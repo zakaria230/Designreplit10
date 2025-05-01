@@ -232,12 +232,11 @@ export default function AuthPage() {
         </div>
 
         {/* Hero Section */}
-        <div className="hidden md:block relative">
+        <div className="hidden md:block relative bg-blue-900">
           <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-700 opacity-90 dark:opacity-80"></div>
           <div
-            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
+            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay bg-[url('/fashion-rack.jpg')]"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1561052967-61fc91e48d79?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
