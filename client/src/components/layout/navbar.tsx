@@ -174,7 +174,8 @@ export function Navbar() {
             <div className="-mr-2 flex items-center sm:hidden">
               <button 
                 onClick={toggleMobileMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                aria-label="Toggle mobile menu"
               >
                 <span className="sr-only">Open main menu</span>
                 {mobileMenuOpen ? (
@@ -197,9 +198,9 @@ export function Navbar() {
                   href={link.href}
                   className={`${
                     isActive(link.href)
-                      ? "bg-primary-50 dark:bg-gray-800 border-primary-700 dark:border-primary-600 text-primary-700 dark:text-primary-400"
-                      : "border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                  } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                      ? "bg-primary-50 dark:bg-gray-800 border-primary-600 dark:border-primary-500 text-primary-700 dark:text-primary-400"
+                      : "border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                  } block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -236,7 +237,8 @@ export function Navbar() {
                         variant="ghost"
                         size="icon"
                         onClick={toggleCart}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 relative"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                        aria-label="Open cart"
                       >
                         <ShoppingCart className="h-5 w-5" />
                         {totalItems > 0 && (
@@ -250,14 +252,14 @@ export function Navbar() {
                   <div className="mt-3 space-y-1">
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Profile
                     </Link>
                     <Link
                       href="/orders"
-                      className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Orders
@@ -265,14 +267,14 @@ export function Navbar() {
                     {user.role === "admin" && (
                       <Link
                         href="/admin"
-                        className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Admin Dashboard
                       </Link>
                     )}
                     <button
-                      className="w-full text-left block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="w-full text-left block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       onClick={() => {
                         handleLogout();
                         setMobileMenuOpen(false);
@@ -306,7 +308,8 @@ export function Navbar() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      aria-label="Search"
                     >
                       <Search className="h-5 w-5" />
                       <span className="sr-only">Search</span>
@@ -315,7 +318,8 @@ export function Navbar() {
                       variant="ghost"
                       size="icon"
                       onClick={toggleCart}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 relative"
+                      className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                      aria-label="Open cart"
                     >
                       <ShoppingCart className="h-5 w-5" />
                       {totalItems > 0 && (
