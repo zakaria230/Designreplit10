@@ -23,6 +23,11 @@ import HelpCenterPage from "@/pages/help-center-page";
 import FAQPage from "@/pages/faq-page";
 import TermsPage from "@/pages/terms-page";
 import PrivacyPage from "@/pages/privacy-page";
+import ProfilePage from "@/pages/profile/profile-page";
+import OrdersPage from "@/pages/profile/orders-page";
+import PurchasesPage from "@/pages/profile/purchases-page";
+import DownloadsPage from "@/pages/profile/downloads-page";
+import SettingsPage from "@/pages/profile/settings-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProductManagement from "@/pages/admin/product-management";
 import AdminOrderManagement from "@/pages/admin/order-management";
@@ -53,6 +58,13 @@ function Router() {
         <Route path="/faq" component={FAQPage} />
         <Route path="/terms" component={TermsPage} />
         <Route path="/privacy" component={PrivacyPage} />
+        
+        {/* Profile Routes */}
+        <ProtectedRoute path="/profile" component={ProfilePage} />
+        <ProtectedRoute path="/profile/orders" component={OrdersPage} />
+        <ProtectedRoute path="/profile/purchases" component={PurchasesPage} />
+        <ProtectedRoute path="/profile/downloads" component={DownloadsPage} />
+        <ProtectedRoute path="/profile/settings" component={SettingsPage} />
         
         {/* Admin Routes */}
         <ProtectedRoute 

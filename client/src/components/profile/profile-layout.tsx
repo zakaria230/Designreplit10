@@ -1,25 +1,23 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/use-auth";
-import { Layout } from "@/components/layout/layout";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 import { 
   User, 
-  Settings, 
   ShoppingBag, 
   Download, 
-  CreditCard, 
-  LogOut,
-  Loader2 
+  Settings, 
+  ChevronRight,
+  Receipt,
+  LogOut
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProfileLayoutProps {
   children: ReactNode;
@@ -27,123 +25,146 @@ interface ProfileLayoutProps {
   description?: string;
 }
 
-export function ProfileLayout({ children, title, description }: ProfileLayoutProps) {
-  const { user, isLoading, logoutMutation } = useAuth();
-  const [location] = useLocation();
+interface SidebarLinkProps {
+  href: string;
+  icon: ReactNode;
+  label: string;
+  isActive: boolean;
+}
 
-  const navigationItems = [
+function SidebarLink({ href, icon, label, isActive }: SidebarLinkProps) {
+  return (
+    <Link href={href}>
+      <a
+        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+          isActive
+            ? "bg-primary text-primary-foreground"
+            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+        }`}
+      >
+        {icon}
+        <span>{label}</span>
+      </a>
+    </Link>
+  );
+}
+
+export function ProfileLayout({ children, title, description }: ProfileLayoutProps) {
+  const { user, logoutMutation } = useAuth();
+  const [location] = useLocation();
+  const isMobile = useIsMobile();
+  
+  const navLinks = [
     {
-      name: "Profile Overview",
       href: "/profile",
-      icon: <User className="mr-2 h-4 w-4" />,
+      icon: <User className="h-5 w-5" />,
+      label: "Overview",
     },
     {
-      name: "My Orders",
       href: "/profile/orders",
-      icon: <ShoppingBag className="mr-2 h-4 w-4" />,
+      icon: <ShoppingBag className="h-5 w-5" />,
+      label: "Orders",
     },
     {
-      name: "My Purchases",
       href: "/profile/purchases",
-      icon: <CreditCard className="mr-2 h-4 w-4" />,
+      icon: <Receipt className="h-5 w-5" />,
+      label: "Purchases",
     },
     {
-      name: "My Downloads",
       href: "/profile/downloads",
-      icon: <Download className="mr-2 h-4 w-4" />,
+      icon: <Download className="h-5 w-5" />,
+      label: "Downloads",
     },
     {
-      name: "Settings",
       href: "/profile/settings",
-      icon: <Settings className="mr-2 h-4 w-4" />,
+      icon: <Settings className="h-5 w-5" />,
+      label: "Settings",
     },
   ];
 
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-4">
-          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6 text-center">
-            You need to be signed in to access your profile.
-          </p>
-          <Link href="/auth">
-            <Button>Sign In</Button>
-          </Link>
-        </div>
-      </Layout>
-    );
-  }
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   return (
-    <Layout>
-      <Helmet>
-        <title>{title} | DesignKorv</title>
-        <meta name="description" content={description || `Manage your ${title.toLowerCase()} and account settings.`} />
-      </Helmet>
-      <div className="container py-8 max-w-6xl">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Account</CardTitle>
-                <CardDescription>
-                  {user.username}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <nav className="flex flex-col">
-                  {navigationItems.map((item) => (
-                    <Link key={item.href} href={item.href}>
-                      <a
-                        className={`flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                          location === item.href
-                            ? "bg-gray-100 dark:bg-gray-800 text-primary font-medium"
-                            : "text-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        {item.icon}
-                        {item.name}
+    <div className="container py-8">
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Sidebar - Desktop */}
+        <aside className="hidden md:block w-64 shrink-0">
+          <div className="sticky top-20 space-y-1">
+            <div className="mb-6">
+              <h3 className="font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
+                Account
+              </h3>
+            </div>
+            
+            {navLinks.map((link) => (
+              <SidebarLink
+                key={link.href}
+                href={link.href}
+                icon={link.icon}
+                label={link.label}
+                isActive={location === link.href}
+              />
+            ))}
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-3 px-3 py-2 rounded-md transition-colors w-full text-left hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-500 mt-8"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Log Out</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Mobile Navigation */}
+        {isMobile && (
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">{title}</h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Menu
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {navLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link href={link.href}>
+                      <a className="flex items-center cursor-pointer">
+                        {link.icon}
+                        <span className="ml-2">{link.label}</span>
                       </a>
                     </Link>
-                  ))}
-                  <button
-                    onClick={() => logoutMutation.mutate()}
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left border-t border-gray-200 dark:border-gray-700 mt-2"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </button>
-                </nav>
-              </CardContent>
-            </Card>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300 focus:bg-red-50 dark:focus:bg-red-950"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          {/* Main Content */}
-          <div className="flex-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                {description && <CardDescription>{description}</CardDescription>}
-              </CardHeader>
-              <CardContent>
-                {children}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1">
+          {!isMobile && (
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">{title}</h1>
+              {description && (
+                <p className="text-gray-500 dark:text-gray-400">{description}</p>
+              )}
+            </div>
+          )}
+          {children}
+        </main>
       </div>
-    </Layout>
+    </div>
   );
 }
