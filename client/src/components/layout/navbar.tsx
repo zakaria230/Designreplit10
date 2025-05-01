@@ -87,7 +87,8 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="Toggle theme"
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 <span className="sr-only">Toggle theme</span>
@@ -95,7 +96,8 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="Search"
               >
                 <Search className="h-5 w-5" />
                 <span className="sr-only">Search</span>
@@ -104,7 +106,8 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleCart}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 relative"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                aria-label="Open cart"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
@@ -224,7 +227,8 @@ export function Navbar() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        aria-label="Toggle theme"
                       >
                         {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                       </Button>
@@ -293,7 +297,8 @@ export function Navbar() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      aria-label="Toggle theme"
                     >
                       {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                       <span className="sr-only">Toggle theme</span>
