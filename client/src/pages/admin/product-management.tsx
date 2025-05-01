@@ -183,25 +183,16 @@ export default function ProductManagement() {
 
   // Handle add product submission
   const onAddSubmit = (values: ProductFormValues) => {
-    // Convert nullish categoryId to undefined for API
-    const payload = {
-      ...values,
-      categoryId: values.categoryId || undefined,
-    };
-    addProductMutation.mutate(payload);
+    // Use the values directly as the API expects null (not undefined)
+    addProductMutation.mutate(values);
   };
 
   // Handle edit product submission
   const onEditSubmit = (values: ProductFormValues) => {
     if (!editingProduct) return;
     
-    // Convert nullish categoryId to undefined for API
-    const payload = {
-      ...values,
-      categoryId: values.categoryId || undefined,
-    };
-    
-    updateProductMutation.mutate({ id: editingProduct.id, product: payload });
+    // Use the values directly as the API expects null (not undefined)
+    updateProductMutation.mutate({ id: editingProduct.id, product: values });
   };
 
   // Handle editing a product
@@ -378,8 +369,8 @@ export default function ProductManagement() {
                         <FormItem>
                           <FormLabel>Category</FormLabel>
                           <Select
-                            value={field.value?.toString() || ""}
-                            onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                            value={field.value?.toString() || "0"}
+                            onValueChange={(value) => field.onChange(value === "0" ? null : parseInt(value))}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -387,7 +378,7 @@ export default function ProductManagement() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">No category</SelectItem>
+                              <SelectItem value="0">No category</SelectItem>
                               {categories?.map((category) => (
                                 <SelectItem key={category.id} value={category.id.toString()}>
                                   {category.name}
@@ -669,8 +660,8 @@ export default function ProductManagement() {
                       <FormItem>
                         <FormLabel>Category</FormLabel>
                         <Select
-                          value={field.value?.toString() || ""}
-                          onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                          value={field.value?.toString() || "0"}
+                          onValueChange={(value) => field.onChange(value === "0" ? null : parseInt(value))}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -678,7 +669,7 @@ export default function ProductManagement() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">No category</SelectItem>
+                            <SelectItem value="0">No category</SelectItem>
                             {categories?.map((category) => (
                               <SelectItem key={category.id} value={category.id.toString()}>
                                 {category.name}
