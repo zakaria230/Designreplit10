@@ -14,6 +14,14 @@ import ShopPage from "@/pages/shop-page";
 import ProductPage from "@/pages/product-page";
 import CartPage from "@/pages/cart-page";
 import CheckoutPage from "@/pages/checkout-page";
+import AboutPage from "@/pages/about-page";
+import BlogPage from "@/pages/blog-page";
+import CareersPage from "@/pages/careers-page";
+import ContactPage from "@/pages/contact-page";
+import HelpCenterPage from "@/pages/help-center-page";
+import FAQPage from "@/pages/faq-page";
+import TermsPage from "@/pages/terms-page";
+import PrivacyPage from "@/pages/privacy-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProductManagement from "@/pages/admin/product-management";
 import AdminOrderManagement from "@/pages/admin/order-management";
@@ -30,6 +38,18 @@ function Router() {
         <Route path="/product/:slug" component={ProductPage} />
         <ProtectedRoute path="/cart" component={CartPage} />
         <ProtectedRoute path="/checkout" component={CheckoutPage} />
+        
+        {/* Company Pages */}
+        <Route path="/about" component={AboutPage} />
+        <Route path="/blog" component={BlogPage} />
+        <Route path="/careers" component={CareersPage} />
+        <Route path="/contact" component={ContactPage} />
+        
+        {/* Support Pages */}
+        <Route path="/help" component={HelpCenterPage} />
+        <Route path="/faq" component={FAQPage} />
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/privacy" component={PrivacyPage} />
         
         {/* Admin Routes */}
         <ProtectedRoute 

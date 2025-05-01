@@ -66,7 +66,7 @@ const jobListings = [
 ];
 
 // Grouped by department
-const departments = [...new Set(jobListings.map(job => job.department))];
+const departments = Array.from(new Set(jobListings.map(job => job.department)));
 
 export default function CareersPage() {
   return (
