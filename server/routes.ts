@@ -159,6 +159,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Database seeding (development only)
+  app.post("/api/dev/seed", async (req, res) => {
+    try {
+      const seed = require("./seed").default;
+      await seed();
+      res.status(200).json({ message: "Database seeded successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: `Error seeding database: ${error.message}` });
+    }
+  });
+
   // Admin routes
   app.post("/api/admin/products", isAdmin, async (req, res) => {
     try {

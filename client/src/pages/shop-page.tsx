@@ -106,7 +106,7 @@ export default function ShopPage() {
     : 100;
 
   // Handle applying a filter
-  const applyFilter = (type: string, value: string | number) => {
+  const applyFilter = (type: string, value: string | number | number[]) => {
     if (type === "category") {
       setSelectedCategory(value as number);
       const category = categories?.find(c => c.id === value);
@@ -116,8 +116,12 @@ export default function ShopPage() {
         }
       }
     } else if (type === "price") {
-      setPriceRange(value as number[]);
-      setActiveFilters([...activeFilters.filter(f => !f.startsWith("Price:")), `Price: $${value[0]} - $${value[1]}`]);
+      const priceValues = value as number[];
+      setPriceRange(priceValues);
+      setActiveFilters([
+        ...activeFilters.filter(f => !f.startsWith("Price:")), 
+        `Price: $${priceValues[0]} - $${priceValues[1]}`
+      ]);
     }
   };
 

@@ -1,0 +1,199 @@
+Complete DesignKorv E-commerce Platform Prompt
+Project Overview
+Create "DesignKorv," a premium e-commerce platform for digital fashion design files. The platform allows designers to sell their fashion design assets and customers to purchase and download them. The site features modern animations, fast performance, and a high-end shopping experience for digital fashion design assets.
+
+Technical Specifications
+Frontend
+React with TypeScript for type safety
+Tailwind CSS for styling with shadcn/ui components
+Dark/light mode support across all components
+TanStack Query for data fetching and state management
+Wouter for client-side routing
+Form validation with react-hook-form and zod
+Toast notifications for user feedback
+Responsive design for all screen sizes
+Stripe integration for payment processing
+Backend
+Express.js server with TypeScript
+PostgreSQL database with Drizzle ORM
+RESTful API endpoints
+Session-based authentication
+Secure password hashing with scrypt
+Role-based access control (admin, user, vendor)
+Core User Flows
+Customer Journey
+Browse digital fashion designs by category or featured collections
+View detailed product pages with high-quality previews
+Add designs to cart
+Create account/sign in
+Complete checkout with Stripe
+Access purchased designs in personal dashboard
+Download purchased digital assets
+Admin Journey
+Log in to admin panel (credentials: admin/admin123)
+View dashboard with analytics (sales, users, products)
+Manage products (add, edit, delete)
+Process orders and view order history
+Manage user accounts
+View database statistics
+Designer/Vendor Journey
+Register as a vendor
+Upload and manage design files
+Set pricing and categorization
+Track sales and analytics
+Receive payments through the platform
+Feature Details
+Homepage
+Hero section with animated showcase of premium designs
+Featured products carousel
+Category navigation with visual elements
+Testimonials from satisfied customers
+Newsletter signup with validation
+Quick access to popular/trending designs
+Product Catalog
+Grid layout with filterable/sortable products
+Quick view functionality
+Detailed product pages with:
+High-resolution previews
+Product descriptions
+File format information
+Designer information
+Related products
+Add to cart functionality
+User Authentication
+Registration form with validation
+Login system with security measures
+Password recovery flow
+Profile management (account details, order history)
+Role-based access (customer, vendor, admin)
+Shopping Cart
+Add/remove products
+Adjust quantities
+Cart persistence between sessions
+Real-time price calculation
+Checkout process with address collection
+Stripe payment integration
+Admin Dashboard
+Overview with key metrics:
+Revenue statistics
+New users
+Recent orders
+Popular products
+Product management interface
+Order processing system
+User management tools
+Content management for homepage
+Database monitoring tools
+API Structure
+/api/users/* - User management endpoints
+/api/products/* - Product management endpoints
+/api/categories/* - Category management endpoints
+/api/cart/* - Shopping cart endpoints
+/api/orders/* - Order processing endpoints
+/api/admin/* - Admin-specific endpoints
+Database Schema
+Users Table
+id (primary key)
+username (unique)
+email (unique)
+password (hashed)
+fullName
+role (enum: 'user', 'admin', 'vendor')
+isVendor (boolean)
+createdAt
+updatedAt
+Products Table
+id (primary key)
+title
+description
+price
+imageUrl
+fileFormats
+vendorId (foreign key to users)
+category
+isNew (boolean)
+isTrending (boolean)
+isFeatured (boolean)
+hasWatermark (boolean)
+createdAt
+updatedAt
+Categories Table
+id (primary key)
+name
+imageUrl
+productCount
+Cart Items Table
+id (primary key)
+userId (foreign key to users)
+productId (foreign key to products)
+quantity
+createdAt
+Orders Table
+id (primary key)
+userId (foreign key to users)
+totalAmount
+status (enum: 'pending', 'completed', 'cancelled')
+createdAt
+updatedAt
+Order Items Table
+id (primary key)
+orderId (foreign key to orders)
+productId (foreign key to products)
+quantity
+price
+createdAt
+UI/UX Design Elements
+Clean, minimal layout with ample whitespace
+Premium color scheme:
+Dark mode: Rich dark backgrounds with accent colors
+Light mode: Crisp white with subtle shadows
+Smooth animations for transitions and interactions
+Micro-interactions for better user engagement
+Consistent typography with hierarchical structure
+High-quality product imagery
+Intuitive navigation with breadcrumbs
+Responsive breakpoints for all device sizes
+Loading states and skeleton screens
+Comprehensive error handling with user-friendly messages
+Implementation Details
+Authentication System
+Token-based authentication with secure HTTP-only cookies
+Password hashing with salt using scrypt
+Protected routes for authenticated content
+Admin-specific routes with role verification
+Persistent login with proper token handling
+Payment Processing
+Stripe integration for secure payments
+Support for multiple payment methods
+Order confirmation emails
+Invoice generation
+Secure digital asset delivery
+Performance Optimization
+Code splitting for faster initial load
+Image optimization for quick rendering
+Lazy loading for off-screen content
+Efficient data fetching with TanStack Query
+Memoization of expensive calculations
+Security Measures
+Input validation for all forms
+SQL injection protection with parameterized queries
+XSS protection
+CSRF protection
+Rate limiting for API endpoints
+Secure password storage
+HTTPS enforcement
+Deployment Considerations
+Environment variable management for secrets
+Database migration strategy
+Hosting on Replit with proper configuration
+API endpoint documentation
+Performance monitoring and analytics
+Development Best Practices
+TypeScript for type safety
+Component-based architecture
+Clean code principles
+Consistent error handling
+Comprehensive logging
+Git-based version control
+Code reviews and quality checks
+This comprehensive prompt provides all the necessary details to understand, develop, and maintain the DesignKorv e-commerce platform for digital fashion design files.
