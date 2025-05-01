@@ -220,6 +220,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
+  // Admin Orders
+  app.get("/api/admin/orders", isAdmin, async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/admin/orders/:id", isAdmin, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
+      const order = await storage.getOrderById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      const items = await storage.getOrderItemsByOrder(orderId);
+      const user = await storage.getUser(order.userId);
+      
+      res.json({ ...order, items, user });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch order details" });
+    }
+  });
+
+  app.patch("/api/admin/orders/:id/status", isAdmin, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      const order = await storage.updateOrderStatus(orderId, status);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  app.patch("/api/admin/orders/:id/payment", isAdmin, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
+      const { paymentStatus } = req.body;
+      if (!paymentStatus) {
+        return res.status(400).json({ message: "Payment status is required" });
+      }
+      
+      const order = await storage.updatePaymentStatus(orderId, paymentStatus);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update payment status" });
+    }
+  });
+
+  // Admin Products
   app.post("/api/admin/products", isAdmin, async (req, res) => {
     try {
       const product = req.body;
