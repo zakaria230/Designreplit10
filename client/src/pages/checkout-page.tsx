@@ -159,6 +159,26 @@ function CheckoutForm() {
           </CardHeader>
           <CardContent>
             <PaymentElement />
+            <div className="mt-4 py-3 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Supported payment methods:</p>
+              <div className="flex items-center space-x-3">
+                <div className="bg-white rounded p-1 shadow-sm">
+                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/visa.svg" alt="Visa" className="h-6 w-10" />
+                </div>
+                <div className="bg-white rounded p-1 shadow-sm">
+                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/mastercard.svg" alt="Mastercard" className="h-6 w-10" />
+                </div>
+                <div className="bg-white rounded p-1 shadow-sm">
+                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/american-express.svg" alt="American Express" className="h-6 w-10" />
+                </div>
+                <div className="bg-white rounded p-1 shadow-sm">
+                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/paypal.svg" alt="PayPal" className="h-6 w-10" />
+                </div>
+                <div className="bg-white rounded p-1 shadow-sm">
+                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/apple-pay.svg" alt="Apple Pay" className="h-6 w-10" />
+                </div>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-between">
             <div className="text-sm font-medium">
@@ -189,6 +209,7 @@ export default function CheckoutPage() {
   const { items, totalItems, totalPrice, clearCart } = useCart();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("visa");
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { user } = useAuth();
@@ -217,17 +238,22 @@ export default function CheckoutPage() {
     }
     
     try {
+      // Get payment method name for notes
+      const paymentMethodName = selectedPaymentMethod.charAt(0).toUpperCase() + selectedPaymentMethod.slice(1);
+      
       // Create a mock order
       const response = await apiRequest("POST", "/api/create-order", {
         items: items,
         totalAmount: totalPrice,
-        paymentStatus: "paid" // Simulate payment
+        paymentStatus: "paid", // Simulate payment
+        paymentMethod: selectedPaymentMethod,
+        notes: `Payment processed via ${paymentMethodName}`
       });
       
       if (response.ok) {
         toast({
           title: "Order Successful!",
-          description: "Your order has been placed successfully.",
+          description: `Your order has been placed successfully and paid with ${paymentMethodName}.`,
         });
         clearCart();
         navigate("/orders");
@@ -416,6 +442,33 @@ export default function CheckoutPage() {
                                       </FormItem>
                                     )}
                                   />
+                                  
+                                  <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <p className="text-sm font-medium mb-3">Payment Method</p>
+                                    <div className="grid grid-cols-3 gap-3">
+                                      <div 
+                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'visa' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
+                                        onClick={() => setSelectedPaymentMethod('visa')}
+                                      >
+                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/visa.svg" alt="Visa" className="h-6" />
+                                      </div>
+                                      <div 
+                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'mastercard' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
+                                        onClick={() => setSelectedPaymentMethod('mastercard')}
+                                      >
+                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/mastercard.svg" alt="Mastercard" className="h-6" />
+                                      </div>
+                                      <div 
+                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'paypal' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
+                                        onClick={() => setSelectedPaymentMethod('paypal')}
+                                      >
+                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/paypal.svg" alt="PayPal" className="h-6" />
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                      Selected: {selectedPaymentMethod.charAt(0).toUpperCase() + selectedPaymentMethod.slice(1)}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div className="flex justify-between pt-4">
                                   <Button variant="outline" onClick={() => navigate("/cart")}>
