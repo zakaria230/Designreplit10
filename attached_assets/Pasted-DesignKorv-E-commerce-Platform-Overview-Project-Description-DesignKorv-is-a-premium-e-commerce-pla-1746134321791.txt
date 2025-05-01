@@ -1,0 +1,152 @@
+DesignKorv E-commerce Platform Overview
+Project Description
+DesignKorv is a premium e-commerce platform designed for selling digital fashion design files. The platform provides a seamless shopping experience for customers looking to purchase high-quality fashion design assets while offering robust management capabilities for administrators.
+
+Tech Stack
+Frontend: React with TypeScript, TailwindCSS, shadcn/ui components
+Backend: Express.js server with TypeScript
+Database: PostgreSQL with Drizzle ORM
+State Management: TanStack Query (React Query)
+Routing: wouter for client-side routing
+Authentication: Custom authentication with session-based storage
+Payments: Stripe integration
+Core Features
+User-Facing Features
+Homepage
+
+Hero section showcasing premium digital fashion assets
+Featured products carousel
+Category navigation
+Testimonials section
+Newsletter subscription
+Product Browsing
+
+Browse products by category
+Search functionality
+Filtering options (price, popularity, etc.)
+Detailed product pages with previews
+User Authentication
+
+User registration and login
+Profile management
+Purchase history
+Shopping Experience
+
+Add products to cart
+Persistent cart (saved between sessions)
+Secure checkout process
+Stripe payment integration
+Post-Purchase
+
+Digital asset delivery
+Order tracking
+Download history
+Admin Features
+Dashboard
+
+Overview of sales, users, and products
+Analytics and statistics
+Quick access to management sections
+Product Management
+
+Add, edit, and remove products
+Manage product categories
+Set product visibility and featured status
+Order Management
+
+View and process orders
+Order status updates
+Sales reports
+User Management
+
+View user list
+Manage user roles
+Handle customer inquiries
+Content Management
+
+Update homepage content
+Manage featured items
+Edit site information
+Database Management
+
+View database statistics
+Perform basic database operations
+Monitor database health
+Architecture
+Client-Side Structure
+Components: Reusable UI elements organized by function
+
+components/ui: Basic UI components (buttons, inputs, etc.)
+components/layout: Page layouts and structural elements
+components/home: Homepage-specific components
+components/admin: Admin-related components
+components/shop: Shop-related components
+components/cart: Shopping cart components
+components/auth: Authentication-related components
+Pages: Main route components
+
+Public pages (home, shop, product details, etc.)
+Protected user pages (account, dashboard, etc.)
+Admin pages (admin dashboard, product management, etc.)
+Context: Global state management
+
+AuthContext: Handles user authentication state
+CartContext: Manages shopping cart state
+ThemeContext: Controls light/dark mode
+Hooks: Custom React hooks
+
+useAuth: Authentication utilities
+useCart: Shopping cart utilities
+useToast: Notification system
+Lib: Utility functions and configurations
+
+API request handling
+Form validation
+Data formatting
+Server-Side Structure
+API Routes: RESTful endpoints for data operations
+
+User authentication (/api/users/*)
+Products management (/api/products/*)
+Orders processing (/api/orders/*)
+Admin operations (/api/admin/*)
+Database: PostgreSQL with Drizzle ORM
+
+User tables
+Product tables
+Order tables
+Category tables
+Authentication: Session-based with secure password storage
+
+Password hashing with scrypt
+Session management
+Key Files
+client/src/App.tsx: Main application component with routing
+client/src/context/auth-context.tsx: Authentication state management
+client/src/context/cart-context.tsx: Shopping cart state management
+client/src/lib/protected-route.tsx: Route protection for authenticated pages
+client/src/pages/admin/*: Admin page components
+client/src/pages/auth-page.tsx: User authentication page
+server/routes.ts: API route definitions
+server/auth.ts: Authentication logic
+server/storage.ts: Data storage interface
+server/db.ts: Database connection
+shared/schema.ts: Database schema definitions
+Special Features
+Dark/Light Mode: Complete theme support across the entire application
+Responsive Design: Mobile-first approach for all pages
+Admin Analytics: Visual dashboard with key performance indicators
+Real-time Updates: Dynamic content updates without page reloads
+Secure Authentication: Role-based access control system
+Optimized Images: Responsive image loading for fast page rendering
+Toast Notifications: User-friendly status messages
+Form Validation: Comprehensive client-side validation with Zod
+Development Guidelines
+Follow TypeScript best practices for type safety
+Use React function components with hooks
+Implement proper error handling for all operations
+Maintain consistent styling using TailwindCSS
+Ensure all API endpoints are properly secured
+Keep components modular and reusable
+Write clean, maintainable code with appropriate comments
+This e-commerce platform combines modern frontend technologies with a robust backend to create a seamless shopping experience for digital fashion design assets, while providing powerful tools for site administration and content management.
