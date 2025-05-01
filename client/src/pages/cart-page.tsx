@@ -169,6 +169,7 @@ export default function CartPage() {
                 <Button 
                   variant="outline" 
                   size="sm"
+                  className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                   onClick={() => clearCart()}
                 >
                   <XCircle className="h-4 w-4 mr-2" />
@@ -176,7 +177,8 @@ export default function CartPage() {
                 </Button>
                 <Button 
                   variant="ghost" 
-                  size="sm" 
+                  size="sm"
+                  className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
                   asChild
                 >
                   <Link href="/shop">
@@ -210,7 +212,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <Button className="w-full" size="lg" asChild>
+                  <Button className="w-full text-white dark:text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600" size="lg" asChild>
                     <Link href="/checkout">
                       Proceed to Checkout <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

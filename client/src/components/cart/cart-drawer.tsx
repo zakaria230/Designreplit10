@@ -73,12 +73,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <SheetFooter className="flex flex-col sm:flex-row gap-3">
                 <Button 
                   variant="outline" 
-                  className="sm:flex-1"
+                  className="sm:flex-1 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                   onClick={() => clearCart()}
                 >
                   Clear Cart
                 </Button>
-                <Button asChild className="sm:flex-1">
+                <Button 
+                  asChild 
+                  className="sm:flex-1 text-white dark:text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+                >
                   <Link href="/checkout" onClick={onClose}>
                     Checkout <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
