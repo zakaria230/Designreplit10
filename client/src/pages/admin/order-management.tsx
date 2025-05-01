@@ -303,7 +303,7 @@ export default function OrderManagement() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={statusFilter || ""} onValueChange={(value) => setStatusFilter(value || null)}>
+            <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center">
                   <Filter className="mr-2 h-4 w-4" />
@@ -311,7 +311,7 @@ export default function OrderManagement() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 {ORDER_STATUSES.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -320,7 +320,7 @@ export default function OrderManagement() {
               </SelectContent>
             </Select>
 
-            <Select value={paymentFilter || ""} onValueChange={(value) => setPaymentFilter(value || null)}>
+            <Select value={paymentFilter || "all"} onValueChange={(value) => setPaymentFilter(value === "all" ? null : value)}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center">
                   <Filter className="mr-2 h-4 w-4" />
@@ -328,7 +328,7 @@ export default function OrderManagement() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Payments</SelectItem>
+                <SelectItem value="all">All Payments</SelectItem>
                 {PAYMENT_STATUSES.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
