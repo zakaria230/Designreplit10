@@ -111,7 +111,7 @@ export function Navbar() {
               >
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-700 rounded-full">
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 dark:bg-primary-500 ring-2 ring-white dark:ring-gray-900 rounded-full">
                     {totalItems}
                   </span>
                 )}
@@ -242,7 +242,7 @@ export function Navbar() {
                       >
                         <ShoppingCart className="h-5 w-5" />
                         {totalItems > 0 && (
-                          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-700 rounded-full">
+                          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 dark:bg-primary-500 ring-2 ring-white dark:ring-gray-900 rounded-full">
                             {totalItems}
                           </span>
                         )}
@@ -323,7 +323,7 @@ export function Navbar() {
                     >
                       <ShoppingCart className="h-5 w-5" />
                       {totalItems > 0 && (
-                        <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-700 rounded-full">
+                        <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 dark:bg-primary-500 ring-2 ring-white dark:ring-gray-900 rounded-full">
                           {totalItems}
                         </span>
                       )}
