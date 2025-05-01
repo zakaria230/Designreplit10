@@ -69,13 +69,22 @@
     @apply bg-card text-card-foreground rounded-lg border border-border shadow-sm;
   }
   
+  /* Improved text readability */
+  .text-gray-600 {
+    color: rgb(55 65 81); /* gray-700 */
+  }
+  
+  .text-gray-500 {
+    color: rgb(75 85 99); /* gray-600 */
+  }
+  
   /* Improved dark mode text readability */
-  .dark .text-gray-600 {
-    @apply text-gray-300;
+  .dark .text-gray-600, .dark .text-gray-700 {
+    color: rgb(209 213 219); /* gray-300 */
   }
   
   .dark .text-gray-500 {
-    @apply text-gray-400;
+    color: rgb(156 163 175); /* gray-400 */
   }
   
   /* Better form input contrast in dark mode */
@@ -85,7 +94,7 @@
     @apply bg-muted border-border text-foreground;
   }
   
-  /* Clear button styling */
+  /* Clear button styling with better visibility */
   button {
     @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
   }
@@ -98,5 +107,16 @@
   /* Improved navigation links */
   nav a {
     @apply no-underline;
+  }
+  
+  /* Ensure empty cart button is visible */
+  .empty-cart-button {
+    @apply bg-primary text-white hover:bg-primary-600;
+  }
+  
+  /* Ensure button text is visible in all contexts */
+  button:not([class*="bg-"]), 
+  a[role="button"]:not([class*="bg-"]) {
+    @apply text-foreground;
   }
 }

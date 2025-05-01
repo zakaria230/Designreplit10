@@ -62,7 +62,7 @@ export default function CartPage() {
             <p className="text-gray-500 dark:text-gray-400 mb-8">
               Looks like you haven't added any items to your cart yet.
             </p>
-            <Button size="lg" asChild>
+            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href="/shop">
                 Browse Products
               </Link>

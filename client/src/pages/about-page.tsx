@@ -40,7 +40,7 @@ export default function AboutPage() {
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Today, we're proud to provide the most comprehensive collection of premium digital fashion assets, used by leading designers and brands worldwide.
               </p>
-              <Button asChild>
+              <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link href="/shop">
                   Explore Our Collection
                 </Link>
