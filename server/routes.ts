@@ -85,6 +85,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch category products" });
     }
   });
+  
+  app.get("/api/products/category/:id", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      const products = await storage.getProductsByCategory(categoryId);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch category products" });
+    }
+  });
 
   // Protected routes middleware
   const isAuthenticated = (req, res, next) => {

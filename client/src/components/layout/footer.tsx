@@ -59,18 +59,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/categories" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                  Categories
+                </Link>
+              </li>
+              <li>
                 <Link href="/categories/patterns" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
                   Patterns
                 </Link>
               </li>
               <li>
-                <Link href="/categories/technical-drawings" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-                  Technical Drawings
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/3d-models" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-                  3D Models
+                <Link href="/categories/templates" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                  Templates
                 </Link>
               </li>
               <li>
