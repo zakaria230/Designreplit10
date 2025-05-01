@@ -570,10 +570,10 @@ export default function OrderManagement() {
                             <div key={item.id} className="py-3 flex justify-between items-center">
                               <div className="flex items-center">
                                 <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 mr-3">
-                                  {item.product.imageUrl ? (
+                                  {item.product && item.product.imageUrl ? (
                                     <img
                                       src={item.product.imageUrl}
-                                      alt={item.product.name}
+                                      alt={item.product.name || 'Product'}
                                       className="h-full w-full object-cover"
                                     />
                                   ) : (
@@ -583,7 +583,7 @@ export default function OrderManagement() {
                                   )}
                                 </div>
                                 <div>
-                                  <p className="font-medium">{item.product.name}</p>
+                                  <p className="font-medium">{item.product ? item.product.name : `Product #${item.productId}`}</p>
                                   <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Qty: {item.quantity} × {formatPrice(item.price)}
                                   </p>
@@ -593,7 +593,7 @@ export default function OrderManagement() {
                                 <p className="font-medium mr-3">
                                   {formatPrice(item.quantity * item.price)}
                                 </p>
-                                {item.product.downloadUrl && (
+                                {item.product && item.product.downloadUrl && (
                                   <Button size="sm" variant="outline">
                                     <Download className="h-4 w-4 mr-1" />
                                     Files
