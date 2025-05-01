@@ -135,6 +135,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create order (simulated checkout when Stripe is not available)
+  app.post("/api/create-order", isAuthenticated, async (req, res) => {
+    try {
+      const { items, totalAmount, paymentStatus = "paid" } = req.body;
+
+      if (!items || !Array.isArray(items) || !totalAmount) {
+        return res.status(400).json({ message: "Invalid order data" });
+      }
+
+      // Create the order
+      const order = await storage.createOrder({
+        userId: req.user.id,
+        totalAmount,
+        status: "processing", // Since this is a simulated direct payment
+        paymentStatus,
+        paymentIntentId: `sim_${Date.now()}` // Simulated payment intent ID
+      });
+
+      // Add order items
+      for (const item of items) {
+        await storage.createOrderItem({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.product.price,
+        });
+      }
+
+      res.status(201).json(order);
+    } catch (error: any) {
+      console.error("Order creation error:", error);
+      res.status(500).json({ message: `Failed to create order: ${error.message}` });
+    }
+  });
+
   app.get("/api/orders/:id", isAuthenticated, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);

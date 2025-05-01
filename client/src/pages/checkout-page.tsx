@@ -186,11 +186,15 @@ function CheckoutForm() {
 }
 
 export default function CheckoutPage() {
-  const { items, totalItems, totalPrice } = useCart();
+  const { items, totalItems, totalPrice, clearCart } = useCart();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+
+  // Flag to check if Stripe is properly configured
+  const isStripeConfigured = import.meta.env.VITE_STRIPE_PUBLIC_KEY && stripePromise;
 
   // Format price to display with 2 decimal places
   const formatPrice = (price: number) => {
@@ -200,6 +204,45 @@ export default function CheckoutPage() {
     }).format(price);
   };
 
+  // Handle simulated checkout when Stripe is not configured
+  const handleSimulatedCheckout = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to complete your order",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+    
+    try {
+      // Create a mock order
+      const response = await apiRequest("POST", "/api/create-order", {
+        items: items,
+        totalAmount: totalPrice,
+        paymentStatus: "paid" // Simulate payment
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Order Successful!",
+          description: "Your order has been placed successfully.",
+        });
+        clearCart();
+        navigate("/orders");
+      } else {
+        throw new Error("Failed to create order");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Checkout Failed",
+        description: error.message || "An error occurred during checkout",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     // Redirect to cart if cart is empty
     if (totalItems === 0) {
@@ -207,38 +250,43 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Create PaymentIntent as soon as the page loads
-    const createPaymentIntent = async () => {
-      try {
-        setIsLoading(true);
-        
-        const response = await apiRequest("POST", "/api/create-payment-intent", { 
-          amount: totalPrice,
-          items: items
-        });
-        
-        const data = await response.json();
-        setClientSecret(data.clientSecret);
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: "Failed to initialize payment. Please try again.",
-          variant: "destructive",
-        });
-        console.error("Error creating payment intent:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // If Stripe is configured, create PaymentIntent as soon as the page loads
+    if (isStripeConfigured) {
+      const createPaymentIntent = async () => {
+        try {
+          setIsLoading(true);
+          
+          const response = await apiRequest("POST", "/api/create-payment-intent", { 
+            amount: totalPrice,
+            items: items
+          });
+          
+          const data = await response.json();
+          setClientSecret(data.clientSecret);
+        } catch (error: any) {
+          toast({
+            title: "Error",
+            description: "Failed to initialize payment. Please try again.",
+            variant: "destructive",
+          });
+          console.error("Error creating payment intent:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    createPaymentIntent();
-  }, [items, totalItems, totalPrice, navigate, toast]);
+      createPaymentIntent();
+    } else {
+      // If Stripe is not configured, don't show loading
+      setIsLoading(false);
+    }
+  }, [items, totalItems, totalPrice, navigate, toast, isStripeConfigured]);
 
   if (totalItems === 0) {
     return null; // Will redirect in useEffect
   }
 
-  if (isLoading || !clientSecret) {
+  if (isLoading && isStripeConfigured) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -305,18 +353,84 @@ export default function CheckoutPage() {
                   Complete Your Order
                 </h2>
                 
-                {stripePromise && clientSecret ? (
+                {isStripeConfigured && clientSecret ? (
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
                     <CheckoutForm />
                   </Elements>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-red-500 dark:text-red-400 mb-4">
-                      Stripe payment is not configured correctly.
-                    </p>
-                    <Button onClick={() => navigate("/cart")}>
-                      Return to Cart
-                    </Button>
+                    {isStripeConfigured ? (
+                      <>
+                        <p className="text-red-500 dark:text-red-400 mb-4">
+                          Error initializing payment system. Please try again.
+                        </p>
+                        <Button onClick={() => navigate("/cart")}>
+                          Return to Cart
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-amber-500 dark:text-amber-400 mb-4">
+                          Development mode: Stripe payment is not configured.
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6">
+                          You can use simulated checkout to test the ordering process.
+                        </p>
+                        {(() => {
+                          // Create a form instance for simulated checkout
+                          const simulatedForm = useForm<CheckoutFormValues>({
+                            resolver: zodResolver(checkoutFormSchema),
+                            defaultValues: {
+                              email: user?.email || "",
+                              name: user?.username || "",
+                            },
+                          });
+                          
+                          return (
+                            <Form {...simulatedForm}>
+                              <form onSubmit={simulatedForm.handleSubmit(handleSimulatedCheckout)} className="space-y-6">
+                                <div className="space-y-4">
+                                  <FormField
+                                    control={simulatedForm.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Full Name</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Enter your name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={simulatedForm.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                          <Input type="email" placeholder="Enter your email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                                <div className="flex justify-between pt-4">
+                                  <Button variant="outline" onClick={() => navigate("/cart")}>
+                                    Return to Cart
+                                  </Button>
+                                  <Button type="submit">
+                                    Complete Simulated Purchase
+                                  </Button>
+                                </div>
+                              </form>
+                            </Form>
+                          );
+                        })()}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
