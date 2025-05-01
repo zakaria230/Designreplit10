@@ -40,7 +40,7 @@ export default function AboutPage() {
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Today, we're proud to provide the most comprehensive collection of premium digital fashion assets, used by leading designers and brands worldwide.
               </p>
-              <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button asChild className="bg-blue-500 text-white hover:bg-blue-600">
                 <Link href="/shop">
                   Explore Our Collection
                 </Link>
@@ -125,12 +125,12 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Button size="lg" variant="secondary" className="bg-white text-primary-600 hover:bg-gray-50" asChild>
+                <Button size="lg" variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 dark:bg-white dark:text-primary-600 dark:hover:bg-gray-50" asChild>
                   <Link href="/shop">
                     Browse Collection
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
+                <Button size="lg" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-white dark:text-white dark:hover:bg-white/10" asChild>
                   <Link href="/contact">
                     Contact Us
                   </Link>

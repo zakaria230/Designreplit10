@@ -212,7 +212,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <Button className="w-full text-white dark:text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600" size="lg" asChild>
+                  <Button className="w-full bg-blue-500 text-white hover:bg-blue-600" size="lg" asChild>
                     <Link href="/checkout">
                       Proceed to Checkout <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

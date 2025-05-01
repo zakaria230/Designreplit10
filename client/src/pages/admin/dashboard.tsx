@@ -113,12 +113,12 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-2">
-            <Button asChild>
+            <Button asChild className="bg-blue-500 text-white hover:bg-blue-600">
               <Link href="/admin/products">
                 Manage Products
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="border-blue-500 text-blue-500 hover:bg-blue-500/10">
               <Link href="/admin/orders">
                 View Orders
               </Link>
@@ -321,7 +321,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Orders</CardTitle>
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="border-blue-500 text-blue-500 hover:bg-blue-500/10">
                   <Link href="/admin/orders">
                     View All
                     <ChevronRight className="ml-1 h-4 w-4" />
