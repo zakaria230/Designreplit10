@@ -1,32 +1,39 @@
-# DesignKorv cPanel Deployment Steps
+# DesignKorv cPanel Deployment Steps (UPDATED SOLUTION)
 
-Follow these exact steps to deploy DesignKorv on your cPanel hosting:
+This guide contains the specific steps to fix the 403 Access Denied error and deploy DesignKorv to your cPanel hosting.
 
 ## Before You Begin
 
-1. Make sure your cPanel hosting supports Node.js applications
-2. You will need PostgreSQL database access
+1. Make sure your cPanel hosting supports Node.js applications (you seem to have this)
+2. You need PostgreSQL database access (check with your hosting provider if unsure)
 
-## Step 1: Prepare Your Local Build
+## Step 1: Prepare Your Local Build (FIXED)
 
 1. Run the build command locally to generate production files:
    ```
    npm run build
    ```
-   This creates the `/dist` directory with compiled server code
 
-## Step 2: Upload Files to cPanel
+2. Run the cPanel preparation script:
+   ```
+   node build-for-cpanel.js
+   ```
+   This will create additional files needed specifically for cPanel deployment.
 
-Upload the following files and directories to your website's root directory:
-- The entire `dist` directory (contains compiled server code)
-- The entire `client/public` directory (contains static assets)
-- The `node_modules` directory (or install dependencies on the server)
-- `.htaccess` (created in this project)
-- `server.js` (created in this project)
-- `.env` file (based on the .env.example template)
-- `passenger-nodejs.json` (created in this project)
-- `package.json`
-- The `uploads` directory
+## Step 2: Upload Files to cPanel (FIXED)
+
+Upload the following files and directories to your cPanel hosting root directory:
+
+### Essential Files
+- `dist/` directory (contains compiled server and client code)
+- `cjs-adapter.cjs` (critical - this is the entry point for cPanel)
+- `.htaccess` (critical - contains rewrite rules to make the app work)
+- `index.html` (main HTML entry point for the frontend)
+
+### Additional Required Files
+- `node_modules/` directory (dependencies)
+- `.env` file (based on the .env.example template) - rename .env.cpanel and update values
+- `uploads/` directory (for user uploaded files)
 
 ## Step 3: Create and Configure Database
 
@@ -42,7 +49,7 @@ Upload the following files and directories to your website's root directory:
    PGDATABASE=database_name
    ```
 
-## Step 4: Set Up Node.js Application
+## Step 4: Set Up Node.js Application (CRITICAL STEP)
 
 1. In cPanel, look for "Setup Node.js App" or similar option
 2. Create a new Node.js application with these settings:
@@ -50,7 +57,7 @@ Upload the following files and directories to your website's root directory:
    - Node.js Version: Select the latest available (v18+ recommended)
    - Application Root: Your website root directory
    - Application URL: Your domain name
-   - Application Startup File: server.js
+   - **Application Startup File: cjs-adapter.cjs** (VERY IMPORTANT - NOT server.js)
    - Environment Variables: NODE_ENV=production
 
 ## Step 5: Initialize the Database

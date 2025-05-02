@@ -1,0 +1,13 @@
+# robots.txt file for DesignKorv
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /dashboard/*
+
+# Allow sitemap
+Sitemap: https://designkorv.com/sitemap.xml
