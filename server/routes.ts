@@ -706,9 +706,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allUsers = await db.select().from(users);
       const allProducts = await storage.getAllProducts();
       
-      // Calculate total revenue
+      // Calculate total revenue (only from paid orders)
       const totalRevenue = allOrders.reduce((sum, order) => {
-        return sum + (order.totalAmount || 0);
+        // Only include revenue from orders with paymentStatus === 'paid'
+        return order.paymentStatus === 'paid' ? sum + (order.totalAmount || 0) : sum;
       }, 0);
       
       // Get recent orders with additional info
@@ -743,7 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         // Calculate total for this month
-        const total = monthOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        const total = monthOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
         
         return {
           name: monthNames[month.getMonth()],
