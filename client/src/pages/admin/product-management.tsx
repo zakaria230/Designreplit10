@@ -383,12 +383,19 @@ export default function ProductManagement() {
   };
   
   const handleRemoveTag = (tag: string) => {
-    const currentTags = addForm.getValues("tags") || [];
-    addForm.setValue("tags", currentTags.filter(t => t !== tag));
+    if (editingProduct) {
+      // We're in edit mode
+      const currentTags = editForm.getValues("tags") || [];
+      editForm.setValue("tags", currentTags.filter(t => t !== tag));
+    } else {
+      // We're in add mode
+      const currentTags = addForm.getValues("tags") || [];
+      addForm.setValue("tags", currentTags.filter(t => t !== tag));
+    }
   };
   
   // Handle tags for edit form
-  const handleEditTag = () => {
+  const handleAddEditTag = () => {
     if (editTagInput.trim() === "") return;
     
     const currentTags = editForm.getValues("tags") || [];
@@ -396,11 +403,6 @@ export default function ProductManagement() {
       editForm.setValue("tags", [...currentTags, editTagInput.trim()]);
     }
     setEditTagInput("");
-  };
-  
-  const handleRemoveEditTag = (tag: string) => {
-    const currentTags = editForm.getValues("tags") || [];
-    editForm.setValue("tags", currentTags.filter(t => t !== tag));
   };
 
   // Cropping functionality
@@ -597,7 +599,7 @@ export default function ProductManagement() {
                 Add Product
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Product</DialogTitle>
                 <DialogDescription>
@@ -1159,7 +1161,7 @@ export default function ProductManagement() {
 
         {/* Edit Product Dialog */}
         <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
               <DialogDescription>
@@ -1281,6 +1283,56 @@ export default function ProductManagement() {
                     )}
                   />
                 </div>
+                
+                <FormField
+                  control={editForm.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {field.value?.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
+                              {tag}
+                              <button 
+                                type="button"
+                                onClick={() => handleRemoveTag(tag)}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                ✕
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Add a tag"
+                            value={editTagInput}
+                            onChange={(e) => setEditTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddEditTag();
+                              }
+                            }}
+                          />
+                          <Button 
+                            type="button" 
+                            size="sm"
+                            onClick={handleAddEditTag}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                      <FormDescription>
+                        Tags help customers find your products. Press Enter or click Add to add a tag.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={editForm.control}
@@ -1498,7 +1550,7 @@ export default function ProductManagement() {
                               {tag}
                               <button 
                                 type="button"
-                                onClick={() => handleRemoveEditTag(tag)}
+                                onClick={() => handleRemoveTag(tag)}
                                 className="text-muted-foreground hover:text-foreground"
                               >
                                 ✕
@@ -1514,14 +1566,14 @@ export default function ProductManagement() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
-                                handleEditTag();
+                                handleAddEditTag();
                               }
                             }}
                           />
                           <Button 
                             type="button" 
                             size="sm"
-                            onClick={handleEditTag}
+                            onClick={handleAddEditTag}
                           >
                             Add
                           </Button>
