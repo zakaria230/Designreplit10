@@ -53,6 +53,7 @@ export const products = pgTable("products", {
   imageUrl: text("image_url"),
   downloadUrl: text("download_url"),
   categoryId: integer("category_id").references(() => categories.id),
+  tags: text("tags").array(),
   isFeatured: boolean("is_featured").default(false),
   rating: doublePrecision("rating").default(0),
   numReviews: integer("num_reviews").default(0),
@@ -67,6 +68,7 @@ export const insertProductSchema = createInsertSchema(products).pick({
   imageUrl: true,
   downloadUrl: true,
   categoryId: true,
+  tags: true,
   isFeatured: true,
 });
 
