@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Helmet } from "react-helmet-async";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { AdminLayout } from "@/components/admin/admin-layout";
 
@@ -200,6 +200,13 @@ const defaultPaymentSettings: PaymentSettingsValues = {
 export default function AdminSettings() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("general");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch all settings
+  const { data: allSettings, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ['/api/admin/settings'],
+    // No longer need to manually handle this as TanStack Query v5 shows errors in the UI
+  });
 
   // Site settings form
   const siteSettingsForm = useForm<SiteSettingsValues>({
@@ -230,6 +237,36 @@ export default function AdminSettings() {
     resolver: zodResolver(paymentSettingsSchema),
     defaultValues: defaultPaymentSettings,
   });
+  
+  // Load settings into forms when data is fetched
+  useEffect(() => {
+    if (allSettings && !isLoadingSettings) {
+      // Type assertion to help TypeScript understand the structure
+      const settings = allSettings as Record<string, any>;
+      
+      if (settings.site) {
+        siteSettingsForm.reset(settings.site as SiteSettingsValues);
+      }
+      
+      if (settings.analytics) {
+        analyticsSettingsForm.reset(settings.analytics as AnalyticsSettingsValues);
+      }
+      
+      if (settings.email) {
+        emailSettingsForm.reset(settings.email as EmailSettingsValues);
+      }
+      
+      if (settings.social) {
+        socialMediaSettingsForm.reset(settings.social as SocialMediaSettingsValues);
+      }
+      
+      if (settings.payment) {
+        paymentSettingsForm.reset(settings.payment as PaymentSettingsValues);
+      }
+      
+      setIsLoading(false);
+    }
+  }, [allSettings, isLoadingSettings]);
 
   // Site settings mutation
   const siteSettingsMutation = useMutation({
@@ -241,6 +278,8 @@ export default function AdminSettings() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate settings cache to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       toast({
         title: "Success",
         description: "Site settings updated successfully",
@@ -265,6 +304,8 @@ export default function AdminSettings() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate settings cache to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       toast({
         title: "Success",
         description: "Analytics settings updated successfully",
@@ -289,6 +330,8 @@ export default function AdminSettings() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate settings cache to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       toast({
         title: "Success",
         description: "Email settings updated successfully",
@@ -313,6 +356,8 @@ export default function AdminSettings() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate settings cache to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       toast({
         title: "Success",
         description: "Social media settings updated successfully",
@@ -337,6 +382,8 @@ export default function AdminSettings() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate settings cache to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       toast({
         title: "Success",
         description: "Payment gateway settings updated successfully",
