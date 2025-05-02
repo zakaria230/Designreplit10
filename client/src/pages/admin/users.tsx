@@ -87,7 +87,7 @@ const userFormSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .optional(),
-  role: z.enum(["user", "admin"], {
+  role: z.enum(["user", "admin", "designer"], {
     required_error: "Please select a role",
   }),
 });
@@ -258,7 +258,7 @@ export default function AdminUsers() {
     editForm.reset({
       username: user.username,
       email: user.email,
-      role: user.role as "user" | "admin",
+      role: user.role as "user" | "admin" | "designer",
       password: "",
     });
     setIsEditDialogOpen(true);
