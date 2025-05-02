@@ -648,6 +648,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // PayPal endpoints
+  app.post("/api/create-paypal-order", isAuthenticated, async (req, res) => {
+    try {
+      const { amount, items, email } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      
+      // In a real implementation, this would create a PayPal order via their API
+      // For this implementation, we'll simulate it
+      
+      // Create simulated PayPal order ID
+      const paypalOrderId = `PAYPAL_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      
+      // Create order in our database with pending status
+      const order = await storage.createOrder({
+        userId: req.user.id,
+        totalAmount: amount,
+        status: "pending",
+        paymentIntentId: paypalOrderId,
+        paymentStatus: "pending",
+        notes: `PayPal order for ${email}`
+      });
+      
+      // Add order items
+      if (Array.isArray(items) && items.length > 0) {
+        for (const item of items) {
+          await storage.createOrderItem({
+            orderId: order.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.product.price,
+          });
+        }
+      }
+      
+      // Return the PayPal order ID
+      res.json({
+        id: paypalOrderId,
+        orderId: order.id
+      });
+    } catch (error: any) {
+      console.error("PayPal order creation error:", error);
+      res.status(500).json({
+        message: `Error creating PayPal order: ${error.message}`
+      });
+    }
+  });
+  
+  app.post("/api/capture-paypal-order", isAuthenticated, async (req, res) => {
+    try {
+      const { orderId, items } = req.body;
+      
+      if (!orderId) {
+        return res.status(400).json({ message: "Missing PayPal order ID" });
+      }
+      
+      // In a real implementation, we would validate the order with PayPal
+      // and capture the payment there.
+      // For this implementation, we'll simulate a successful capture
+      
+      // Find the order in our database by the PayPal order ID
+      const orders = await storage.getAllOrders();
+      const order = orders.find(o => o.paymentIntentId === orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Update the order status to paid
+      const updatedOrder = await storage.updateOrderStatus(order.id, "completed");
+      if (updatedOrder) {
+        await storage.updatePaymentStatus(order.id, "paid", orderId);
+      }
+      
+      res.json({
+        success: true,
+        orderId: order.id
+      });
+      
+    } catch (error: any) {
+      console.error("PayPal capture error:", error);
+      res.status(500).json({
+        message: `Error capturing PayPal payment: ${error.message}`
+      });
+    }
+  });
 
   app.post("/api/webhook", async (req, res) => {
     if (!stripe) {
