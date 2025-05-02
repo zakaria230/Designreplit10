@@ -97,8 +97,8 @@ async function initializePaymentGateways() {
       console.warn('Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.');
     }
     
-    if (!process.env.PAYPAL_SECRET) {
-      console.warn('Warning: PAYPAL_SECRET is not set. Using simulation for PayPal checkout.');
+    if (!process.env.PAYPAL_CLIENT_SECRET) {
+      console.warn('Warning: PAYPAL_CLIENT_SECRET is not set. Using simulation for PayPal checkout.');
     }
   }
 }
@@ -725,11 +725,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
       
-      // In a real implementation, this would create a PayPal order via their API
-      // For this implementation, we'll simulate it
+      if (!paypalClient) {
+        return res.status(500).json({ 
+          message: "PayPal is not configured. Please check your PayPal API credentials." 
+        });
+      }
       
-      // Create simulated PayPal order ID
-      const paypalOrderId = `PAYPAL_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      // Create a PayPal order using the PayPal SDK
+      const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
+      request.prefer("return=representation");
+      request.requestBody({
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            amount: {
+              currency_code: "USD",
+              value: amount.toString(),
+            },
+            description: "DesignKorv order"
+          },
+        ],
+        application_context: {
+          brand_name: "DesignKorv",
+          landing_page: "NO_PREFERENCE",
+          user_action: "PAY_NOW",
+          return_url: `${req.protocol}://${req.get('host')}/checkout-success`,
+          cancel_url: `${req.protocol}://${req.get('host')}/checkout-cancel`
+        }
+      });
+      
+      // Execute the PayPal order creation request
+      const paypalOrder = await paypalClient.execute(request);
+      
+      if (!paypalOrder || !paypalOrder.result || !paypalOrder.result.id) {
+        throw new Error("Failed to create PayPal order");
+      }
+      
+      // Get the PayPal order ID
+      const paypalOrderId = paypalOrder.result.id;
       
       // Create order in our database with pending status
       const order = await storage.createOrder({
@@ -737,8 +770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalAmount: amount,
         status: "pending",
         paymentIntentId: paypalOrderId,
-        paymentStatus: "pending",
-        notes: `PayPal order for ${email}`
+        paymentStatus: "pending"
       });
       
       // Add order items
@@ -748,7 +780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             orderId: order.id,
             productId: item.productId,
             quantity: item.quantity,
-            price: item.product.price,
+            price: item.product?.price || 0,
           });
         }
       }
@@ -768,15 +800,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/capture-paypal-order", isAuthenticated, async (req, res) => {
     try {
-      const { orderId, items } = req.body;
+      const { orderId } = req.body;
       
       if (!orderId) {
         return res.status(400).json({ message: "Missing PayPal order ID" });
       }
       
-      // In a real implementation, we would validate the order with PayPal
-      // and capture the payment there.
-      // For this implementation, we'll simulate a successful capture
+      if (!paypalClient) {
+        return res.status(500).json({ 
+          message: "PayPal is not configured. Please check your PayPal API credentials."
+        });
+      }
       
       // Find the order in our database by the PayPal order ID
       const orders = await storage.getAllOrders();
@@ -786,7 +820,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      // Update the order status to paid
+      // Create a request to capture the approved PayPal order
+      const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderId);
+      request.prefer("return=representation");
+      
+      // Execute the PayPal capture request
+      const capture = await paypalClient.execute(request);
+      
+      if (
+        !capture ||
+        !capture.result ||
+        capture.result.status !== "COMPLETED"
+      ) {
+        throw new Error("Failed to capture PayPal payment");
+      }
+      
+      // Update the order status to completed
       const updatedOrder = await storage.updateOrderStatus(order.id, "completed");
       if (updatedOrder) {
         await storage.updatePaymentStatus(order.id, "paid", orderId);
