@@ -6,23 +6,28 @@
 /**
  * Generate structured data for the organization
  */
-export const getOrganizationSchema = () => ({
+export const getOrganizationSchema = (
+  siteName: string = 'DesignKorv',
+  domain: string = 'https://designkorv.com',
+  contactEmail: string = 'support@designkorv.com',
+  contactPhone: string = ''
+) => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "DesignKorv",
-  url: "https://designkorv.com",
-  logo: "https://designkorv.com/logo.png",
+  name: siteName,
+  url: domain,
+  logo: `${domain}/logo.png`,
   sameAs: [
-    "https://twitter.com/designkorv",
-    "https://facebook.com/designkorv",
-    "https://instagram.com/designkorv",
-    "https://linkedin.com/company/designkorv"
+    `https://twitter.com/${siteName.toLowerCase().replace(/\s+/g, '')}`,
+    `https://facebook.com/${siteName.toLowerCase().replace(/\s+/g, '')}`,
+    `https://instagram.com/${siteName.toLowerCase().replace(/\s+/g, '')}`,
+    `https://linkedin.com/company/${siteName.toLowerCase().replace(/\s+/g, '')}`
   ],
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "",
+    telephone: contactPhone,
     contactType: "customer service",
-    email: "support@designkorv.com",
+    email: contactEmail,
     availableLanguage: ["English"]
   }
 });
@@ -30,20 +35,23 @@ export const getOrganizationSchema = () => ({
 /**
  * Generate structured data for a product
  */
-export const getProductSchema = (product: {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  currency?: string;
-  image: string;
-  url: string;
-  sku?: string;
-  brand?: string;
-  category?: string;
-  ratingValue?: number;
-  reviewCount?: number;
-}) => ({
+export const getProductSchema = (
+  product: {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    currency?: string;
+    image: string;
+    url: string;
+    sku?: string;
+    brand?: string;
+    category?: string;
+    ratingValue?: number;
+    reviewCount?: number;
+  },
+  siteName: string = 'DesignKorv'
+) => ({
   "@context": "https://schema.org",
   "@type": "Product",
   name: product.name,
@@ -53,7 +61,7 @@ export const getProductSchema = (product: {
   mpn: `DKMPN-${product.id}`,
   brand: {
     "@type": "Brand",
-    name: product.brand || "DesignKorv"
+    name: product.brand || siteName
   },
   offers: {
     "@type": "Offer",
@@ -63,7 +71,7 @@ export const getProductSchema = (product: {
     availability: "https://schema.org/InStock",
     seller: {
       "@type": "Organization",
-      name: "DesignKorv"
+      name: siteName
     }
   },
   ...(product.ratingValue && product.reviewCount ? {
@@ -78,11 +86,15 @@ export const getProductSchema = (product: {
 /**
  * Generate structured data for a category page
  */
-export const getCategorySchema = (category: {
-  name: string;
-  description: string;
-  url: string;
-}) => ({
+export const getCategorySchema = (
+  category: {
+    name: string;
+    description: string;
+    url: string;
+  },
+  siteName: string = 'DesignKorv',
+  domain: string = 'https://designkorv.com'
+) => ({
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   name: category.name,
@@ -90,8 +102,8 @@ export const getCategorySchema = (category: {
   url: category.url,
   isPartOf: {
     "@type": "WebSite",
-    name: "DesignKorv",
-    url: "https://designkorv.com"
+    name: siteName,
+    url: domain
   }
 });
 
@@ -128,14 +140,14 @@ export const getBreadcrumbSchema = (breadcrumbs: Array<{name: string; url: strin
 /**
  * Generate structured data for the home page
  */
-export const getWebsiteSchema = () => ({
+export const getWebsiteSchema = (siteName: string = 'DesignKorv', domain: string = 'https://designkorv.com') => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "DesignKorv",
-  url: "https://designkorv.com",
+  name: siteName,
+  url: domain,
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://designkorv.com/search?q={search_term_string}",
+    target: `${domain}/search?q={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
 });
