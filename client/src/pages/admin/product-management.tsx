@@ -883,12 +883,59 @@ export default function ProductManagement() {
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
-                      </FormControl>
+                      <FormLabel>Product Image</FormLabel>
+                      <div className="flex items-center gap-4">
+                        <FormControl>
+                          <Input 
+                            placeholder="Image path" 
+                            {...field} 
+                            readOnly 
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => editImageInputRef.current?.click()}
+                            disabled={uploadImageMutation.isPending}
+                          >
+                            {uploadImageMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Upload Image"
+                            )}
+                          </Button>
+                          {field.value && (
+                            <Button 
+                              type="button" 
+                              variant="destructive" 
+                              size="icon" 
+                              onClick={() => editForm.setValue("imageUrl", "")}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={editImageInputRef}
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'edit')}
+                      />
+                      {field.value && (
+                        <div className="mt-2 overflow-hidden rounded-md border border-input h-40 flex items-center justify-center">
+                          <img 
+                            src={field.value} 
+                            alt="Product preview" 
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      )}
                       <FormDescription>
-                        URL to the product image.
+                        Upload a product image (JPG, PNG, or SVG).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -900,12 +947,56 @@ export default function ProductManagement() {
                   name="downloadUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Download URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/download.zip" {...field} />
-                      </FormControl>
+                      <FormLabel>Downloadable File</FormLabel>
+                      <div className="flex items-center gap-4">
+                        <FormControl>
+                          <Input 
+                            placeholder="File path" 
+                            {...field} 
+                            readOnly 
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => editFileInputRef.current?.click()}
+                            disabled={uploadFileMutation.isPending}
+                          >
+                            {uploadFileMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Upload File"
+                            )}
+                          </Button>
+                          {field.value && (
+                            <Button 
+                              type="button" 
+                              variant="destructive" 
+                              size="icon" 
+                              onClick={() => editForm.setValue("downloadUrl", "")}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
+                        ref={editFileInputRef}
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, 'edit')}
+                      />
+                      {field.value && (
+                        <div className="mt-2 px-2 py-1 rounded-md border border-input inline-block">
+                          <span className="font-medium">File Ready: </span>
+                          {field.value.split('/').pop()}
+                        </div>
+                      )}
                       <FormDescription>
-                        URL to the downloadable product file.
+                        Upload the downloadable product file (ZIP, PDF, AI, PSD, EPS, or SVG).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
