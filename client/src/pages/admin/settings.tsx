@@ -325,7 +325,7 @@ export default function AdminSettings() {
 
   // Site settings mutation
   const siteSettingsMutation = useMutation({
-    mutationFn: async (data: SiteSettingsValues) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await apiRequest("POST", "/api/admin/settings/site", data);
       if (!response.ok) {
         throw new Error("Failed to save site settings");
@@ -351,7 +351,7 @@ export default function AdminSettings() {
 
   // Analytics settings mutation
   const analyticsSettingsMutation = useMutation({
-    mutationFn: async (data: AnalyticsSettingsValues) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await apiRequest("POST", "/api/admin/settings/analytics", data);
       if (!response.ok) {
         throw new Error("Failed to save analytics settings");
@@ -377,7 +377,7 @@ export default function AdminSettings() {
 
   // Email settings mutation
   const emailSettingsMutation = useMutation({
-    mutationFn: async (data: EmailSettingsValues) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await apiRequest("POST", "/api/admin/settings/email", data);
       if (!response.ok) {
         throw new Error("Failed to save email settings");
@@ -403,7 +403,7 @@ export default function AdminSettings() {
 
   // Social media settings mutation
   const socialMediaSettingsMutation = useMutation({
-    mutationFn: async (data: SocialMediaSettingsValues) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await apiRequest("POST", "/api/admin/settings/social", data);
       if (!response.ok) {
         throw new Error("Failed to save social media settings");
@@ -429,7 +429,7 @@ export default function AdminSettings() {
   
   // Payment settings mutation
   const paymentSettingsMutation = useMutation({
-    mutationFn: async (data: PaymentSettingsValues) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await apiRequest("POST", "/api/admin/settings/payment", data);
       if (!response.ok) {
         throw new Error("Failed to save payment gateway settings");
@@ -454,23 +454,48 @@ export default function AdminSettings() {
   });
 
   const onSubmitSiteSettings = (data: SiteSettingsValues) => {
-    siteSettingsMutation.mutate(data);
+    // Add site_ prefix to keys when sending to the server
+    const prefixedData: Record<string, any> = {};
+    Object.entries(data).forEach(([key, value]) => {
+      prefixedData[`site_${key}`] = value;
+    });
+    siteSettingsMutation.mutate(prefixedData);
   };
 
   const onSubmitAnalyticsSettings = (data: AnalyticsSettingsValues) => {
-    analyticsSettingsMutation.mutate(data);
+    // Add analytics_ prefix to keys when sending to the server
+    const prefixedData: Record<string, any> = {};
+    Object.entries(data).forEach(([key, value]) => {
+      prefixedData[`analytics_${key}`] = value;
+    });
+    analyticsSettingsMutation.mutate(prefixedData);
   };
 
   const onSubmitEmailSettings = (data: EmailSettingsValues) => {
-    emailSettingsMutation.mutate(data);
+    // Add email_ prefix to keys when sending to the server
+    const prefixedData: Record<string, any> = {};
+    Object.entries(data).forEach(([key, value]) => {
+      prefixedData[`email_${key}`] = value;
+    });
+    emailSettingsMutation.mutate(prefixedData);
   };
 
   const onSubmitSocialMediaSettings = (data: SocialMediaSettingsValues) => {
-    socialMediaSettingsMutation.mutate(data);
+    // Add social_ prefix to keys when sending to the server
+    const prefixedData: Record<string, any> = {};
+    Object.entries(data).forEach(([key, value]) => {
+      prefixedData[`social_${key}`] = value;
+    });
+    socialMediaSettingsMutation.mutate(prefixedData);
   };
   
   const onSubmitPaymentSettings = (data: PaymentSettingsValues) => {
-    paymentSettingsMutation.mutate(data);
+    // Add payment_ prefix to keys when sending to the server
+    const prefixedData: Record<string, any> = {};
+    Object.entries(data).forEach(([key, value]) => {
+      prefixedData[`payment_${key}`] = value;
+    });
+    paymentSettingsMutation.mutate(prefixedData);
   };
 
   return (

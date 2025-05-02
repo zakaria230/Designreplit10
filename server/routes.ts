@@ -965,7 +965,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Save each site setting to the database
       for (const [key, value] of Object.entries(req.body)) {
-        await storage.updateSetting(`site_${key}`, value, 'site');
+        // The keys might already have the prefix if sent from the client
+        const settingKey = key.startsWith('site_') ? key : `site_${key}`;
+        await storage.updateSetting(settingKey, value, 'site');
       }
       
       // Return the updated settings
@@ -988,7 +990,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Save each analytics setting to the database
       for (const [key, value] of Object.entries(req.body)) {
-        await storage.updateSetting(`analytics_${key}`, value, 'analytics');
+        // The keys might already have the prefix if sent from the client
+        const settingKey = key.startsWith('analytics_') ? key : `analytics_${key}`;
+        await storage.updateSetting(settingKey, value, 'analytics');
       }
       
       // Return the updated settings
@@ -1011,7 +1015,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Save each email setting to the database
       for (const [key, value] of Object.entries(req.body)) {
-        await storage.updateSetting(`email_${key}`, value, 'email');
+        // The keys might already have the prefix if sent from the client
+        const settingKey = key.startsWith('email_') ? key : `email_${key}`;
+        await storage.updateSetting(settingKey, value, 'email');
       }
       
       // Return the updated settings
@@ -1034,7 +1040,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Save each social media setting to the database
       for (const [key, value] of Object.entries(req.body)) {
-        await storage.updateSetting(`social_${key}`, value, 'social');
+        // The keys might already have the prefix if sent from the client
+        const settingKey = key.startsWith('social_') ? key : `social_${key}`;
+        await storage.updateSetting(settingKey, value, 'social');
       }
       
       // Return the updated settings
