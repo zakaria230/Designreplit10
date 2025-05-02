@@ -156,8 +156,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders", isAuthenticated, async (req, res) => {
     try {
       const orders = await storage.getOrdersByUser(req.user.id);
-      res.json(orders);
+      
+      // Fetch order items for each order and add them to the response
+      const ordersWithItems = await Promise.all(orders.map(async (order) => {
+        const items = await storage.getOrderItemsByOrder(order.id);
+        
+        // Fetch product details for each item
+        const itemsWithProducts = await Promise.all(items.map(async (item) => {
+          const product = await storage.getProductById(item.productId);
+          return {
+            ...item,
+            product
+          };
+        }));
+        
+        return {
+          ...order,
+          items: itemsWithProducts
+        };
+      }));
+      
+      res.json(ordersWithItems);
     } catch (error) {
+      console.error("Error fetching orders:", error);
       res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
