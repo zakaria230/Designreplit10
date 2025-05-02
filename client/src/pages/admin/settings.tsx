@@ -864,6 +864,423 @@ export default function AdminSettings() {
             </Card>
           </TabsContent>
 
+          {/* Payment Settings */}
+          <TabsContent value="payment">
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Gateway Settings</CardTitle>
+                <CardDescription>
+                  Configure payment providers and methods
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...paymentSettingsForm}>
+                  <form onSubmit={paymentSettingsForm.handleSubmit(onSubmitPaymentSettings)} className="space-y-6">
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-medium">General Payment Settings</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="currencyCode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Currency Code</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="USD" />
+                              </FormControl>
+                              <FormDescription>
+                                Three-letter currency code (e.g., USD, EUR, GBP)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="taxRate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tax Rate (%)</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="text" />
+                              </FormControl>
+                              <FormDescription>
+                                Default tax rate percentage
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="enableTaxCalculation"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">Tax Calculation</FormLabel>
+                                <FormDescription>
+                                  Enable automatic tax calculation
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="requireBillingAddress"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">Billing Address</FormLabel>
+                                <FormDescription>
+                                  Require billing address at checkout
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="requireShippingAddress"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">Shipping Address</FormLabel>
+                                <FormDescription>
+                                  Require shipping address at checkout
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Stripe Settings */}
+                    <div className="space-y-6">
+                      <div className="flex flex-row items-center justify-between">
+                        <h3 className="text-lg font-medium">Stripe Settings</h3>
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="stripeEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2">
+                              <FormLabel className="text-sm">Enable Stripe</FormLabel>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {paymentSettingsForm.watch("stripeEnabled") && (
+                        <div className="grid grid-cols-1 gap-6">
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="stripePublicKey"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Stripe Public Key</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="pk_..." />
+                                </FormControl>
+                                <FormDescription>
+                                  Your Stripe publishable key (starts with pk_)
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="stripeSecretKey"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Stripe Secret Key</FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input {...field} type="password" placeholder="sk_..." />
+                                  </FormControl>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="outline" size="icon" className="absolute right-0 top-0">
+                                        <AlertCircle className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Security Warning</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Your Stripe Secret Key should be kept secure and never shared publicly. This key provides full access to your Stripe account.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogAction>I understand</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                                <FormDescription>
+                                  Your Stripe secret key (starts with sk_)
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="stripeWebhookSecret"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Stripe Webhook Secret</FormLabel>
+                                <FormControl>
+                                  <Input {...field} type="password" placeholder="whsec_..." />
+                                </FormControl>
+                                <FormDescription>
+                                  Your Stripe webhook secret for verifying webhook events
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* PayPal Settings */}
+                    <div className="space-y-6">
+                      <div className="flex flex-row items-center justify-between">
+                        <h3 className="text-lg font-medium">PayPal Settings</h3>
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="paypalEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2">
+                              <FormLabel className="text-sm">Enable PayPal</FormLabel>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {paymentSettingsForm.watch("paypalEnabled") && (
+                        <div className="grid grid-cols-1 gap-6">
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="paypalClientId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>PayPal Client ID</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  Your PayPal client ID from the developer dashboard
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="paypalClientSecret"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>PayPal Client Secret</FormLabel>
+                                <FormControl>
+                                  <Input {...field} type="password" />
+                                </FormControl>
+                                <FormDescription>
+                                  Your PayPal client secret from the developer dashboard
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="paypalSandboxMode"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">Sandbox Mode</FormLabel>
+                                  <FormDescription>
+                                    Use PayPal sandbox for testing
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* Payoneer Settings */}
+                    <div className="space-y-6">
+                      <div className="flex flex-row items-center justify-between">
+                        <h3 className="text-lg font-medium">Payoneer Settings</h3>
+                        <FormField
+                          control={paymentSettingsForm.control}
+                          name="payoneerEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2">
+                              <FormLabel className="text-sm">Enable Payoneer</FormLabel>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {paymentSettingsForm.watch("payoneerEnabled") && (
+                        <div className="grid grid-cols-1 gap-6">
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="payoneerApiKey"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Payoneer API Key</FormLabel>
+                                <FormControl>
+                                  <Input {...field} type="password" />
+                                </FormControl>
+                                <FormDescription>
+                                  Your Payoneer API key for integration
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                              control={paymentSettingsForm.control}
+                              name="payoneerUsername"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Payoneer Username</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={paymentSettingsForm.control}
+                              name="payoneerPassword"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Payoneer Password</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="password" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={paymentSettingsForm.control}
+                            name="payoneerSandboxMode"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">Sandbox Mode</FormLabel>
+                                  <FormDescription>
+                                    Use Payoneer sandbox for testing
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full sm:w-auto"
+                      disabled={paymentSettingsMutation.isPending}
+                    >
+                      {paymentSettingsMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Payment Settings
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Social Media Settings */}
           <TabsContent value="social">
             <Card>
