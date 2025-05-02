@@ -23,6 +23,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  deleteUser(id: number): Promise<boolean>;
 
   // Product methods
   getAllProducts(): Promise<Product[]>;
@@ -111,6 +112,48 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      // Step 1: Delete user's cart
+      await db
+        .delete(carts)
+        .where(eq(carts.userId, id));
+      
+      // Step 2: Delete user's reviews
+      await db
+        .delete(reviews)
+        .where(eq(reviews.userId, id));
+      
+      // Step 3: Delete user's order items and then orders
+      const userOrders = await db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(eq(orders.userId, id));
+      
+      // Delete order items first
+      for (const order of userOrders) {
+        await db
+          .delete(orderItems)
+          .where(eq(orderItems.orderId, order.id));
+      }
+      
+      // Delete orders
+      await db
+        .delete(orders)
+        .where(eq(orders.userId, id));
+      
+      // Step 4: Finally delete the user
+      await db
+        .delete(users)
+        .where(eq(users.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error("Error in deleteUser method:", error);
+      return false;
+    }
   }
 
   // Product methods
