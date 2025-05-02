@@ -165,6 +165,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup authentication routes
   setupAuth(app);
+  
+  // Setup CSRF protection middleware
+  const csrfProtection = csrf({ cookie: true });
+  
+  // CSRF token endpoint
+  app.get("/api/csrf-token", csrfProtection, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+  });
 
   // Using middleware from middleware.ts
 
