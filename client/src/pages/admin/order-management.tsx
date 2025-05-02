@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Order } from "@shared/schema";
 import { Link } from "wouter";
+import { AdminLayout } from "@/components/admin/admin-layout";
 
 import {
   Table,
@@ -272,13 +273,13 @@ export default function OrderManagement() {
   };
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Order Management | DesignKorv Admin</title>
         <meta name="description" content="Manage customer orders for the DesignKorv e-commerce platform." />
       </Helmet>
 
-      <div className="flex-1 p-8 pt-6 space-y-6">
+      <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Button variant="ghost" size="sm" asChild className="mr-2">
@@ -634,6 +635,6 @@ export default function OrderManagement() {
           </DialogContent>
         </Dialog>
       </div>
-    </>
+    </AdminLayout>
   );
 }

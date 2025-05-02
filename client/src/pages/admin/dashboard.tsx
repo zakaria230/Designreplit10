@@ -42,6 +42,7 @@ import {
   LineChart as LineChartIcon,
   PieChart as PieChartIcon
 } from "lucide-react";
+import { AdminLayout } from "@/components/admin/admin-layout";
 
 // Mocked data for dashboard
 const salesData = [
@@ -103,13 +104,13 @@ export default function AdminDashboard() {
   };
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Admin Dashboard | DesignKorv</title>
         <meta name="description" content="Admin dashboard for DesignKorv e-commerce platform." />
       </Helmet>
 
-      <div className="flex-1 p-8 pt-6 space-y-6">
+      <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-2">
@@ -378,6 +379,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-    </>
+    </AdminLayout>
   );
 }
