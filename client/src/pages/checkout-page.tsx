@@ -38,9 +38,16 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   console.warn('Missing VITE_STRIPE_PUBLIC_KEY. Stripe payments will not work correctly.');
 }
 
-const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
-  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-  : null;
+// Safe Stripe initialization for production environments
+let stripePromise: Promise<any> | null = null;
+try {
+  if (import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
+    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+  }
+} catch (error) {
+  console.error('Failed to initialize Stripe:', error);
+  stripePromise = null;
+}
 
 // Checkout form schema
 const checkoutFormSchema = z.object({
@@ -287,12 +294,33 @@ export default function CheckoutPage() {
             items: items
           });
           
+          if (!response.ok) {
+            // Handle specific error cases from the API
+            const errorData = await response.json();
+            if (errorData.errorCode === "STRIPE_NOT_CONFIGURED") {
+              // If Stripe isn't available on the server, switch to simulated checkout
+              toast({
+                title: "Stripe Payment Unavailable",
+                description: "Using simulated checkout instead. This is common in test environments.",
+                variant: "warning"
+              });
+              setIsLoading(false);
+              return;
+            } else {
+              throw new Error(errorData.message || "Failed to initialize payment");
+            }
+          }
+          
           const data = await response.json();
-          setClientSecret(data.clientSecret);
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          } else {
+            throw new Error("Invalid payment session response");
+          }
         } catch (error: any) {
           toast({
-            title: "Error",
-            description: "Failed to initialize payment. Please try again.",
+            title: "Payment Setup Error",
+            description: "Failed to initialize payment. Please try a different method or try again later.",
             variant: "destructive",
           });
           console.error("Error creating payment intent:", error);

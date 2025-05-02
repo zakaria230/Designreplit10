@@ -1,17 +1,30 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import Stripe from "stripe";
 import { z } from "zod";
 
+// Check for Stripe API key with more descriptive warning
 if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe functionality will not work correctly.');
+  console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe payment functionality will be disabled.');
+  console.warn('You can still use the simulated checkout flow, but real payment processing will not work.');
 }
 
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" })
-  : null;
+// Initialize Stripe with a more robust approach for production environments
+let stripe: Stripe | null = null;
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { 
+      apiVersion: "2023-10-16",
+      // Useful for debugging issues in production
+      telemetry: false,
+    });
+    console.log("Stripe payment processing initialized successfully");
+  }
+} catch (error) {
+  console.error("Failed to initialize Stripe:", error);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
