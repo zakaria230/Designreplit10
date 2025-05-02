@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteRule ^$ https://%{HTTP_HOST}/public/ [L,R=301]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+<IfModule mod_passenger.c>
+    PassengerNodejs /usr/local/bin/node
+    PassengerAppType node
+    PassengerStartupFile server.js
+</IfModule>
