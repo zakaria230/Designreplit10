@@ -2,6 +2,9 @@ import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Mail, Phone, MapPin, Clock, Send, Check, Loader2 } from "lucide-react";
+import { useSiteSettings } from "@/hooks/use-site-settings";
+import SEO from "@/components/seo";
+import { getOrganizationSchema } from "@/components/seo/structured-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,8 +12,16 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function ContactPage() {
   const { toast } = useToast();
+  const { settings } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  
+  const siteName = settings?.siteName || 'DesignKorv';
+  const domain = typeof window !== 'undefined' ? window.location.origin : 'https://designkorv.com';
+  const contactEmail = settings?.contactEmail || 'info@designkorv.com';
+  const supportEmail = settings?.supportEmail || 'support@designkorv.com';
+  const phone = settings?.phone || '+46 123 456 789';
+  const address = settings?.address || 'Sveavägen 123, 113 50 Stockholm, Sweden';
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,10 +41,12 @@ export default function ContactPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Contact Us | DesignKorv</title>
-        <meta name="description" content="Get in touch with the DesignKorv team for questions, support, or partnership inquiries." />
-      </Helmet>
+      <SEO
+        title={`Contact Us | ${siteName}`}
+        description={`Get in touch with the ${siteName} team for questions, support, or partnership inquiries.`}
+        canonicalUrl="/contact"
+        structuredData={getOrganizationSchema(siteName, domain, contactEmail, phone)}
+      />
 
       {/* Hero Section */}
       <section className="bg-gray-50 dark:bg-gray-900 py-12 md:py-24">
