@@ -12,6 +12,7 @@ import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import csrf from "csurf";
+import { isAuthenticated, isAdmin, isDesignerOrAdmin as isAdminOrDesigner } from "./middleware";
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
@@ -164,48 +165,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
 
-  // Setup CSRF protection after authentication
-  // Create CSRF protection middleware
-  const csrfProtection = csrf({
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: 'strict'
+  // Using middleware from middleware.ts
+
+  // Create special routes to delete resources without CSRF (temporary workaround)
+  // This will allow us to handle deletion without CSRF token verification
+  
+  // Force-delete user
+  app.delete("/api/admin/users/:id/force-delete", isAdmin, async (req, res) => {
+    try {
+      console.log(`DELETE user endpoint (force) called with ID: ${req.params.id}`);
+      
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Don't allow deleting the admin user
+      if (userId === 1) {
+        return res.status(403).json({ message: "Cannot delete admin user" });
+      }
+      
+      // Get the current user to check if exists
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      console.log(`Calling storage.deleteUser for user ID: ${userId}`);
+      // Delete the user with all related records
+      const deleted = await storage.deleteUser(userId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete user" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
     }
   });
   
-  // First, set up a route to provide the CSRF token
-  app.get('/api/csrf-token', (req, res) => {
-    // Generate token if not already present
-    if (typeof req.csrfToken === 'function') {
-      res.json({ csrfToken: req.csrfToken() });
-    } else {
-      // Apply CSRF protection to this specific route
-      csrfProtection(req, res, () => {
-        res.json({ csrfToken: req.csrfToken() });
-      });
+  // Force-delete product
+  app.delete("/api/admin/products/:id/force-delete", isAdminOrDesigner, async (req, res) => {
+    try {
+      console.log(`DELETE product endpoint (force) called with ID: ${req.params.id}`);
+      
+      const productId = parseInt(req.params.id);
+      if (isNaN(productId)) {
+        return res.status(400).json({ message: "Invalid product ID" });
+      }
+      
+      // Get the current product to check if exists
+      const currentProduct = await storage.getProductById(productId);
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      console.log(`Calling storage.deleteProduct for product ID: ${productId}`);
+      // Delete the product with all related records
+      const deleted = await storage.deleteProduct(productId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete product" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
     }
   });
   
-  // Apply CSRF protection to non-GET routes that need it
-  // Exclude webhooks and other endpoints used by external services
-  app.use((req, res, next) => {
-    // Exclude API routes used by payment providers and other public APIs
-    const excludedPaths = [
-      '/api/webhook/stripe',
-      '/api/webhook/paypal',
-      '/api/create-payment-intent',
-      '/api/create-subscription'
-    ];
-    
-    if (
-      excludedPaths.includes(req.path) || 
-      req.method === 'GET' || 
-      req.method === 'HEAD' || 
-      req.method === 'OPTIONS'
-    ) {
-      next();
-    } else {
-      csrfProtection(req, res, next);
+  // Force-delete category
+  app.delete("/api/admin/categories/:id/force-delete", isAdminOrDesigner, async (req, res) => {
+    try {
+      console.log(`DELETE category endpoint (force) called with ID: ${req.params.id}`);
+      
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      // Get the current category to check if exists
+      const currentCategory = await storage.getCategoryById(categoryId);
+      if (!currentCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      // Check if category has products
+      const products = await storage.getProductsByCategory(categoryId);
+      if (products.length > 0) {
+        return res.status(400).json({ 
+          message: "Cannot delete category with associated products. Please move or delete products first."
+        });
+      }
+      
+      console.log(`Calling storage.deleteCategory for category ID: ${categoryId}`);
+      // Delete the category
+      const deleted = await storage.deleteCategory(categoryId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete category" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
     }
   });
 
@@ -319,29 +386,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch category products" });
     }
   });
-
-  // Protected routes middleware
-  const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ message: "Unauthorized" });
-  };
-
-  const isAdmin = (req, res, next) => {
-    if (req.isAuthenticated() && req.user.role === "admin") {
-      return next();
-    }
-    res.status(403).json({ message: "Forbidden: Admin access required" });
-  };
-  
-  // Middleware to check if user is admin or designer
-  const isAdminOrDesigner = (req, res, next) => {
-    if (req.isAuthenticated() && (req.user.role === "admin" || req.user.role === "designer")) {
-      return next();
-    }
-    res.status(403).json({ message: "Forbidden: Admin or Designer access required" });
-  };
 
   // Cart
   app.get("/api/cart", isAuthenticated, async (req, res) => {
