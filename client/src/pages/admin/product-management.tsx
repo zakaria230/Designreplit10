@@ -373,7 +373,8 @@ export default function ProductManagement() {
   }, []);
 
   // Show crop dialog
-  const startImageCrop = (imageUrl: string, context: 'add' | 'edit') => {
+  const startImageCrop = (imageUrl: string | null | undefined, context: 'add' | 'edit') => {
+    if (!imageUrl) return;
     setImageToEdit(imageUrl);
     setFormContext(context);
     setCropDialogOpen(true);
@@ -382,9 +383,9 @@ export default function ProductManagement() {
   // Function to create a data URL from a cropped area
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
-      const image = new Image();
+      const image = new window.Image() as HTMLImageElement;
       image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', error => reject(error));
+      image.addEventListener('error', (error: Event) => reject(error));
       image.src = url;
     });
 
@@ -609,7 +610,11 @@ export default function ProductManagement() {
                           <Textarea 
                             placeholder="Product description" 
                             className="h-24"
-                            {...field} 
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            name={field.name}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1048,7 +1053,11 @@ export default function ProductManagement() {
                         <Textarea 
                           placeholder="Product description" 
                           className="h-24"
-                          {...field} 
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          name={field.name}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1155,11 +1164,12 @@ export default function ProductManagement() {
                                   variant="outline"
                                   size="icon"
                                   className="h-8 w-8 bg-white hover:bg-white"
-                                  onClick={() => {
-                                    // Editing image would go here
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startImageCrop(field.value, 'edit');
                                   }}
                                 >
-                                  <Pencil className="h-4 w-4" />
+                                  <Scissors className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   type="button"
