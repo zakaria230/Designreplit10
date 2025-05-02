@@ -302,7 +302,7 @@ export default function CheckoutPage() {
               toast({
                 title: "Stripe Payment Unavailable",
                 description: "Using simulated checkout instead. This is common in test environments.",
-                variant: "warning"
+                variant: "destructive"
               });
               setIsLoading(false);
               return;

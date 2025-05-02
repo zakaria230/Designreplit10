@@ -109,6 +109,11 @@ export default function ShopPage() {
   const applyFilter = (type: string, value: string | number | number[]) => {
     if (type === "category") {
       setSelectedCategory(value as number);
+      // If value is 0, we're clearing the category filter
+      if (value === 0) {
+        setActiveFilters(activeFilters.filter(f => !f.startsWith('Category:')));
+        return;
+      }
       const category = categories?.find(c => c.id === value);
       if (category) {
         if (!activeFilters.includes(`Category: ${category.name}`)) {
@@ -208,7 +213,7 @@ export default function ShopPage() {
                                       id={`category-${category.id}`}
                                       checked={selectedCategory === category.id}
                                       onCheckedChange={() => {
-                                        applyFilter("category", selectedCategory === category.id ? null : category.id);
+                                        applyFilter("category", selectedCategory === category.id ? 0 : category.id);
                                       }}
                                     />
                                     <label
