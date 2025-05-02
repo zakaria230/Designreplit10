@@ -173,6 +173,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // First, set up a route to provide the CSRF token
+  app.get('/api/csrf-token', (req, res) => {
+    // Generate token if not already present
+    if (typeof req.csrfToken === 'function') {
+      res.json({ csrfToken: req.csrfToken() });
+    } else {
+      // Apply CSRF protection to this specific route
+      csrfProtection(req, res, () => {
+        res.json({ csrfToken: req.csrfToken() });
+      });
+    }
+  });
+  
   // Apply CSRF protection to non-GET routes that need it
   // Exclude webhooks and other endpoints used by external services
   app.use((req, res, next) => {
@@ -194,18 +207,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } else {
       csrfProtection(req, res, next);
     }
-  });
-  
-  // Add CSRF token to API responses for authenticated users
-  app.use((req, res, next) => {
-    if (req.isAuthenticated && req.isAuthenticated() && typeof req.csrfToken === 'function') {
-      res.cookie('XSRF-TOKEN', req.csrfToken(), {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        httpOnly: false // Frontend needs to read this
-      });
-    }
-    next();
   });
 
   // API routes

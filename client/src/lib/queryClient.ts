@@ -7,14 +7,41 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Function to get CSRF token from cookies
-function getCsrfToken(): string | undefined {
+// CSRF token storage
+let csrfTokenCache: string | undefined;
+
+// Function to get CSRF token
+async function getCsrfToken(): Promise<string | undefined> {
+  // Return cached token if available
+  if (csrfTokenCache) {
+    return csrfTokenCache;
+  }
+  
+  // Try to get from cookies first
   const value = `; ${document.cookie}`;
   const parts = value.split(`; XSRF-TOKEN=`);
   if (parts.length === 2) {
     const csrfToken = parts.pop()?.split(';').shift();
-    return csrfToken;
+    if (csrfToken) {
+      csrfTokenCache = csrfToken;
+      return csrfToken;
+    }
   }
+  
+  // If not in cookies, fetch from API
+  try {
+    const response = await fetch('/api/csrf-token');
+    if (response.ok) {
+      const data = await response.json();
+      if (data.csrfToken) {
+        csrfTokenCache = data.csrfToken;
+        return data.csrfToken;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch CSRF token:', error);
+  }
+  
   return undefined;
 }
 
@@ -32,7 +59,7 @@ export async function apiRequest(
   
   // Add CSRF token to all state-changing requests (non-GET, non-HEAD)
   if (method !== 'GET' && method !== 'HEAD') {
-    const csrfToken = getCsrfToken();
+    const csrfToken = await getCsrfToken();
     if (csrfToken) {
       headers['X-CSRF-Token'] = csrfToken;
     }
