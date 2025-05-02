@@ -461,6 +461,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete user
   app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
     try {
+      console.log(`DELETE user endpoint called with ID: ${req.params.id}`);
+      
       const userId = parseInt(req.params.id);
       if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
@@ -477,6 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
+      console.log(`Calling storage.deleteUser for user ID: ${userId}`);
       // Delete the user with all related records
       const deleted = await storage.deleteUser(userId);
       

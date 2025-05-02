@@ -116,39 +116,62 @@ export class DatabaseStorage implements IStorage {
   
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // Step 1: Delete user's cart
-      await db
-        .delete(carts)
-        .where(eq(carts.userId, id));
+      console.log(`Starting deleteUser method for user ID: ${id}`);
+      
+      // First, check if the user has a cart
+      const userCart = await db
+        .select()
+        .from(carts)
+        .where(eq(carts.userId, id))
+        .limit(1);
+      
+      // Step 1: Delete user's cart if it exists
+      if (userCart.length > 0) {
+        console.log(`Deleting cart for user ID: ${id}`);
+        const cartDeleted = await db.execute(
+          sql`DELETE FROM carts WHERE user_id = ${id}`
+        );
+        console.log(`Cart deletion result:`, cartDeleted);
+      } else {
+        console.log(`No cart found for user ID: ${id}`);
+      }
       
       // Step 2: Delete user's reviews
-      await db
-        .delete(reviews)
-        .where(eq(reviews.userId, id));
+      console.log(`Deleting reviews for user ID: ${id}`);
+      await db.execute(
+        sql`DELETE FROM reviews WHERE user_id = ${id}`
+      );
       
       // Step 3: Delete user's order items and then orders
+      console.log(`Fetching orders for user ID: ${id}`);
       const userOrders = await db
         .select({ id: orders.id })
         .from(orders)
         .where(eq(orders.userId, id));
       
+      console.log(`Found ${userOrders.length} orders for user ID: ${id}`);
+      
       // Delete order items first
       for (const order of userOrders) {
-        await db
-          .delete(orderItems)
-          .where(eq(orderItems.orderId, order.id));
+        console.log(`Deleting order items for order ID: ${order.id}`);
+        await db.execute(
+          sql`DELETE FROM order_items WHERE order_id = ${order.id}`
+        );
       }
       
       // Delete orders
-      await db
-        .delete(orders)
-        .where(eq(orders.userId, id));
+      console.log(`Deleting orders for user ID: ${id}`);
+      await db.execute(
+        sql`DELETE FROM orders WHERE user_id = ${id}`
+      );
       
       // Step 4: Finally delete the user
-      await db
-        .delete(users)
-        .where(eq(users.id, id));
+      console.log(`Deleting user ID: ${id}`);
+      await db.execute(
+        sql`DELETE FROM users WHERE id = ${id}`
+      );
       
+      console.log(`User ${id} successfully deleted`);
       return true;
     } catch (error) {
       console.error("Error in deleteUser method:", error);
