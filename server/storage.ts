@@ -12,19 +12,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
-// Create a type definition for SessionStore to fix type issues
-declare module 'express-session' {
-  interface SessionStore {
-    all: (callback: (err: any, sessions: any) => void) => void;
-    get: (sid: string, callback: (err: any, session?: session.SessionData | null) => void) => void;
-    set: (sid: string, session: session.SessionData, callback?: (err?: any) => void) => void;
-    destroy: (sid: string, callback?: (err?: any) => void) => void;
-    length?: (callback: (err: any, length: number) => void) => void;
-    clear?: (callback?: (err?: any) => void) => void;
-    touch?: (sid: string, session: session.SessionData, callback?: (err?: any) => void) => void;
-  }
-}
-
+// Initialize PostgreSQL session store with proper type assertion
 const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
@@ -76,10 +64,11 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.SessionStore;
 
   constructor() {
+    // Type assertion to satisfy the SessionStore interface
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true
-    });
+    }) as session.SessionStore;
   }
 
   // User methods

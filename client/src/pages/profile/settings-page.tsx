@@ -87,8 +87,8 @@ export default function SettingsPage() {
     defaultValues: {
       username: user?.username || "",
       email: user?.email || "",
-      name: user?.name || "",
-      bio: user?.bio || "",
+      name: "", // User doesn't have name yet
+      bio: "",  // User doesn't have bio yet
     },
   });
 
@@ -131,7 +131,7 @@ export default function SettingsPage() {
       } else {
         throw new Error("Failed to update profile");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Update Failed",
         description: error.message || "An error occurred while updating your profile.",
