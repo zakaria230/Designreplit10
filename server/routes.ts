@@ -159,7 +159,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(403).send('Forbidden file type');
     }
     next();
-  }, (req: any, res: any, next: any) => {
+  }, async (req: Request, res: Response, next: NextFunction) => {
+    // Special security for downloadable files
+    // If the request is for a file in the downloads directory, check if the user has paid for it
+    if (req.url.startsWith('/downloads/') && req.isAuthenticated()) {
+      const fileName = path.basename(req.url);
+      
+      try {
+        // Get all paid orders for this user
+        const orders = await storage.getOrdersByUser(req.user!.id);
+        const paidOrders = orders.filter(order => order.paymentStatus === 'paid');
+        
+        // Fetch order items with product info for all paid orders
+        let hasAccess = false;
+        
+        for (const order of paidOrders) {
+          const orderItems = await storage.getOrderItemsByOrder(order.id);
+          
+          // Check if any of the ordered products has this file as download URL
+          for (const item of orderItems) {
+            if (item.product && item.product.downloadUrl) {
+              const downloadFileName = path.basename(item.product.downloadUrl);
+              if (downloadFileName === fileName) {
+                hasAccess = true;
+                break;
+              }
+            }
+          }
+          
+          if (hasAccess) break;
+        }
+        
+        if (!hasAccess) {
+          return res.status(403).send('Access denied: You have not purchased this item or payment is pending');
+        }
+      } catch (error) {
+        console.error('Error checking download access:', error);
+        return res.status(500).send('Server error checking download permissions');
+      }
+    }
+    
     express.static(uploadDir)(req, res, next);
   });
   

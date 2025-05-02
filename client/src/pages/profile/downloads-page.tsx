@@ -31,7 +31,11 @@ export default function DownloadsPage() {
     
     const downloadableItems = [];
     orders.forEach(order => {
-      if (order.items && order.items.length > 0 && order.status === 'completed') {
+      // Only show downloads for completed orders that have been paid
+      if (order.items && 
+          order.items.length > 0 && 
+          order.status === 'completed' && 
+          order.paymentStatus === 'paid') {
         order.items.forEach(item => {
           if (item.product && item.product.downloadUrl) {
             downloadableItems.push({
