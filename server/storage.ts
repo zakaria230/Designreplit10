@@ -5,7 +5,8 @@ import {
   orders, Order, InsertOrder,
   orderItems, OrderItem, InsertOrderItem,
   carts, Cart, InsertCart,
-  reviews, Review, InsertReview
+  reviews, Review, InsertReview,
+  settings, Settings, InsertSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -65,6 +66,12 @@ export interface IStorage {
   updateReview(id: number, review: Partial<InsertReview>): Promise<Review | undefined>;
   deleteReview(id: number): Promise<boolean>;
   updateProductRatingAndCount(productId: number): Promise<Product | undefined>;
+  
+  // Settings methods
+  getSetting(key: string): Promise<any>;
+  getSettingsByCategory(category: string): Promise<Record<string, any>>;
+  updateSetting(key: string, value: any, category: string): Promise<boolean>;
+  getAllSettings(): Promise<Record<string, any>>;
 
   // Session store
   sessionStore: session.Store;
@@ -379,6 +386,82 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedProduct;
+  }
+  
+  // Settings methods
+  async getSetting(key: string): Promise<any> {
+    const [setting] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    
+    if (setting) {
+      return setting.value;
+    }
+    
+    return null;
+  }
+  
+  async getSettingsByCategory(category: string): Promise<Record<string, any>> {
+    const categorySettings = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.category, category));
+    
+    const result: Record<string, any> = {};
+    
+    for (const setting of categorySettings) {
+      result[setting.key] = setting.value;
+    }
+    
+    return result;
+  }
+  
+  async updateSetting(key: string, value: any, category: string): Promise<boolean> {
+    // Check if setting exists
+    const existingSetting = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    
+    if (existingSetting.length > 0) {
+      // Update existing setting
+      await db
+        .update(settings)
+        .set({ 
+          value,
+          updatedAt: new Date()
+        })
+        .where(eq(settings.key, key));
+    } else {
+      // Create new setting
+      await db
+        .insert(settings)
+        .values({
+          key,
+          value,
+          category
+        });
+    }
+    
+    return true;
+  }
+  
+  async getAllSettings(): Promise<Record<string, any>> {
+    const allSettings = await db.select().from(settings);
+    
+    // Group settings by category
+    const result: Record<string, any> = {};
+    
+    for (const setting of allSettings) {
+      if (!result[setting.category]) {
+        result[setting.category] = {};
+      }
+      
+      result[setting.category][setting.key] = setting.value;
+    }
+    
+    return result;
   }
 }
 
