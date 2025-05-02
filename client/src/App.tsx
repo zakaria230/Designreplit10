@@ -74,37 +74,37 @@ function Router() {
         <ProtectedRoute 
           path="/admin" 
           component={AdminDashboard} 
-          adminOnly={true} 
+          allowedRoles={["admin", "designer"]} 
         />
         <ProtectedRoute 
           path="/admin/products" 
           component={AdminProductManagement} 
-          adminOnly={true} 
+          allowedRoles={["admin", "designer"]} 
         />
         <ProtectedRoute 
           path="/admin/orders" 
           component={AdminOrderManagement} 
-          adminOnly={true} 
+          allowedRoles={["admin", "designer"]} 
         />
         <ProtectedRoute 
           path="/admin/users" 
           component={AdminUsers} 
-          adminOnly={true} 
+          allowedRoles="admin" 
         />
         <ProtectedRoute 
           path="/admin/analytics" 
           component={AdminAnalytics} 
-          adminOnly={true} 
+          allowedRoles={["admin", "designer"]} 
         />
         <ProtectedRoute 
           path="/admin/settings" 
           component={AdminSettings} 
-          adminOnly={true} 
+          allowedRoles="admin" 
         />
         <ProtectedRoute 
           path="/admin/categories" 
           component={CategoryManagement} 
-          adminOnly={true} 
+          allowedRoles={["admin", "designer"]} 
         />
         
         {/* Fallback to 404 */}

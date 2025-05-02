@@ -2,14 +2,18 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 
+type AllowedRoles = "admin" | "designer" | string[];
+
 export function ProtectedRoute({
   path,
   component: Component,
   adminOnly = false,
+  allowedRoles,
 }: {
   path: string;
   component: () => React.JSX.Element;
   adminOnly?: boolean;
+  allowedRoles?: AllowedRoles;
 }) {
   const { user, isLoading } = useAuth();
 
@@ -31,12 +35,28 @@ export function ProtectedRoute({
     );
   }
 
+  // For backwards compatibility
   if (adminOnly && user.role !== "admin") {
     return (
       <Route path={path}>
         <Redirect to="/" />
       </Route>
     );
+  }
+
+  // Check against allowed roles if specified
+  if (allowedRoles) {
+    const allowedRolesArray = Array.isArray(allowedRoles) 
+      ? allowedRoles 
+      : [allowedRoles];
+    
+    if (!allowedRolesArray.includes(user.role)) {
+      return (
+        <Route path={path}>
+          <Redirect to="/" />
+        </Route>
+      );
+    }
   }
 
   return (

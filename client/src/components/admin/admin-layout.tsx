@@ -29,36 +29,43 @@ const navItems = [
     title: "Dashboard",
     href: "/admin",
     icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["admin", "designer"],
   },
   {
     title: "Products",
     href: "/admin/products",
     icon: <Package className="h-5 w-5" />,
+    roles: ["admin", "designer"],
   },
   {
     title: "Categories",
     href: "/admin/categories",
     icon: <FolderClosed className="h-5 w-5" />,
+    roles: ["admin", "designer"],
   },
   {
     title: "Orders",
     href: "/admin/orders",
     icon: <ShoppingCart className="h-5 w-5" />,
+    roles: ["admin", "designer"],
   },
   {
     title: "Users",
     href: "/admin/users",
     icon: <Users className="h-5 w-5" />,
+    roles: ["admin"],
   },
   {
     title: "Analytics",
     href: "/admin/analytics",
     icon: <BarChart className="h-5 w-5" />,
+    roles: ["admin", "designer"],
   },
   {
     title: "Settings",
     href: "/admin/settings",
     icon: <Settings className="h-5 w-5" />,
+    roles: ["admin"],
   },
 ];
 
@@ -67,8 +74,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, logoutMutation } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Redirect if not admin
-  if (!user || user.role !== "admin") {
+  // Redirect if not admin or designer
+  if (!user || (user.role !== "admin" && user.role !== "designer")) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <div className="text-center space-y-6 max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -155,33 +162,35 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </h3>
               <div className="mt-1 h-px bg-gradient-to-r from-blue-500/20 to-transparent"></div>
             </div>
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all",
-                    location === item.href
-                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm border-l-4 border-blue-500"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1"
-                  )}
-                >
-                  <div className={cn(
-                    "flex items-center justify-center",
-                    location === item.href
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-500 dark:text-gray-400"
-                  )}>
-                    {item.icon}
+            {navItems
+              .filter(item => item.roles?.includes(user.role))
+              .map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all",
+                      location === item.href
+                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm border-l-4 border-blue-500"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex items-center justify-center",
+                      location === item.href
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-500 dark:text-gray-400"
+                    )}>
+                      {item.icon}
+                    </div>
+                    <span>{item.title}</span>
+                    {location === item.href && (
+                      <span className="ml-auto px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                        Active
+                      </span>
+                    )}
                   </div>
-                  <span>{item.title}</span>
-                  {location === item.href && (
-                    <span className="ml-auto px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
-                      Active
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
           </nav>
 
           <Separator />
@@ -208,7 +217,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     {user.email}
                   </span>
                   <span className="mt-1 text-xs px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full w-fit">
-                    Administrator
+                    {user.role === "admin" ? "Administrator" : "Designer"}
                   </span>
                 </div>
               </div>
