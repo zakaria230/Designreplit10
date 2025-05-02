@@ -8,6 +8,8 @@ import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
 import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
+import { db } from "./db";
+import { users } from "@shared/schema";
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
