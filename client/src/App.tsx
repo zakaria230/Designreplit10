@@ -31,6 +31,9 @@ import SettingsPage from "@/pages/profile/settings-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProductManagement from "@/pages/admin/product-management";
 import AdminOrderManagement from "@/pages/admin/order-management";
+import AdminUsers from "@/pages/admin/users";
+import AdminAnalytics from "@/pages/admin/analytics";
+import AdminSettings from "@/pages/admin/settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -80,6 +83,21 @@ function Router() {
         <ProtectedRoute 
           path="/admin/orders" 
           component={AdminOrderManagement} 
+          adminOnly={true} 
+        />
+        <ProtectedRoute 
+          path="/admin/users" 
+          component={AdminUsers} 
+          adminOnly={true} 
+        />
+        <ProtectedRoute 
+          path="/admin/analytics" 
+          component={AdminAnalytics} 
+          adminOnly={true} 
+        />
+        <ProtectedRoute 
+          path="/admin/settings" 
+          component={AdminSettings} 
           adminOnly={true} 
         />
         
