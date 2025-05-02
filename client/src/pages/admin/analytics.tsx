@@ -288,29 +288,38 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={salesData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tickFormatter={formatDate}
-                            />
-                            <YAxis 
-                              tickFormatter={(value) => `$${value}`} 
-                            />
-                            <Tooltip 
-                              formatter={(value: any) => [`$${value}`, 'Revenue']}
-                              labelFormatter={(label) => formatDate(label.toString())}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="revenue" 
-                              stroke="#3b82f6" 
-                              fill="#3b82f6" 
-                              fillOpacity={0.2} 
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                        {salesData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={salesData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="date" 
+                                tickFormatter={formatDate}
+                              />
+                              <YAxis 
+                                tickFormatter={(value) => `$${value}`} 
+                              />
+                              <Tooltip 
+                                formatter={(value: any) => [`$${value}`, 'Revenue']}
+                                labelFormatter={(label) => formatDate(label.toString())}
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="revenue" 
+                                stroke="#3b82f6" 
+                                fill="#3b82f6" 
+                                fillOpacity={0.2} 
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No revenue data available</p>
+                              <p className="text-sm">Revenue trends will appear once you have sales</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -322,46 +331,55 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={salesData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tickFormatter={formatDate} 
-                            />
-                            <YAxis 
-                              yAxisId="left" 
-                              orientation="left"
-                              tickFormatter={(value) => `$${value}`}
-                            />
-                            <YAxis 
-                              yAxisId="right" 
-                              orientation="right"
-                              tickFormatter={(value) => `${value}`}
-                            />
-                            <Tooltip 
-                              labelFormatter={(label) => formatDate(label.toString())}
-                              formatter={(value, name) => {
-                                return name === 'revenue' 
-                                  ? [`$${value}`, 'Revenue'] 
-                                  : [value, 'Orders'];
-                              }}
-                            />
-                            <Line 
-                              yAxisId="left"
-                              type="monotone" 
-                              dataKey="revenue" 
-                              stroke="#3b82f6" 
-                              activeDot={{ r: 8 }} 
-                            />
-                            <Line 
-                              yAxisId="right"
-                              type="monotone" 
-                              dataKey="orders" 
-                              stroke="#f59e0b" 
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                        {salesData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={salesData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="date" 
+                                tickFormatter={formatDate} 
+                              />
+                              <YAxis 
+                                yAxisId="left" 
+                                orientation="left"
+                                tickFormatter={(value) => `$${value}`}
+                              />
+                              <YAxis 
+                                yAxisId="right" 
+                                orientation="right"
+                                tickFormatter={(value) => `${value}`}
+                              />
+                              <Tooltip 
+                                labelFormatter={(label) => formatDate(label.toString())}
+                                formatter={(value, name) => {
+                                  return name === 'revenue' 
+                                    ? [`$${value}`, 'Revenue'] 
+                                    : [value, 'Orders'];
+                                }}
+                              />
+                              <Line 
+                                yAxisId="left"
+                                type="monotone" 
+                                dataKey="revenue" 
+                                stroke="#3b82f6" 
+                                activeDot={{ r: 8 }} 
+                              />
+                              <Line 
+                                yAxisId="right"
+                                type="monotone" 
+                                dataKey="orders" 
+                                stroke="#f59e0b" 
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No orders or revenue data available</p>
+                              <p className="text-sm">Order and revenue comparison will appear once you have sales</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -373,19 +391,28 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={categoryData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="value" fill="#8b5cf6">
-                              {categoryData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
+                        {categoryData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={categoryData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#8b5cf6">
+                                {categoryData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No category sales data available</p>
+                              <p className="text-sm">Category distribution will appear once you have sales across different categories</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -402,27 +429,36 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={visitorData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tickFormatter={formatDate}
-                            />
-                            <YAxis />
-                            <Tooltip 
-                              labelFormatter={(label) => formatDate(label.toString())}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="visitors" 
-                              stackId="1"
-                              stroke="#14b8a6" 
-                              fill="#14b8a6" 
-                              fillOpacity={0.8} 
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                        {visitorData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={visitorData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="date" 
+                                tickFormatter={formatDate}
+                              />
+                              <YAxis />
+                              <Tooltip 
+                                labelFormatter={(label) => formatDate(label.toString())}
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="visitors" 
+                                stackId="1"
+                                stroke="#14b8a6" 
+                                fill="#14b8a6" 
+                                fillOpacity={0.8} 
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No visitor data available</p>
+                              <p className="text-sm">Traffic trends will appear once your store has visitors</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -517,26 +553,35 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={deviceData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={60}
-                              outerRadius={100}
-                              fill="#8884d8"
-                              paddingAngle={5}
-                              dataKey="value"
-                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            >
-                              {deviceData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip formatter={(value, name) => [`${value}%`, name]} />
-                          </PieChart>
-                        </ResponsiveContainer>
+                        {deviceData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={deviceData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={100}
+                                fill="#8884d8"
+                                paddingAngle={5}
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {deviceData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No device data available</p>
+                              <p className="text-sm">Device breakdown will appear once your store has visitor data</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -548,26 +593,35 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={countryData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={60}
-                              outerRadius={100}
-                              fill="#8884d8"
-                              paddingAngle={5}
-                              dataKey="value"
-                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            >
-                              {countryData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip formatter={(value, name) => [`${value}%`, name]} />
-                          </PieChart>
-                        </ResponsiveContainer>
+                        {countryData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={countryData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={100}
+                                fill="#8884d8"
+                                paddingAngle={5}
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {countryData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No geographic data available</p>
+                              <p className="text-sm">Geographic distribution will appear once your store has visitor data</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
