@@ -44,48 +44,12 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2, Download, Calendar } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
-// Sample data for demonstrations (would be replaced with API data)
-const salesData = [
-  { date: "2024-01-01", revenue: 1200, orders: 48 },
-  { date: "2024-02-01", revenue: 1900, orders: 65 },
-  { date: "2024-03-01", revenue: 1500, orders: 42 },
-  { date: "2024-04-01", revenue: 2400, orders: 78 },
-  { date: "2024-05-01", revenue: 2700, orders: 89 },
-  { date: "2024-06-01", revenue: 3500, orders: 110 },
-  { date: "2024-07-01", revenue: 3100, orders: 95 },
-];
-
-const visitorData = [
-  { date: "2024-01-01", visitors: 2500, newUsers: 950, returningUsers: 1550 },
-  { date: "2024-02-01", visitors: 3200, newUsers: 1200, returningUsers: 2000 },
-  { date: "2024-03-01", visitors: 2800, newUsers: 1100, returningUsers: 1700 },
-  { date: "2024-04-01", visitors: 3600, newUsers: 1500, returningUsers: 2100 },
-  { date: "2024-05-01", visitors: 4200, newUsers: 1700, returningUsers: 2500 },
-  { date: "2024-06-01", visitors: 4900, newUsers: 1900, returningUsers: 3000 },
-  { date: "2024-07-01", visitors: 4500, newUsers: 1800, returningUsers: 2700 },
-];
-
-const categoryData = [
-  { name: "Patterns", value: 42 },
-  { name: "Textures", value: 28 },
-  { name: "Technical Drawings", value: 35 },
-  { name: "3D Models", value: 20 },
-];
-
-const deviceData = [
-  { name: "Desktop", value: 52 },
-  { name: "Mobile", value: 38 },
-  { name: "Tablet", value: 10 },
-];
-
-const countryData = [
-  { name: "United States", value: 38 },
-  { name: "United Kingdom", value: 15 },
-  { name: "Germany", value: 12 },
-  { name: "France", value: 9 },
-  { name: "Canada", value: 8 },
-  { name: "Others", value: 18 },
-];
+// Empty data arrays for production deployment
+const salesData: Array<{ date: string; revenue: number; orders: number }> = [];
+const visitorData: Array<{ date: string; visitors: number; newUsers: number; returningUsers: number }> = [];
+const categoryData: Array<{ name: string; value: number }> = [];
+const deviceData: Array<{ name: string; value: number }> = [];
+const countryData: Array<{ name: string; value: number }> = [];
 
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b", "#3b82f6", "#a3a3a3"];
 
@@ -112,7 +76,7 @@ export default function AdminAnalytics() {
     });
   };
 
-  // Fetch analytics data
+  // Fetch analytics data from API
   const {
     data: analyticsData,
     isLoading,
@@ -120,29 +84,12 @@ export default function AdminAnalytics() {
   } = useQuery({
     queryKey: ["/api/admin/analytics", timeRange, dateFrom, dateTo],
     queryFn: async () => {
-      // In a real app, this would fetch from the API with proper params
-      // const params = new URLSearchParams();
-      // params.append('timeRange', timeRange);
-      // if (dateFrom) params.append('dateFrom', dateFrom);
-      // if (dateTo) params.append('dateTo', dateTo);
-      // const response = await apiRequest(`GET`, `/api/admin/analytics?${params.toString()}`);
-      // return await response.json();
-      
-      // For now, return mock data
-      return {
-        salesSummary: {
-          totalRevenue: 16300,
-          totalOrders: 527,
-          averageOrderValue: 31,
-          conversionRate: 3.2,
-        },
-        trafficSummary: {
-          totalVisitors: 25700,
-          newUsers: 11150,
-          returningUsers: 14550,
-          averageSessionDuration: "2m 45s",
-        },
-      };
+      const params = new URLSearchParams();
+      params.append('timeRange', timeRange);
+      if (dateFrom) params.append('dateFrom', dateFrom);
+      if (dateTo) params.append('dateTo', dateTo);
+      const response = await apiRequest("GET", `/api/admin/analytics?${params.toString()}`);
+      return await response.json();
     },
   });
 
@@ -245,7 +192,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(metrics?.totalRevenue || 0)}</div>
-                  <p className="text-xs text-green-600 mt-1">+12.5% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -255,7 +202,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.totalOrders?.toLocaleString() || 0}</div>
-                  <p className="text-xs text-green-600 mt-1">+8.3% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -675,40 +622,14 @@ export default function AdminAnalytics() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                      <tr className="[&_td]:p-2">
-                        <td className="font-medium">Direct</td>
-                        <td>5,246</td>
-                        <td>4.2%</td>
-                        <td>{formatCurrency(5750)}</td>
-                        <td className="text-green-600">185%</td>
-                      </tr>
-                      <tr className="[&_td]:p-2">
-                        <td className="font-medium">Organic Search</td>
-                        <td>4,821</td>
-                        <td>3.8%</td>
-                        <td>{formatCurrency(4250)}</td>
-                        <td className="text-green-600">210%</td>
-                      </tr>
-                      <tr className="[&_td]:p-2">
-                        <td className="font-medium">Social Media</td>
-                        <td>3,985</td>
-                        <td>2.5%</td>
-                        <td>{formatCurrency(2840)}</td>
-                        <td className="text-green-600">145%</td>
-                      </tr>
-                      <tr className="[&_td]:p-2">
-                        <td className="font-medium">Email Marketing</td>
-                        <td>2,750</td>
-                        <td>5.2%</td>
-                        <td>{formatCurrency(3500)}</td>
-                        <td className="text-green-600">225%</td>
-                      </tr>
-                      <tr className="[&_td]:p-2">
-                        <td className="font-medium">Referral</td>
-                        <td>1,845</td>
-                        <td>4.1%</td>
-                        <td>{formatCurrency(1950)}</td>
-                        <td className="text-green-600">175%</td>
+                      {/* Empty state */}
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-gray-500">
+                          <div className="flex flex-col items-center space-y-2">
+                            <p>No marketing data available yet</p>
+                            <p className="text-sm">Marketing performance data will appear here once your store has traffic</p>
+                          </div>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
