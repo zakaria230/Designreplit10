@@ -8,6 +8,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { 
+  PayPalScriptProvider, 
+  PayPalButtons,
+  usePayPalScriptReducer
+} from "@paypal/react-paypal-js";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,7 +35,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, ShoppingCart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, ShoppingCart, CreditCard, DollarSign } from "lucide-react";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -212,14 +218,187 @@ function CheckoutForm() {
   );
 }
 
+// PayPal checkout component
+function PayPalCheckout({ 
+  amount, 
+  items, 
+  onSuccess, 
+  email 
+}: { 
+  amount: number, 
+  items: any[], 
+  onSuccess: () => void,
+  email: string
+}) {
+  const { toast } = useToast();
+  const [{ isPending }] = usePayPalScriptReducer();
+  
+  const createOrder = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/create-paypal-order", {
+        amount,
+        items,
+        email
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to create PayPal order");
+      }
+      
+      const data = await response.json();
+      return data.id;
+    } catch (error: any) {
+      toast({
+        title: "PayPal Error",
+        description: error.message || "Failed to initialize PayPal payment",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+  
+  const onApprove = async (data: any) => {
+    try {
+      const response = await apiRequest("POST", "/api/capture-paypal-order", {
+        orderId: data.orderID,
+        items
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to capture PayPal payment");
+      }
+      
+      toast({
+        title: "Payment Successful!",
+        description: "Thank you for your purchase. You can now download your assets.",
+      });
+      
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Payment Capture Failed",
+        description: error.message || "Failed to complete payment",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  if (isPending) {
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  return (
+    <PayPalButtons
+      style={{ 
+        layout: "vertical",
+        shape: "rect",
+        color: "gold"
+      }}
+      createOrder={createOrder}
+      onApprove={onApprove}
+      onError={(err) => {
+        toast({
+          title: "PayPal Error",
+          description: "An error occurred with PayPal. Please try again.",
+          variant: "destructive"
+        });
+        console.error("PayPal error:", err);
+      }}
+    />
+  );
+}
+
+// Payoneer checkout component (simulated)
+function PayoneerCheckout({
+  amount,
+  items,
+  onComplete,
+  formData
+}: {
+  amount: number;
+  items: any[];
+  onComplete: (status: 'success' | 'error', message?: string) => void;
+  formData: CheckoutFormValues;
+}) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+  
+  const handlePayoneerCheckout = async () => {
+    setIsProcessing(true);
+    try {
+      // Simulate API call
+      const response = await apiRequest("POST", "/api/create-order", {
+        items: items,
+        totalAmount: amount,
+        paymentMethod: "payoneer",
+        paymentStatus: "paid",
+        notes: "Payment processed via Payoneer"
+      });
+      
+      if (response.ok) {
+        onComplete('success');
+      } else {
+        throw new Error("Payment processing failed");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "An error occurred with your payment",
+        variant: "destructive",
+      });
+      onComplete('error', error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Click the button below to complete your payment using Payoneer. You will be redirected to the secure Payoneer page.
+      </p>
+      <Button 
+        onClick={handlePayoneerCheckout}
+        disabled={isProcessing}
+        className="w-full bg-[#00ade5] hover:bg-[#0090c0] text-white"
+      >
+        {isProcessing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            Pay with Payoneer
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const { items, totalItems, totalPrice, clearCart } = useCart();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("visa");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
+  const [activeTab, setActiveTab] = useState<"stripe" | "paypal" | "payoneer">("stripe");
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  
+  // Form for customer information
+  const form = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutFormSchema),
+    defaultValues: {
+      email: user?.email || "",
+      name: user?.username || "",
+    },
+  });
 
   // Flag to check if Stripe is properly configured
   const isStripeConfigured = import.meta.env.VITE_STRIPE_PUBLIC_KEY && stripePromise;
