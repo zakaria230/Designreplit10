@@ -175,6 +175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     res.status(403).json({ message: "Forbidden: Admin access required" });
   };
+  
+  // Middleware to check if user is admin or designer
+  const isAdminOrDesigner = (req, res, next) => {
+    if (req.isAuthenticated() && (req.user.role === "admin" || req.user.role === "designer")) {
+      return next();
+    }
+    res.status(403).json({ message: "Forbidden: Admin or Designer access required" });
+  };
 
   // Cart
   app.get("/api/cart", isAuthenticated, async (req, res) => {
@@ -410,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Products
-  app.post("/api/admin/products", isAdmin, async (req, res) => {
+  app.post("/api/admin/products", isAdminOrDesigner, async (req, res) => {
     try {
       const product = req.body;
       const newProduct = await storage.createProduct(product);
@@ -420,7 +428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/products/:id", isAdmin, async (req, res) => {
+  app.put("/api/admin/products/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
       if (isNaN(productId)) {
@@ -440,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // File upload endpoints
-  app.post('/api/admin/upload/product-image', isAdmin, async (req: any, res) => {
+  app.post('/api/admin/upload/product-image', isAdminOrDesigner, async (req: any, res) => {
     try {
       if (!req.files || !req.files.file) {
         return res.status(400).json({ message: 'No file uploaded' });
@@ -476,7 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/admin/upload/product-file', isAdmin, async (req: any, res) => {
+  app.post('/api/admin/upload/product-file', isAdminOrDesigner, async (req: any, res) => {
     try {
       if (!req.files || !req.files.file) {
         return res.status(400).json({ message: 'No file uploaded' });
@@ -514,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/products/:id", isAdmin, async (req, res) => {
+  app.delete("/api/admin/products/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
       if (isNaN(productId)) {
@@ -528,7 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/categories", isAdmin, async (req, res) => {
+  app.post("/api/admin/categories", isAdminOrDesigner, async (req, res) => {
     try {
       const category = req.body;
       const newCategory = await storage.createCategory(category);
