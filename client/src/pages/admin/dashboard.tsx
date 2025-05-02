@@ -358,7 +358,7 @@ export default function AdminDashboard() {
                               size="icon"
                               asChild
                             >
-                              <Link href={`/admin/orders/${order.id}`}>
+                              <Link href="/admin/orders">
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
