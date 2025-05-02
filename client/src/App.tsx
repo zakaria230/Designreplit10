@@ -14,6 +14,7 @@ import ShopPage from "@/pages/shop-page";
 import ProductPage from "@/pages/product-page";
 import CartPage from "@/pages/cart-page";
 import CheckoutPage from "@/pages/checkout-page";
+import ThankYouPage from "@/pages/thank-you-page";
 import CategoriesPage from "@/pages/categories-page";
 import AboutPage from "@/pages/about-page";
 import BlogPage from "@/pages/blog-page";
@@ -50,6 +51,7 @@ function Router() {
         <Route path="/product/:slug" component={ProductPage} />
         <ProtectedRoute path="/cart" component={CartPage} />
         <ProtectedRoute path="/checkout" component={CheckoutPage} />
+        <ProtectedRoute path="/thank-you" component={ThankYouPage} />
         
         {/* Company Pages */}
         <Route path="/about" component={AboutPage} />

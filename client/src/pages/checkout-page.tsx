@@ -52,7 +52,7 @@ function PayPalCheckout({
 }: { 
   amount: number, 
   items: any[], 
-  onSuccess: () => void,
+  onSuccess: (orderData?: {orderId?: number}) => void,
   email: string
 }) {
   const { toast } = useToast();
@@ -100,7 +100,7 @@ function PayPalCheckout({
         description: "Thank you for your purchase. You can now download your assets.",
       });
       
-      onSuccess();
+      onSuccess(orderData);
     } catch (error: any) {
       toast({
         title: "Payment Capture Failed",
@@ -303,12 +303,11 @@ export default function CheckoutPage() {
                               amount={totalPrice} 
                               items={items} 
                               email={form.getValues().email}
-                              onSuccess={() => {
+                              onSuccess={(orderData) => {
                                 clearCart();
-                                // Get the created order ID from the first item if available
-                                const orderId = items[0]?.orderId;
                                 // Navigate to thank you page
-                                navigate(`/thank-you${orderId ? `?orderId=${orderId}` : ''}`);
+                                // The captured order ID will come from a response from the API (if available)
+                                navigate(`/thank-you${orderData?.orderId ? `?orderId=${orderData.orderId}` : ''}`);
                               }} 
                             />
                           </PayPalScriptProvider>

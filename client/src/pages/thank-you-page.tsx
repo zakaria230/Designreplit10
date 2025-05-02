@@ -167,7 +167,7 @@ export default function ThankYouPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Order Status:</span>
                   <Badge variant={
-                    order.status === "delivered" ? "success" :
+                    order.status === "delivered" ? "default" :
                     order.status === "cancelled" ? "destructive" :
                     "default"
                   }>
@@ -178,7 +178,7 @@ export default function ThankYouPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Payment Status:</span>
                   <Badge variant={
-                    order.paymentStatus === "paid" ? "success" :
+                    order.paymentStatus === "paid" ? "default" :
                     order.paymentStatus === "refunded" ? "destructive" :
                     "default"
                   }>
