@@ -321,7 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Stats
-  app.get("/api/admin/stats", isAdmin, async (req, res) => {
+  app.get("/api/admin/stats", isAdminOrDesigner, async (req, res) => {
     try {
       // Return zeroed-out stats data
       const stats = {
@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Orders
-  app.get("/api/admin/orders", isAdmin, async (req, res) => {
+  app.get("/api/admin/orders", isAdminOrDesigner, async (req, res) => {
     try {
       const orders = await storage.getAllOrders();
       res.json(orders);
@@ -350,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/orders/:id", isAdmin, async (req, res) => {
+  app.get("/api/admin/orders/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
       if (isNaN(orderId)) {
@@ -371,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/orders/:id/status", isAdmin, async (req, res) => {
+  app.patch("/api/admin/orders/:id/status", isAdminOrDesigner, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
       if (isNaN(orderId)) {
@@ -394,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/orders/:id/payment", isAdmin, async (req, res) => {
+  app.patch("/api/admin/orders/:id/payment", isAdminOrDesigner, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
       if (isNaN(orderId)) {
@@ -546,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/categories/:id", isAdmin, async (req, res) => {
+  app.put("/api/admin/categories/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
@@ -566,7 +566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/categories/:id", isAdmin, async (req, res) => {
+  app.delete("/api/admin/categories/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
@@ -684,7 +684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Analytics Endpoint
-  app.get("/api/admin/analytics", isAdmin, async (req, res) => {
+  app.get("/api/admin/analytics", isAdminOrDesigner, async (req, res) => {
     try {
       // Return zeroed-out analytics data
       res.json({
