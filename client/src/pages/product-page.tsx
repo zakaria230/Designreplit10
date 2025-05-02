@@ -1,6 +1,5 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { Product, Category } from "@shared/schema";
 import { useCart } from "@/hooks/use-cart";
@@ -12,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { ReviewList } from "@/components/product/review-list";
 import { Loader2, ChevronRight, ShoppingCart, Download, Check } from "lucide-react";
+import SEO from "@/components/seo";
+import { getProductSchema, getBreadcrumbSchema } from "@/components/seo/structured-data";
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -96,12 +97,54 @@ export default function ProductPage() {
     );
   }
 
+  // Create breadcrumbs for SEO
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Shop", url: "/shop" },
+  ];
+  
+  // Add category to breadcrumbs if available
+  if (category) {
+    breadcrumbs.push({ name: category.name, url: `/categories/${category.slug}` });
+  }
+  
+  // Add current product to breadcrumbs
+  breadcrumbs.push({ name: product.name, url: `/product/${product.slug}` });
+  
+  // Create product schema for structured data
+  const productSchema = getProductSchema({
+    id: product.id,
+    name: product.name,
+    description: product.description || "Digital fashion design asset",
+    price: product.price,
+    image: product.imageUrl || "/logo.png",
+    url: `/product/${product.slug}`,
+    brand: "DesignKorv",
+    category: category?.name,
+    ratingValue: product.rating || undefined,
+    reviewCount: product.numReviews || undefined
+  });
+  
+  // Create breadcrumb schema
+  const breadcrumbSchema = getBreadcrumbSchema(breadcrumbs);
+  
+  // Combine structured data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [productSchema, breadcrumbSchema]
+  };
+
   return (
     <>
-      <Helmet>
-        <title>{`${product.name} | DesignKorv`}</title>
-        <meta name="description" content={product.description || "Digital fashion design asset"} />
-      </Helmet>
+      <SEO 
+        title={`${product.name} | DesignKorv`}
+        description={product.description || "Digital fashion design asset"}
+        keywords={`fashion design, digital assets, ${product.name}, ${category?.name || ''}`}
+        canonicalUrl={`/product/${product.slug}`}
+        ogType="product"
+        ogImage={product.imageUrl || undefined}
+        structuredData={structuredData}
+      />
 
       <div className="bg-white dark:bg-gray-900 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
