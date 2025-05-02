@@ -7,9 +7,20 @@ import { z } from "zod";
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
+import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
 
-// Define a global variable for Stripe instance
+// Define global variables for payment gateways
 let stripe: Stripe | null = null;
+let paypalClient: any = null;
+
+// Helper function to setup PayPal
+function getPayPalClient(clientId: string, clientSecret: string, isSandbox = true) {
+  const environment = isSandbox
+    ? new checkoutNodeJssdk.core.SandboxEnvironment(clientId, clientSecret)
+    : new checkoutNodeJssdk.core.LiveEnvironment(clientId, clientSecret);
+  
+  return new checkoutNodeJssdk.core.PayPalHttpClient(environment);
+}
 
 // Function to initialize payment gateways from database settings or environment variables
 async function initializePaymentGateways() {
@@ -33,21 +44,35 @@ async function initializePaymentGateways() {
       console.warn('You can still use the simulated checkout flow, but real payment processing will not work.');
     }
     
-    // Log PayPal status
+    // Initialize PayPal
     const paypalClientId = 
       paymentSettings['payment_paypalClientId'] || 
       process.env.PAYPAL_CLIENT_ID;
 
-    const paypalSecret = 
+    const paypalClientSecret = 
       paymentSettings['payment_paypalClientSecret'] || 
-      process.env.PAYPAL_SECRET;
+      process.env.PAYPAL_CLIENT_SECRET;
     
-    if (!paypalClientId) {
-      console.warn('Warning: PayPal Client ID not found. Using test mode for PayPal.');
-    }
+    const paypalSandboxMode = 
+      paymentSettings['payment_paypalSandboxMode'] === 'true' || 
+      true; // Default to sandbox mode for safety
     
-    if (!paypalSecret) {
-      console.warn('Warning: PayPal Secret not found. Using simulation for PayPal checkout.');
+    if (paypalClientId && paypalClientSecret) {
+      // Create PayPal client
+      paypalClient = getPayPalClient(
+        paypalClientId,
+        paypalClientSecret,
+        paypalSandboxMode
+      );
+      console.log("PayPal payment processing initialized successfully");
+    } else {
+      if (!paypalClientId) {
+        console.warn('Warning: PayPal Client ID not found. PayPal checkout will be disabled.');
+      }
+      
+      if (!paypalClientSecret) {
+        console.warn('Warning: PayPal Client Secret not found. PayPal checkout will be disabled.');
+      }
     }
     
   } catch (error) {
