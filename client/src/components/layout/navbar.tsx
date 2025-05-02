@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const { user, logoutMutation } = useAuth();
   const { totalItems } = useCart();
+  const { settings } = useSiteSettings();
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -63,7 +65,7 @@ export function Navbar() {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/" className="text-primary-700 dark:text-primary-500 font-bold text-xl">
-                  DesignKorv
+                  {settings?.siteName || 'DesignKorv'}
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

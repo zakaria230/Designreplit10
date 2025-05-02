@@ -364,6 +364,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // API routes
   
+  // Public endpoint for site settings
+  app.get("/api/settings/public", async (req, res) => {
+    try {
+      // Only expose select settings categories that are safe for public consumption
+      const siteSettings = await storage.getSettingsByCategory('site');
+      
+      // Exclude any sensitive settings (just in case)
+      const sensitiveKeys = ['site_smtpPassword', 'site_apiKeys'];
+      Object.keys(siteSettings).forEach(key => {
+        if (sensitiveKeys.some(sk => key.includes(sk))) {
+          delete siteSettings[key];
+        }
+      });
+      
+      res.json({
+        success: true,
+        data: {
+          site: siteSettings
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching public settings:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Error fetching public settings" 
+      });
+    }
+  });
+
   // Categories
   app.get("/api/categories", async (req, res) => {
     try {

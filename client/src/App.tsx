@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
+import { SiteSettingsProvider } from "@/hooks/use-site-settings";
 import { Layout } from "@/components/layout/layout";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
@@ -121,14 +122,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <CartProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Router />
-              </TooltipProvider>
-            </CartProvider>
-          </AuthProvider>
+          <SiteSettingsProvider>
+            <AuthProvider>
+              <CartProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Router />
+                </TooltipProvider>
+              </CartProvider>
+            </AuthProvider>
+          </SiteSettingsProvider>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
