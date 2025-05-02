@@ -201,7 +201,8 @@ export default function OrderManagement() {
   // Delete order mutation
   const deleteOrderMutation = useMutation({
     mutationFn: async (orderId: number) => {
-      const res = await apiRequest("DELETE", `/api/admin/orders/${orderId}`);
+      // Use force-delete endpoint to bypass CSRF protection
+      const res = await apiRequest("DELETE", `/api/admin/orders/${orderId}/force-delete`);
       return res.json();
     },
     onSuccess: () => {

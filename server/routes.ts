@@ -275,6 +275,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete category" });
     }
   });
+  
+  // Force-delete order
+  app.delete("/api/admin/orders/:id/force-delete", isAdminOrDesigner, async (req, res) => {
+    try {
+      console.log(`DELETE order endpoint (force) called with ID: ${req.params.id}`);
+      
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
+      // Get the current order to check if exists
+      const currentOrder = await storage.getOrderById(orderId);
+      if (!currentOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      console.log(`Calling storage.deleteOrder for order ID: ${orderId}`);
+      // Delete the order with all related records
+      const deleted = await storage.deleteOrder(orderId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete order" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      res.status(500).json({ message: "Failed to delete order" });
+    }
+  });
 
   // API routes
   
