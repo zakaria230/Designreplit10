@@ -148,11 +148,11 @@ export default function ProductPage() {
                 </h1>
                 
                 {/* Rating */}
-                {product.rating > 0 && (
+                {(product.rating && product.rating > 0) && (
                   <div className="flex items-center mb-4">
-                    <StarRating rating={product.rating} />
+                    <StarRating rating={product.rating || 0} />
                     <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      ({product.numReviews} {product.numReviews === 1 ? 'review' : 'reviews'})
+                      ({product.numReviews || 0} {(product.numReviews || 0) === 1 ? 'review' : 'reviews'})
                     </span>
                   </div>
                 )}
@@ -162,9 +162,11 @@ export default function ProductPage() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {formatPrice(product.price)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Digital download, available immediately after purchase
-                  </p>
+                  {product.downloadable && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Digital download, available immediately after purchase
+                    </p>
+                  )}
                 </div>
                 
                 {/* Description */}
@@ -256,117 +258,34 @@ export default function ProductPage() {
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
               <TabsContent value="details" className="prose dark:prose-invert max-w-none">
-                <h2>Product Details</h2>
-                <p>This premium digital design asset is crafted for professional fashion designers looking to streamline their workflow and enhance their designs. Each file is meticulously created to ensure quality and ease of use.</p>
-                <h3>What's Included</h3>
-                <ul>
-                  <li>High-resolution digital files</li>
-                  <li>Vector formats where applicable</li>
-                  <li>Multiple size variations</li>
-                  <li>Editable layers and components</li>
-                  <li>Detailed documentation</li>
-                </ul>
-                <p>Perfect for both independent designers and fashion studios, our digital assets save you time and help you maintain professional quality across your designs.</p>
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No additional details have been provided for this product.
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                    The basic product information is shown in the main product section.
+                  </p>
+                </div>
               </TabsContent>
               <TabsContent value="specifications">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">File Specifications</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">File Format</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">PDF, AI, PSD</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Dimensions</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Various</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Resolution</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">300 DPI</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">File Size</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">~ 25MB</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Compatibility</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Software</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Adobe Creative Suite, CLO 3D</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Versions</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">CS6 and newer</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Platforms</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">macOS, Windows</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">License</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Single Commercial Use</span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No specifications provided for this product.
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                    Specifications include file formats, dimensions, compatibility, and license details.
+                  </p>
                 </div>
               </TabsContent>
               <TabsContent value="reviews">
-                {product.numReviews > 0 ? (
-                  <div>
-                    <div className="flex items-center mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mr-2">Customer Reviews</h3>
-                      <div className="flex items-center">
-                        <StarRating rating={product.rating} />
-                        <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                          ({product.numReviews} {product.numReviews === 1 ? 'review' : 'reviews'})
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-6">
-                      {/* Mock reviews since we don't have actual review data */}
-                      <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
-                        <div className="flex items-center mb-2">
-                          <StarRating rating={5} />
-                          <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">Excellent Quality</span>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          The detail in this design file is exceptional. It saved me so much time and the file was easy to customize to my specific needs.
-                        </p>
-                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          By Sarah T. on May 12, 2023
-                        </div>
-                      </div>
-                      <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
-                        <div className="flex items-center mb-2">
-                          <StarRating rating={4} />
-                          <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">Great Resource</span>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Very professional and well-structured design file. The documentation was helpful, though it could have been more detailed.
-                        </p>
-                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          By Michael K. on April 3, 2023
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No reviews yet. Be the first to review this product!
-                    </p>
-                  </div>
-                )}
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No reviews yet. Reviews will appear here once customers leave feedback.
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                    Product reviews help other customers make informed decisions.
+                  </p>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

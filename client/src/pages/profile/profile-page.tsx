@@ -8,21 +8,41 @@ import {
   Download, 
   CreditCard, 
   ArrowRight,
-  ShoppingBag
+  ShoppingBag,
+  Eye,
+  Package
 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { getQueryFn } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Order, OrderItem, Product } from "@shared/schema";
+
+interface OrderWithItems extends Order {
+  items?: (OrderItem & { product?: Product })[];
+  notes?: string | null;
+}
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
   
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading } = useQuery<OrderWithItems[]>({
     queryKey: ["/api/orders"],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!user,
   });
+  
+  const handleViewOrder = (order: OrderWithItems) => {
+    setSelectedOrder(order);
+  };
 
   // Format date to display in readable format
   const formatDate = (dateString: string) => {
@@ -155,11 +175,14 @@ export default function ProfilePage() {
                       </td>
                       <td className="px-4 py-2">{formatPrice(order.totalAmount)}</td>
                       <td className="px-4 py-2">
-                        <Link href={`/profile/orders/${order.id}`}>
-                          <Button variant="outline" size="sm">
-                            Details
-                          </Button>
-                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Details
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -180,6 +203,130 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Order Detail Dialog */}
+      {selectedOrder && (
+        <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Order #{selectedOrder.id}</DialogTitle>
+              <DialogDescription>
+                Placed on {formatDate(selectedOrder.createdAt)}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Order status */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                    selectedOrder.status === 'completed' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                      : selectedOrder.status === 'processing'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                      : selectedOrder.status === 'cancelled'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                  }`}>
+                    {selectedOrder.status?.charAt(0).toUpperCase() + selectedOrder.status?.slice(1) || 'Pending'}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Payment</p>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                    selectedOrder.paymentStatus === 'paid' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                  }`}>
+                    {selectedOrder.paymentStatus 
+                      ? selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)
+                      : 'Pending'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Order items */}
+              <div>
+                <h3 className="text-lg font-medium mb-3">Order Items</h3>
+                {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {selectedOrder.items.map((item) => (
+                      <div key={item.id} className="py-3 flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div className="h-12 w-12 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 mr-3">
+                            {item.product && item.product.imageUrl ? (
+                              <img
+                                src={item.product.imageUrl}
+                                alt={item.product.name || 'Product'}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                <Package className="h-6 w-6" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {item.product ? item.product.name : `Product #${item.productId}`}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Qty: {item.quantity} × {formatPrice(item.price)}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <span className="font-medium mr-3">
+                            {formatPrice(item.quantity * item.price)}
+                          </span>
+                          {item.product && item.product.downloadUrl && (
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={item.product.downloadUrl} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-3">
+                    No items found in this order.
+                  </p>
+                )}
+              </div>
+              
+              {/* Order summary */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                  <span className="font-medium">{formatPrice(selectedOrder.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-600 dark:text-gray-400">Taxes</span>
+                  <span className="font-medium">{formatPrice(0)}</span>
+                </div>
+                <div className="flex justify-between py-1 text-lg font-bold">
+                  <span>Total</span>
+                  <span>{formatPrice(selectedOrder.totalAmount)}</span>
+                </div>
+              </div>
+              
+              {/* Notes */}
+              {selectedOrder.notes && selectedOrder.notes.trim() !== "" && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium mb-1">Notes</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.notes}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </ProfileLayout>
   );
 }

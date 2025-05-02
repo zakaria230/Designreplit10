@@ -351,6 +351,17 @@ export default function AdminDashboard() {
                           <td className="text-right">
                             {formatCurrency(order.total)}
                           </td>
+                          <td>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              asChild
+                            >
+                              <Link href={`/admin/orders/${order.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </td>
                         </tr>
                       ))
                     ) : (
