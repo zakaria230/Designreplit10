@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { FeaturedProducts } from "@/components/home/featured-products";
+import { ReviewList } from "@/components/product/review-list";
 import { Loader2, ChevronRight, ShoppingCart, Download, Check } from "lucide-react";
 
 export default function ProductPage() {
@@ -162,7 +163,7 @@ export default function ProductPage() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {formatPrice(product.price)}
                   </p>
-                  {product.downloadable && (
+                  {product.downloadUrl && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       Digital download, available immediately after purchase
                     </p>
@@ -278,14 +279,7 @@ export default function ProductPage() {
                 </div>
               </TabsContent>
               <TabsContent value="reviews">
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No reviews yet. Reviews will appear here once customers leave feedback.
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                    Product reviews help other customers make informed decisions.
-                  </p>
-                </div>
+                <ReviewList productId={product.id} />
               </TabsContent>
             </Tabs>
           </div>

@@ -924,6 +924,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Add PATCH endpoint (same as PUT but for partial updates)
+  app.patch("/api/reviews/:id", isAuthenticated, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      // Check if review exists
+      const review = await storage.getReviewById(reviewId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      // Check if user owns this review
+      if (review.userId !== req.user.id && req.user.role !== "admin") {
+        return res.status(403).json({ message: "You can only edit your own reviews" });
+      }
+      
+      // Update review
+      const { rating, title, comment } = req.body;
+      const updatedReview = await storage.updateReview(reviewId, {
+        rating,
+        title,
+        comment,
+      });
+      
+      res.json(updatedReview);
+    } catch (error: any) {
+      res.status(500).json({ message: `Failed to update review: ${error.message}` });
+    }
+  });
+  
   app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
     try {
       const reviewId = parseInt(req.params.id);
