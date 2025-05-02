@@ -60,13 +60,19 @@ export default function ShopPage() {
   const filteredProducts = products
     ? products
         .filter((product) => {
-          // Filter by search query
-          if (
-            searchQuery &&
-            !product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-          ) {
+          // Ensure product has the necessary properties
+          if (!product || !product.name) {
             return false;
+          }
+          // Filter by search query
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase().trim();
+            const nameMatch = product.name.toLowerCase().includes(query);
+            const descMatch = product.description ? product.description.toLowerCase().includes(query) : false;
+            // Don't filter out if either name or description match
+            if (!nameMatch && !descMatch) {
+              return false;
+            }
           }
 
           // Filter by category
@@ -95,14 +101,21 @@ export default function ShopPage() {
               return (b.rating || 0) - (a.rating || 0);
             case "newest":
             default:
-              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+              // Safely handle date comparison with validation
+              try {
+                const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+              } catch (error) {
+                return 0; // If dates are invalid, don't change order
+              }
           }
         })
     : [];
 
-  // Get max price for the slider
-  const maxPrice = products
-    ? Math.ceil(Math.max(...products.map((p) => p.price)))
+  // Get max price for the slider with error handling
+  const maxPrice = products && products.length > 0
+    ? Math.ceil(Math.max(...products.filter(p => p && typeof p.price === 'number').map(p => p.price))) || 100
     : 100;
 
   // Handle applying a filter
