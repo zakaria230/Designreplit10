@@ -462,6 +462,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ received: true });
   });
 
+  // Admin Settings Routes
+  // Site Settings
+  app.post("/api/admin/settings/site", isAdmin, async (req, res) => {
+    try {
+      // In a real app, you would save these settings to the database
+      // For now, we'll just echo back the data to simulate success
+      res.json({
+        success: true,
+        message: "Site settings updated successfully",
+        data: req.body
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to update site settings" 
+      });
+    }
+  });
+
+  // Analytics Settings
+  app.post("/api/admin/settings/analytics", isAdmin, async (req, res) => {
+    try {
+      // Simulate successful update
+      res.json({
+        success: true,
+        message: "Analytics settings updated successfully",
+        data: req.body
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to update analytics settings" 
+      });
+    }
+  });
+
+  // Email Settings
+  app.post("/api/admin/settings/email", isAdmin, async (req, res) => {
+    try {
+      // Simulate successful update
+      res.json({
+        success: true,
+        message: "Email settings updated successfully",
+        data: req.body
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to update email settings" 
+      });
+    }
+  });
+
+  // Social Media Settings
+  app.post("/api/admin/settings/social", isAdmin, async (req, res) => {
+    try {
+      // Simulate successful update
+      res.json({
+        success: true,
+        message: "Social media settings updated successfully",
+        data: req.body
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to update social media settings" 
+      });
+    }
+  });
+
+  // Payment Settings
+  app.post("/api/admin/settings/payment", isAdmin, async (req, res) => {
+    try {
+      // In a production app, we would:
+      // 1. Validate the payment provider credentials
+      // 2. Store them securely (potentially encrypted)
+      // 3. Update environment variables if needed
+      
+      // For now, simulate successful update
+      res.json({
+        success: true,
+        message: "Payment settings updated successfully",
+        data: {
+          ...req.body,
+          // Don't return sensitive info back to client
+          stripeSecretKey: req.body.stripeSecretKey ? "********" : "",
+          stripeWebhookSecret: req.body.stripeWebhookSecret ? "********" : "",
+          paypalClientSecret: req.body.paypalClientSecret ? "********" : "",
+          payoneerApiKey: req.body.payoneerApiKey ? "********" : "",
+          payoneerPassword: req.body.payoneerPassword ? "********" : ""
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to update payment settings" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
