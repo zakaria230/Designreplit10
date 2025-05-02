@@ -212,7 +212,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(metrics?.averageOrderValue || 0)}</div>
-                  <p className="text-xs text-green-600 mt-1">+3.7% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -222,7 +222,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.conversionRate || 0}%</div>
-                  <p className="text-xs text-red-600 mt-1">-1.2% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
             </div>
@@ -234,7 +234,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.totalVisitors?.toLocaleString() || 0}</div>
-                  <p className="text-xs text-green-600 mt-1">+15.2% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -244,7 +244,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.newUsers?.toLocaleString() || 0}</div>
-                  <p className="text-xs text-green-600 mt-1">+10.8% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -254,7 +254,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.returningUsers?.toLocaleString() || 0}</div>
-                  <p className="text-xs text-green-600 mt-1">+7.5% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
               
@@ -264,7 +264,7 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics?.averageSessionDuration || "0m 0s"}</div>
-                  <p className="text-xs text-green-600 mt-1">+5.3% from previous period</p>
+                  <p className="text-xs text-gray-500 mt-1">0% from previous period</p>
                 </CardContent>
               </Card>
             </div>
@@ -491,40 +491,14 @@ export default function AdminAnalytics() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                          <tr className="[&_td]:p-2">
-                            <td className="font-medium">Basic Pattern Block</td>
-                            <td>Patterns</td>
-                            <td>128</td>
-                            <td>{formatCurrency(3840)}</td>
-                            <td>4.8%</td>
-                          </tr>
-                          <tr className="[&_td]:p-2">
-                            <td className="font-medium">Digital Fashion Toolkit</td>
-                            <td>Textures</td>
-                            <td>96</td>
-                            <td>{formatCurrency(2880)}</td>
-                            <td>4.2%</td>
-                          </tr>
-                          <tr className="[&_td]:p-2">
-                            <td className="font-medium">Advanced Draping Guide</td>
-                            <td>Patterns</td>
-                            <td>84</td>
-                            <td>{formatCurrency(2520)}</td>
-                            <td>3.9%</td>
-                          </tr>
-                          <tr className="[&_td]:p-2">
-                            <td className="font-medium">Technical Drawing Templates</td>
-                            <td>Technical Drawings</td>
-                            <td>75</td>
-                            <td>{formatCurrency(2250)}</td>
-                            <td>3.6%</td>
-                          </tr>
-                          <tr className="[&_td]:p-2">
-                            <td className="font-medium">3D Garment Base</td>
-                            <td>3D Models</td>
-                            <td>62</td>
-                            <td>{formatCurrency(1860)}</td>
-                            <td>3.2%</td>
+                          {/* Empty state */}
+                          <tr>
+                            <td colSpan={5} className="py-6 text-center text-gray-500">
+                              <div className="flex flex-col items-center space-y-2">
+                                <p>No product sales data available yet</p>
+                                <p className="text-sm">Top selling products will appear here once you've made sales</p>
+                              </div>
+                            </td>
                           </tr>
                         </tbody>
                       </table>
