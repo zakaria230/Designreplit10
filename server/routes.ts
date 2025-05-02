@@ -1,9 +1,12 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import Stripe from "stripe";
 import { z } from "zod";
+import fileUpload from 'express-fileupload';
+import path from 'path';
+import fs from 'fs';
 
 // Check for Stripe API key with more descriptive warning
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -27,6 +30,51 @@ try {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create upload directories if they don't exist
+  const uploadDir = path.join(process.cwd(), 'uploads');
+  const productImagesDir = path.join(uploadDir, 'products');
+  const downloadFilesDir = path.join(uploadDir, 'downloads');
+  
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+  }
+  if (!fs.existsSync(productImagesDir)) {
+    fs.mkdirSync(productImagesDir);
+  }
+  if (!fs.existsSync(downloadFilesDir)) {
+    fs.mkdirSync(downloadFilesDir);
+  }
+  
+  // Setup file upload middleware
+  app.use(fileUpload({
+    createParentPath: true,
+    limits: { 
+      fileSize: 50 * 1024 * 1024 // 50MB max file size
+    },
+    abortOnLimit: true,
+    useTempFiles: true,
+    tempFileDir: path.join(process.cwd(), 'tmp'),
+  }));
+  
+  // Serve static files from the uploads directory
+  app.use('/uploads', (req, res, next) => {
+    // Basic security check to prevent directory traversal
+    if (req.url.includes('..')) {
+      return res.status(403).send('Forbidden');
+    }
+    next();
+  }, (req, res, next) => {
+    // Only allow specific file types
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.zip', '.pdf'];
+    const ext = path.extname(req.url).toLowerCase();
+    if (!allowedExtensions.includes(ext)) {
+      return res.status(403).send('Forbidden file type');
+    }
+    next();
+  }, (req: any, res: any, next: any) => {
+    express.static(uploadDir)(req, res, next);
+  });
+  
   // Setup authentication routes
   setupAuth(app);
 
@@ -358,6 +406,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedProduct);
     } catch (error) {
       res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+  
+  // File upload endpoints
+  app.post('/api/admin/upload/product-image', isAdmin, async (req: any, res) => {
+    try {
+      if (!req.files || !req.files.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+      
+      const file = req.files.file;
+      const fileName = `${Date.now()}-${file.name}`;
+      const uploadPath = path.join(process.cwd(), 'uploads/products', fileName);
+      
+      // Validate file type
+      const fileExt = path.extname(file.name).toLowerCase();
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg'];
+      if (!allowedExtensions.includes(fileExt)) {
+        return res.status(400).json({ message: 'Invalid file type. Only images are allowed.' });
+      }
+      
+      // Move the file to upload directory
+      file.mv(uploadPath, (err: any) => {
+        if (err) {
+          console.error('File upload error:', err);
+          return res.status(500).json({ message: 'Error uploading file' });
+        }
+        
+        // Return the file path relative to the uploads directory
+        res.json({ 
+          url: `/uploads/products/${fileName}`,
+          message: 'File uploaded successfully' 
+        });
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: `Failed to upload image: ${error.message}` });
+    }
+  });
+  
+  app.post('/api/admin/upload/product-file', isAdmin, async (req: any, res) => {
+    try {
+      if (!req.files || !req.files.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+      
+      const file = req.files.file;
+      const fileName = `${Date.now()}-${file.name}`;
+      const uploadPath = path.join(process.cwd(), 'uploads/downloads', fileName);
+      
+      // Validate file type
+      const fileExt = path.extname(file.name).toLowerCase();
+      const allowedExtensions = ['.zip', '.pdf', '.ai', '.psd', '.eps', '.svg'];
+      if (!allowedExtensions.includes(fileExt)) {
+        return res.status(400).json({ 
+          message: 'Invalid file type. Only zip, pdf, ai, psd, eps, and svg files are allowed.' 
+        });
+      }
+      
+      // Move the file to upload directory
+      file.mv(uploadPath, (err: any) => {
+        if (err) {
+          console.error('File upload error:', err);
+          return res.status(500).json({ message: 'Error uploading file' });
+        }
+        
+        // Return the file path relative to the uploads directory
+        res.json({ 
+          url: `/uploads/downloads/${fileName}`,
+          message: 'File uploaded successfully' 
+        });
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: `Failed to upload file: ${error.message}` });
     }
   });
 

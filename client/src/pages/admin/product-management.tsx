@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -150,6 +150,110 @@ export default function ProductManagement() {
       });
     },
   });
+
+  // File upload mutations
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/admin/upload/product-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to upload image');
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Image Uploaded',
+        description: 'Product image was uploaded successfully.'
+      });
+      return data.url;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Upload Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const uploadFileMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/admin/upload/product-file', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to upload file');
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'File Uploaded',
+        description: 'Product file was uploaded successfully.'
+      });
+      return data.url;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Upload Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  // Refs for file inputs
+  const addImageInputRef = useRef<HTMLInputElement>(null);
+  const addFileInputRef = useRef<HTMLInputElement>(null);
+  const editImageInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle file upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, formType: 'add' | 'edit') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    try {
+      const result = await uploadImageMutation.mutateAsync(file);
+      if (formType === 'add') {
+        addForm.setValue('imageUrl', result.url);
+      } else {
+        editForm.setValue('imageUrl', result.url);
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, formType: 'add' | 'edit') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    try {
+      const result = await uploadFileMutation.mutateAsync(file);
+      if (formType === 'add') {
+        addForm.setValue('downloadUrl', result.url);
+      } else {
+        editForm.setValue('downloadUrl', result.url);
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+    }
+  };
 
   // Add product form
   const addForm = useForm<ProductFormValues>({
@@ -397,12 +501,59 @@ export default function ProductManagement() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} />
-                        </FormControl>
+                        <FormLabel>Product Image</FormLabel>
+                        <div className="flex items-center gap-4">
+                          <FormControl>
+                            <Input 
+                              placeholder="Image path" 
+                              {...field} 
+                              readOnly 
+                              className="flex-1"
+                            />
+                          </FormControl>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => addImageInputRef.current?.click()}
+                              disabled={uploadImageMutation.isPending}
+                            >
+                              {uploadImageMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Upload Image"
+                              )}
+                            </Button>
+                            {field.value && (
+                              <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="icon" 
+                                onClick={() => addForm.setValue("imageUrl", "")}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          ref={addImageInputRef}
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, 'add')}
+                        />
+                        {field.value && (
+                          <div className="mt-2 overflow-hidden rounded-md border border-input h-40 flex items-center justify-center">
+                            <img 
+                              src={field.value} 
+                              alt="Product preview" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                        )}
                         <FormDescription>
-                          URL to the product image.
+                          Upload a product image (JPG, PNG, or SVG).
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -414,12 +565,56 @@ export default function ProductManagement() {
                     name="downloadUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Download URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/download.zip" {...field} />
-                        </FormControl>
+                        <FormLabel>Downloadable File</FormLabel>
+                        <div className="flex items-center gap-4">
+                          <FormControl>
+                            <Input 
+                              placeholder="File path" 
+                              {...field} 
+                              readOnly 
+                              className="flex-1"
+                            />
+                          </FormControl>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => addFileInputRef.current?.click()}
+                              disabled={uploadFileMutation.isPending}
+                            >
+                              {uploadFileMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Upload File"
+                              )}
+                            </Button>
+                            {field.value && (
+                              <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="icon" 
+                                onClick={() => addForm.setValue("downloadUrl", "")}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <input 
+                          type="file" 
+                          accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
+                          ref={addFileInputRef}
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, 'add')}
+                        />
+                        {field.value && (
+                          <div className="mt-2 px-2 py-1 rounded-md border border-input inline-block">
+                            <span className="font-medium">File Ready: </span>
+                            {field.value.split('/').pop()}
+                          </div>
+                        )}
                         <FormDescription>
-                          URL to the downloadable product file.
+                          Upload the downloadable product file (ZIP, PDF, AI, PSD, EPS, or SVG).
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
