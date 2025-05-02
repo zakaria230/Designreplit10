@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Store
+  Store,
+  FolderClosed
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -33,6 +34,11 @@ const navItems = [
     title: "Products",
     href: "/admin/products",
     icon: <Package className="h-5 w-5" />,
+  },
+  {
+    title: "Categories",
+    href: "/admin/categories",
+    icon: <FolderClosed className="h-5 w-5" />,
   },
   {
     title: "Orders",
