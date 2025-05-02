@@ -157,7 +157,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
-                <a
+                <div
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all",
                     location === item.href
@@ -179,7 +179,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       Active
                     </span>
                   )}
-                </a>
+                </div>
               </Link>
             ))}
           </nav>
@@ -228,8 +228,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   asChild
                 >
                   <Link href="/">
-                    <Store className="h-4 w-4" />
-                    View Store
+                    <div className="flex items-center gap-2 justify-center w-full">
+                      <Store className="h-4 w-4" />
+                      View Store
+                    </div>
                   </Link>
                 </Button>
               </div>
