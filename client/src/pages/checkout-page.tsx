@@ -184,12 +184,6 @@ function CheckoutForm() {
                 <div className="bg-white rounded p-1 shadow-sm">
                   <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/american-express.svg" alt="American Express" className="h-6 w-10" />
                 </div>
-                <div className="bg-white rounded p-1 shadow-sm">
-                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/paypal.svg" alt="PayPal" className="h-6 w-10" />
-                </div>
-                <div className="bg-white rounded p-1 shadow-sm">
-                  <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/apple-pay.svg" alt="Apple Pay" className="h-6 w-10" />
-                </div>
               </div>
             </div>
           </CardContent>
@@ -385,7 +379,6 @@ export default function CheckoutPage() {
   const { items, totalItems, totalPrice, clearCart } = useCart();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
   const [activeTab, setActiveTab] = useState<"stripe" | "paypal" | "payoneer">("stripe");
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -424,22 +417,19 @@ export default function CheckoutPage() {
     }
     
     try {
-      // Get payment method name for notes
-      const paymentMethodName = selectedPaymentMethod.charAt(0).toUpperCase() + selectedPaymentMethod.slice(1);
-      
       // Create a mock order
       const response = await apiRequest("POST", "/api/create-order", {
         items: items,
         totalAmount: totalPrice,
         paymentStatus: "paid", // Simulate payment
-        paymentMethod: selectedPaymentMethod,
-        notes: `Payment processed via ${paymentMethodName}`
+        paymentMethod: "card",
+        notes: "Payment processed via Credit Card"
       });
       
       if (response.ok) {
         toast({
           title: "Order Successful!",
-          description: `Your order has been placed successfully and paid with ${paymentMethodName}.`,
+          description: "Your order has been placed successfully and paid with credit card.",
         });
         clearCart();
         navigate("/orders");
@@ -586,113 +576,142 @@ export default function CheckoutPage() {
                   Complete Your Order
                 </h2>
                 
-                {isStripeConfigured && clientSecret ? (
-                  <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <CheckoutForm />
-                  </Elements>
-                ) : (
-                  <div className="text-center py-8">
-                    {isStripeConfigured ? (
-                      <>
-                        <p className="text-red-500 dark:text-red-400 mb-4">
-                          Error initializing payment system. Please try again.
-                        </p>
-                        <Button onClick={() => navigate("/cart")}>
-                          Return to Cart
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-amber-500 dark:text-amber-400 mb-4">
-                          Development mode: Stripe payment is not configured.
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6">
-                          You can use simulated checkout to test the ordering process.
-                        </p>
-                        {(() => {
-                          // Create a form instance for simulated checkout
-                          const simulatedForm = useForm<CheckoutFormValues>({
-                            resolver: zodResolver(checkoutFormSchema),
-                            defaultValues: {
-                              email: user?.email || "",
-                              name: user?.username || "",
-                            },
-                          });
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter your name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="Enter your email" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <h3 className="text-base font-medium mb-4">Payment Method</h3>
+                        
+                        <Tabs 
+                          value={activeTab} 
+                          onValueChange={(val) => setActiveTab(val as "stripe" | "paypal" | "payoneer")}
+                          className="w-full"
+                        >
+                          <TabsList className="grid grid-cols-3 w-full mb-6">
+                            <TabsTrigger value="stripe" className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4" />
+                              <span>Credit Card</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="paypal" className="flex items-center gap-2">
+                              <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/paypal.svg" alt="PayPal" className="h-4 w-4" />
+                              <span>PayPal</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="payoneer" className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4" />
+                              <span>Payoneer</span>
+                            </TabsTrigger>
+                          </TabsList>
                           
-                          return (
-                            <Form {...simulatedForm}>
-                              <form onSubmit={simulatedForm.handleSubmit(handleSimulatedCheckout)} className="space-y-6">
-                                <div className="space-y-4">
-                                  <FormField
-                                    control={simulatedForm.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Full Name</FormLabel>
-                                        <FormControl>
-                                          <Input placeholder="Enter your name" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={simulatedForm.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Email</FormLabel>
-                                        <FormControl>
-                                          <Input type="email" placeholder="Enter your email" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  
-                                  <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <p className="text-sm font-medium mb-3">Payment Method</p>
-                                    <div className="grid grid-cols-3 gap-3">
-                                      <div 
-                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'visa' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
-                                        onClick={() => setSelectedPaymentMethod('visa')}
-                                      >
-                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/visa.svg" alt="Visa" className="h-6" />
+                          <div className="mt-4">
+                            <TabsContent value="stripe">
+                              {isStripeConfigured && clientSecret ? (
+                                <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                  <CheckoutForm />
+                                </Elements>
+                              ) : (
+                                <div className="text-center py-6">
+                                  {isStripeConfigured ? (
+                                    <>
+                                      <p className="text-red-500 dark:text-red-400 mb-4">
+                                        Error initializing payment system. Please try again.
+                                      </p>
+                                      <Button onClick={() => navigate("/cart")}>
+                                        Return to Cart
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <p className="text-amber-500 dark:text-amber-400 mb-4">
+                                        Credit card payments are currently in test mode.
+                                      </p>
+                                      <div className="mt-6">
+                                        <Button 
+                                          type="button" 
+                                          className="w-full"
+                                          onClick={() => {
+                                            const formValues = form.getValues();
+                                            if (!formValues.email || !formValues.name) {
+                                              form.trigger();
+                                              return;
+                                            }
+                                            handleSimulatedCheckout();
+                                          }}
+                                        >
+                                          Complete Purchase with Card
+                                        </Button>
                                       </div>
-                                      <div 
-                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'mastercard' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
-                                        onClick={() => setSelectedPaymentMethod('mastercard')}
-                                      >
-                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/mastercard.svg" alt="Mastercard" className="h-6" />
-                                      </div>
-                                      <div 
-                                        className={`border rounded-lg p-3 flex items-center justify-center cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedPaymentMethod === 'paypal' ? 'border-primary ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700'}`}
-                                        onClick={() => setSelectedPaymentMethod('paypal')}
-                                      >
-                                        <img src="https://cdn.jsdelivr.net/gh/michelml/payment-icons@1.0.0/paypal.svg" alt="PayPal" className="h-6" />
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                      Selected: {selectedPaymentMethod.charAt(0).toUpperCase() + selectedPaymentMethod.slice(1)}
-                                    </p>
-                                  </div>
+                                    </>
+                                  )}
                                 </div>
-                                <div className="flex justify-between pt-4">
-                                  <Button variant="outline" onClick={() => navigate("/cart")}>
-                                    Return to Cart
-                                  </Button>
-                                  <Button type="submit">
-                                    Complete Simulated Purchase
-                                  </Button>
+                              )}
+                            </TabsContent>
+                            
+                            <TabsContent value="paypal">
+                              <div className="py-4">
+                                <PayPalScriptProvider options={{ clientId: "test", currency: "USD" }}>
+                                  <PayPalCheckout 
+                                    amount={totalPrice} 
+                                    items={items} 
+                                    email={form.getValues().email}
+                                    onSuccess={() => {
+                                      clearCart();
+                                      navigate("/orders");
+                                    }} 
+                                  />
+                                </PayPalScriptProvider>
+                                
+                                <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                                  By clicking the PayPal button, you agree to the terms of service and privacy policy.
                                 </div>
-                              </form>
-                            </Form>
-                          );
-                        })()}
-                      </>
-                    )}
-                  </div>
-                )}
+                              </div>
+                            </TabsContent>
+                            
+                            <TabsContent value="payoneer">
+                              <PayoneerCheckout 
+                                amount={totalPrice} 
+                                items={items} 
+                                formData={form.getValues()}
+                                onComplete={(status) => {
+                                  if (status === 'success') {
+                                    clearCart();
+                                    navigate("/orders");
+                                  }
+                                }} 
+                              />
+                            </TabsContent>
+                          </div>
+                        </Tabs>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
               </div>
             </div>
           </div>

@@ -29,6 +29,16 @@ try {
   console.error("Failed to initialize Stripe:", error);
 }
 
+// PayPal client ID check (This would be needed for production, using test in development)
+if (!process.env.PAYPAL_CLIENT_ID) {
+  console.warn('Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.');
+}
+
+// PayPal secret check
+if (!process.env.PAYPAL_SECRET) {
+  console.warn('Warning: PAYPAL_SECRET is not set. Using simulation for PayPal checkout.');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create upload directories if they don't exist
   const uploadDir = path.join(process.cwd(), 'uploads');
