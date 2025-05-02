@@ -53,9 +53,14 @@ async function initializePaymentGateways() {
       paymentSettings['payment_paypalClientSecret'] || 
       process.env.PAYPAL_CLIENT_SECRET;
     
-    const paypalSandboxMode = 
-      paymentSettings['payment_paypalSandboxMode'] === 'true' || 
-      true; // Default to sandbox mode for safety
+    // Determine PayPal sandbox mode from settings
+    let paypalSandboxMode = true; // Default to sandbox mode for safety
+    
+    if (paymentSettings['payment_paypalSandboxMode'] !== undefined) {
+      // Convert string 'true'/'false' to boolean
+      paypalSandboxMode = paymentSettings['payment_paypalSandboxMode'] === 'true' || 
+                         paymentSettings['payment_paypalSandboxMode'] === true;
+    }
     
     if (paypalClientId && paypalClientSecret) {
       // Create PayPal client
@@ -1062,6 +1067,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save each payment setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         await storage.updateSetting(`payment_${key}`, value, 'payment');
+      }
+      
+      // Re-initialize payment gateways with the new settings
+      try {
+        await initializePaymentGateways();
+        console.log("Payment gateways reinitialized after settings update");
+      } catch (initError) {
+        console.error("Failed to reinitialize payment gateways:", initError);
+        // Continue - we don't want to fail the settings update if reinitialization fails
       }
       
       // Return the updated settings with sensitive info masked

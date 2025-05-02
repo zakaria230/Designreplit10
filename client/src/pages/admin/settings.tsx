@@ -242,26 +242,81 @@ export default function AdminSettings() {
   useEffect(() => {
     if (allSettings && !isLoadingSettings) {
       // Type assertion to help TypeScript understand the structure
-      const settings = allSettings as Record<string, any>;
+      const settingsData = allSettings && typeof allSettings === 'object' && 'data' in allSettings
+        ? allSettings.data as Record<string, any>
+        : {};
       
-      if (settings.site) {
-        siteSettingsForm.reset(settings.site as SiteSettingsValues);
+      // Process site settings
+      if (settingsData.site) {
+        const siteFormValues: SiteSettingsValues = { ...defaultSiteSettings };
+        Object.entries(settingsData.site).forEach(([key, value]) => {
+          const cleanKey = key.replace('site_', '');
+          // @ts-ignore - dynamic key assignment
+          siteFormValues[cleanKey] = value;
+        });
+        siteSettingsForm.reset(siteFormValues);
       }
       
-      if (settings.analytics) {
-        analyticsSettingsForm.reset(settings.analytics as AnalyticsSettingsValues);
+      // Process analytics settings
+      if (settingsData.analytics) {
+        const analyticsFormValues: AnalyticsSettingsValues = { ...defaultAnalyticsSettings };
+        Object.entries(settingsData.analytics).forEach(([key, value]) => {
+          const cleanKey = key.replace('analytics_', '');
+          // Convert string 'true'/'false' to boolean for boolean fields
+          if (typeof value === 'string' && (value === 'true' || value === 'false')) {
+            // @ts-ignore - dynamic key assignment
+            analyticsFormValues[cleanKey] = value === 'true';
+          } else {
+            // @ts-ignore - dynamic key assignment
+            analyticsFormValues[cleanKey] = value;
+          }
+        });
+        analyticsSettingsForm.reset(analyticsFormValues);
       }
       
-      if (settings.email) {
-        emailSettingsForm.reset(settings.email as EmailSettingsValues);
+      // Process email settings
+      if (settingsData.email) {
+        const emailFormValues: EmailSettingsValues = { ...defaultEmailSettings };
+        Object.entries(settingsData.email).forEach(([key, value]) => {
+          const cleanKey = key.replace('email_', '');
+          // Convert string 'true'/'false' to boolean for boolean fields
+          if (typeof value === 'string' && (value === 'true' || value === 'false')) {
+            // @ts-ignore - dynamic key assignment
+            emailFormValues[cleanKey] = value === 'true';
+          } else {
+            // @ts-ignore - dynamic key assignment
+            emailFormValues[cleanKey] = value;
+          }
+        });
+        emailSettingsForm.reset(emailFormValues);
       }
       
-      if (settings.social) {
-        socialMediaSettingsForm.reset(settings.social as SocialMediaSettingsValues);
+      // Process social media settings
+      if (settingsData.social) {
+        const socialFormValues: SocialMediaSettingsValues = { ...defaultSocialMediaSettings };
+        Object.entries(settingsData.social).forEach(([key, value]) => {
+          const cleanKey = key.replace('social_', '');
+          // @ts-ignore - dynamic key assignment
+          socialFormValues[cleanKey] = value;
+        });
+        socialMediaSettingsForm.reset(socialFormValues);
       }
       
-      if (settings.payment) {
-        paymentSettingsForm.reset(settings.payment as PaymentSettingsValues);
+      // Process payment settings
+      if (settingsData.payment) {
+        const paymentFormValues: PaymentSettingsValues = { ...defaultPaymentSettings };
+        Object.entries(settingsData.payment).forEach(([key, value]) => {
+          const cleanKey = key.replace('payment_', '');
+          // Convert string 'true'/'false' to boolean for boolean fields
+          if (typeof value === 'string' && (value === 'true' || value === 'false')) {
+            // @ts-ignore - dynamic key assignment
+            paymentFormValues[cleanKey] = value === 'true';
+          } else {
+            // @ts-ignore - dynamic key assignment
+            paymentFormValues[cleanKey] = value;
+          }
+        });
+        paymentSettingsForm.reset(paymentFormValues);
       }
       
       setIsLoading(false);
