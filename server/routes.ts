@@ -806,15 +806,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Settings Routes
+  // Get all settings
+  app.get("/api/admin/settings", isAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getAllSettings();
+      res.json({
+        success: true,
+        data: settings
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch settings"
+      });
+    }
+  });
+
+  // Get settings by category
+  app.get("/api/admin/settings/:category", isAdmin, async (req, res) => {
+    try {
+      const category = req.params.category;
+      const settings = await storage.getSettingsByCategory(category);
+      res.json({
+        success: true,
+        data: settings
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch settings"
+      });
+    }
+  });
+
   // Site Settings
   app.post("/api/admin/settings/site", isAdmin, async (req, res) => {
     try {
-      // In a real app, you would save these settings to the database
-      // For now, we'll just echo back the data to simulate success
+      // Save each site setting to the database
+      for (const [key, value] of Object.entries(req.body)) {
+        await storage.updateSetting(`site_${key}`, value, 'site');
+      }
+      
+      // Return the updated settings
+      const siteSettings = await storage.getSettingsByCategory('site');
       res.json({
         success: true,
         message: "Site settings updated successfully",
-        data: req.body
+        data: siteSettings
       });
     } catch (error: any) {
       res.status(500).json({ 
@@ -827,11 +865,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics Settings
   app.post("/api/admin/settings/analytics", isAdmin, async (req, res) => {
     try {
-      // Simulate successful update
+      // Save each analytics setting to the database
+      for (const [key, value] of Object.entries(req.body)) {
+        await storage.updateSetting(`analytics_${key}`, value, 'analytics');
+      }
+      
+      // Return the updated settings
+      const analyticsSettings = await storage.getSettingsByCategory('analytics');
       res.json({
         success: true,
         message: "Analytics settings updated successfully",
-        data: req.body
+        data: analyticsSettings
       });
     } catch (error: any) {
       res.status(500).json({ 
@@ -844,11 +888,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email Settings
   app.post("/api/admin/settings/email", isAdmin, async (req, res) => {
     try {
-      // Simulate successful update
+      // Save each email setting to the database
+      for (const [key, value] of Object.entries(req.body)) {
+        await storage.updateSetting(`email_${key}`, value, 'email');
+      }
+      
+      // Return the updated settings
+      const emailSettings = await storage.getSettingsByCategory('email');
       res.json({
         success: true,
         message: "Email settings updated successfully",
-        data: req.body
+        data: emailSettings
       });
     } catch (error: any) {
       res.status(500).json({ 
@@ -861,11 +911,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Social Media Settings
   app.post("/api/admin/settings/social", isAdmin, async (req, res) => {
     try {
-      // Simulate successful update
+      // Save each social media setting to the database
+      for (const [key, value] of Object.entries(req.body)) {
+        await storage.updateSetting(`social_${key}`, value, 'social');
+      }
+      
+      // Return the updated settings
+      const socialSettings = await storage.getSettingsByCategory('social');
       res.json({
         success: true,
         message: "Social media settings updated successfully",
-        data: req.body
+        data: socialSettings
       });
     } catch (error: any) {
       res.status(500).json({ 
@@ -878,24 +934,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Payment Settings
   app.post("/api/admin/settings/payment", isAdmin, async (req, res) => {
     try {
-      // In a production app, we would:
-      // 1. Validate the payment provider credentials
-      // 2. Store them securely (potentially encrypted)
-      // 3. Update environment variables if needed
+      // Process each payment setting
+      const sensitiveFields = [
+        'stripeSecretKey', 
+        'stripeWebhookSecret', 
+        'paypalClientSecret', 
+        'payoneerApiKey', 
+        'payoneerPassword'
+      ];
       
-      // For now, simulate successful update
+      // Save each payment setting to the database
+      for (const [key, value] of Object.entries(req.body)) {
+        await storage.updateSetting(`payment_${key}`, value, 'payment');
+      }
+      
+      // Return the updated settings with sensitive info masked
+      const paymentSettings = await storage.getSettingsByCategory('payment');
+      
+      const safeResponse: Record<string, any> = {};
+      for (const [key, value] of Object.entries(paymentSettings)) {
+        const cleanKey = key.replace('payment_', '');
+        
+        // Mask sensitive information in the response
+        if (sensitiveFields.includes(cleanKey) && value) {
+          safeResponse[cleanKey] = '********';
+        } else {
+          safeResponse[cleanKey] = value;
+        }
+      }
+      
       res.json({
         success: true,
         message: "Payment settings updated successfully",
-        data: {
-          ...req.body,
-          // Don't return sensitive info back to client
-          stripeSecretKey: req.body.stripeSecretKey ? "********" : "",
-          stripeWebhookSecret: req.body.stripeWebhookSecret ? "********" : "",
-          paypalClientSecret: req.body.paypalClientSecret ? "********" : "",
-          payoneerApiKey: req.body.payoneerApiKey ? "********" : "",
-          payoneerPassword: req.body.payoneerPassword ? "********" : ""
-        }
+        data: safeResponse
       });
     } catch (error: any) {
       res.status(500).json({ 
