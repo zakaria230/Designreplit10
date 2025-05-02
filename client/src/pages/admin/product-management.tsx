@@ -395,47 +395,54 @@ export default function ProductManagement() {
 
   // Function to get the cropped image
   async function getCroppedImg(imageSrc: string, pixelCrop: Area, rotation = 0): Promise<Blob> {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    try {
+      const image = await createImage(imageSrc);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
-    if (!ctx) {
-      throw new Error('Canvas context is not available');
+      if (!ctx) {
+        throw new Error('Canvas context is not available');
+      }
+
+      // Set canvas size to match the final image size
+      const targetWidth = pixelCrop.width;
+      const targetHeight = pixelCrop.height;
+      
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      
+      // Clear the canvas
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      
+      // Draw the image directly with the crop parameters
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        targetWidth,
+        targetHeight
+      );
+      
+      // Convert canvas to blob
+      return new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (file) => {
+            if (file) resolve(file);
+            else reject(new Error('Failed to create blob from canvas'));
+          },
+          'image/jpeg',
+          1
+        );
+      });
+    } catch (error) {
+      console.error('Error in getCroppedImg:', error);
+      throw new Error('Failed to crop image');
     }
-
-    const maxSize = Math.max(image.width, image.height);
-    const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
-
-    canvas.width = safeArea;
-    canvas.height = safeArea;
-
-    ctx.translate(safeArea / 2, safeArea / 2);
-    ctx.rotate(getRadianAngle(rotation));
-    ctx.translate(-safeArea / 2, -safeArea / 2);
-
-    ctx.drawImage(
-      image,
-      safeArea / 2 - image.width * 0.5,
-      safeArea / 2 - image.height * 0.5
-    );
-
-    const data = ctx.getImageData(0, 0, safeArea, safeArea);
-
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-
-    ctx.putImageData(
-      data,
-      0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x,
-      0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y
-    );
-
-    return new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(file => {
-        if (file) resolve(file);
-        else reject(new Error('Canvas is empty'));
-      }, 'image/jpeg');
-    });
   }
 
   // Apply cropped image

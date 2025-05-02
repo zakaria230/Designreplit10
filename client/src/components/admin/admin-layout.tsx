@@ -142,19 +142,37 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <Separator />
 
           {/* Navigation links */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-2">
+            <div className="mb-2">
+              <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Main Menu
+              </h3>
+              <div className="mt-1 h-px bg-gradient-to-r from-blue-500/20 to-transparent"></div>
+            </div>
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <a
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all",
                     location === item.href
-                      ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-medium"
-                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm border-l-4 border-blue-500"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1"
                   )}
                 >
-                  {item.icon}
-                  {item.title}
+                  <div className={cn(
+                    "flex items-center justify-center",
+                    location === item.href
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  )}>
+                    {item.icon}
+                  </div>
+                  <span>{item.title}</span>
+                  {location === item.href && (
+                    <span className="ml-auto px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                      Active
+                    </span>
+                  )}
                 </a>
               </Link>
             ))}
@@ -164,37 +182,52 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* User & logout */}
           <div className="p-4 space-y-4">
-            <div className="flex items-center gap-3 py-2">
-              <Avatar>
-                <AvatarFallback className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium truncate">{user.username}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {user.email}
-                </span>
+            <div className="mb-3">
+              <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Account
+              </h3>
+              <div className="mt-1 h-px bg-gradient-to-r from-blue-500/20 to-transparent"></div>
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-14 w-14 border-2 border-blue-200 dark:border-blue-800">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white dark:from-blue-600 dark:to-blue-800 text-lg font-medium">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{user.username}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {user.email}
+                  </span>
+                  <span className="mt-1 text-xs px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full w-fit">
+                    Administrator
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 justify-center bg-white dark:bg-gray-800 shadow-sm"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 justify-center bg-white dark:bg-gray-800 shadow-sm"
+                  asChild
+                >
+                  <Link href="/">
+                    <Store className="h-4 w-4" />
+                    View Store
+                  </Link>
+                </Button>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center gap-2 justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full flex items-center gap-2 justify-start"
-              asChild
-            >
-              <Link href="/">
-                <Store className="h-4 w-4" />
-                Return to Store
-              </Link>
-            </Button>
           </div>
         </div>
       </aside>

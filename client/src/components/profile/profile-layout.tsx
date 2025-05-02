@@ -36,13 +36,15 @@ function SidebarLink({ href, icon, label, isActive }: SidebarLinkProps) {
   return (
     <Link href={href}>
       <a
-        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+        className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
           isActive
-            ? "bg-primary text-primary-foreground"
-            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+            ? "bg-primary/10 text-primary font-medium shadow-sm border-l-4 border-primary"
+            : "hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:translate-x-1"
         }`}
       >
-        {icon}
+        <div className={`${isActive ? "text-primary" : "text-gray-500"}`}>
+          {icon}
+        </div>
         <span>{label}</span>
       </a>
     </Link>
@@ -91,11 +93,12 @@ export function ProfileLayout({ children, title, description }: ProfileLayoutPro
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar - Desktop */}
         <aside className="hidden md:block w-64 shrink-0">
-          <div className="sticky top-20 space-y-1">
-            <div className="mb-6">
-              <h3 className="font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
-                Account
+          <div className="sticky top-20 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 space-y-3 overflow-hidden">
+            <div className="mb-5">
+              <h3 className="font-semibold text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
+                ACCOUNT
               </h3>
+              <div className="mt-4 h-0.5 bg-gradient-to-r from-primary/20 to-transparent rounded-full"></div>
             </div>
             
             {navLinks.map((link) => (
@@ -108,13 +111,17 @@ export function ProfileLayout({ children, title, description }: ProfileLayoutPro
               />
             ))}
             
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-3 px-3 py-2 rounded-md transition-colors w-full text-left hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-500 mt-8"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Log Out</span>
-            </button>
+            <div className="pt-5 mt-5 border-t border-gray-100 dark:border-gray-800">
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left transition-all text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm"
+              >
+                <div className="text-red-500">
+                  <LogOut className="h-5 w-5" />
+                </div>
+                <span className="font-medium">Log Out</span>
+              </button>
+            </div>
           </div>
         </aside>
 
