@@ -722,6 +722,56 @@ export default function ProductManagement() {
                   
                   <FormField
                     control={addForm.control}
+                    name="tags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {field.value?.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
+                                {tag}
+                                <button 
+                                  type="button"
+                                  onClick={() => handleRemoveTag(tag)}
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  ✕
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Add a tag"
+                              value={tagInput}
+                              onChange={(e) => setTagInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddTag();
+                                }
+                              }}
+                            />
+                            <Button 
+                              type="button" 
+                              size="sm"
+                              onClick={handleAddTag}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                        <FormDescription>
+                          Tags help customers find your products. Press Enter or click Add to add a tag.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
