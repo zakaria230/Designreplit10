@@ -36,7 +36,24 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Save } from "lucide-react";
+import { 
+  Loader2, 
+  Save, 
+  CreditCard, 
+  DollarSign,
+  AlertCircle 
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Define schema for site settings
 const siteSettingsSchema = z.object({
@@ -79,10 +96,40 @@ const socialMediaSettingsSchema = z.object({
   pinterestUrl: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
 });
 
+// Schema for payment gateway settings
+const paymentSettingsSchema = z.object({
+  // Stripe Settings
+  stripeEnabled: z.boolean().default(true),
+  stripePublicKey: z.string().optional().or(z.literal("")),
+  stripeSecretKey: z.string().optional().or(z.literal("")),
+  stripeWebhookSecret: z.string().optional().or(z.literal("")),
+  
+  // PayPal Settings
+  paypalEnabled: z.boolean().default(true),
+  paypalClientId: z.string().optional().or(z.literal("")),
+  paypalClientSecret: z.string().optional().or(z.literal("")),
+  paypalSandboxMode: z.boolean().default(true),
+  
+  // Payoneer Settings
+  payoneerEnabled: z.boolean().default(false),
+  payoneerApiKey: z.string().optional().or(z.literal("")),
+  payoneerUsername: z.string().optional().or(z.literal("")),
+  payoneerPassword: z.string().optional().or(z.literal("")),
+  payoneerSandboxMode: z.boolean().default(true),
+  
+  // General Payment Settings
+  currencyCode: z.string().default("USD"),
+  taxRate: z.string().default("0"),
+  enableTaxCalculation: z.boolean().default(true),
+  requireBillingAddress: z.boolean().default(true),
+  requireShippingAddress: z.boolean().default(false),
+});
+
 type SiteSettingsValues = z.infer<typeof siteSettingsSchema>;
 type AnalyticsSettingsValues = z.infer<typeof analyticsSettingsSchema>;
 type EmailSettingsValues = z.infer<typeof emailSettingsSchema>;
 type SocialMediaSettingsValues = z.infer<typeof socialMediaSettingsSchema>;
+type PaymentSettingsValues = z.infer<typeof paymentSettingsSchema>;
 
 // Mock of settings for now - will be replaced with actual API data
 const defaultSiteSettings: SiteSettingsValues = {
@@ -122,6 +169,34 @@ const defaultSocialMediaSettings: SocialMediaSettingsValues = {
   pinterestUrl: "https://pinterest.com/designkorv",
 };
 
+const defaultPaymentSettings: PaymentSettingsValues = {
+  // Stripe Settings
+  stripeEnabled: true,
+  stripePublicKey: "",
+  stripeSecretKey: "",
+  stripeWebhookSecret: "",
+  
+  // PayPal Settings
+  paypalEnabled: true,
+  paypalClientId: "",
+  paypalClientSecret: "",
+  paypalSandboxMode: true,
+  
+  // Payoneer Settings
+  payoneerEnabled: false,
+  payoneerApiKey: "",
+  payoneerUsername: "",
+  payoneerPassword: "",
+  payoneerSandboxMode: true,
+  
+  // General Payment Settings
+  currencyCode: "USD",
+  taxRate: "0",
+  enableTaxCalculation: true,
+  requireBillingAddress: true,
+  requireShippingAddress: false,
+};
+
 export default function AdminSettings() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("general");
@@ -148,6 +223,12 @@ export default function AdminSettings() {
   const socialMediaSettingsForm = useForm<SocialMediaSettingsValues>({
     resolver: zodResolver(socialMediaSettingsSchema),
     defaultValues: defaultSocialMediaSettings,
+  });
+  
+  // Payment settings form
+  const paymentSettingsForm = useForm<PaymentSettingsValues>({
+    resolver: zodResolver(paymentSettingsSchema),
+    defaultValues: defaultPaymentSettings,
   });
 
   // Site settings mutation
@@ -245,6 +326,30 @@ export default function AdminSettings() {
       });
     },
   });
+  
+  // Payment settings mutation
+  const paymentSettingsMutation = useMutation({
+    mutationFn: async (data: PaymentSettingsValues) => {
+      const response = await apiRequest("POST", "/api/admin/settings/payment", data);
+      if (!response.ok) {
+        throw new Error("Failed to save payment gateway settings");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Payment gateway settings updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update payment gateway settings",
+        variant: "destructive",
+      });
+    },
+  });
 
   const onSubmitSiteSettings = (data: SiteSettingsValues) => {
     siteSettingsMutation.mutate(data);
@@ -260,6 +365,10 @@ export default function AdminSettings() {
 
   const onSubmitSocialMediaSettings = (data: SocialMediaSettingsValues) => {
     socialMediaSettingsMutation.mutate(data);
+  };
+  
+  const onSubmitPaymentSettings = (data: PaymentSettingsValues) => {
+    paymentSettingsMutation.mutate(data);
   };
 
   return (
@@ -278,6 +387,7 @@ export default function AdminSettings() {
           <TabsList className="mb-6">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="payment">Payment</TabsTrigger>
             <TabsTrigger value="email">Email</TabsTrigger>
             <TabsTrigger value="social">Social Media</TabsTrigger>
           </TabsList>
