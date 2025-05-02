@@ -40,15 +40,12 @@ import {
   ChevronRight,
   BarChart3,
   LineChart as LineChartIcon,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  Eye
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 
-// Empty data arrays for production ready deployment
-const salesData: Array<{ name: string; sales: number }> = [];
-const categoryData: Array<{ name: string; value: number }> = [];
-const orderStatusData: Array<{ name: string; value: number }> = [];
-
+// Colors for charts
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b"];
 
 export default function AdminDashboard() {
@@ -195,19 +192,19 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {salesData.length > 0 ? (
+                  {stats?.salesData && stats.salesData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={salesData}>
+                      <LineChart data={stats.salesData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
                         <Tooltip 
-                          formatter={(value) => [`$${value}`, 'Sales']}
-                          labelFormatter={(label) => `Month: ${label}`}
+                          formatter={(value: any) => [`$${value}`, 'Sales']}
+                          labelFormatter={(label: any) => `Month: ${label}`}
                         />
                         <Line
                           type="monotone"
-                          dataKey="sales"
+                          dataKey="total"
                           stroke="#14b8a6"
                           strokeWidth={2}
                           activeDot={{ r: 8 }}
@@ -233,15 +230,15 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {categoryData.length > 0 ? (
+                  {stats?.categoryData && stats.categoryData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={categoryData}>
+                      <BarChart data={stats.categoryData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
                         <Tooltip />
                         <Bar dataKey="value" fill="#8b5cf6">
-                          {categoryData.map((entry, index) => (
+                          {stats.categoryData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Bar>
@@ -266,11 +263,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] flex items-center justify-center">
-                  {orderStatusData.length > 0 ? (
+                  {stats?.orderStatusData && stats.orderStatusData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={orderStatusData}
+                          data={stats.orderStatusData}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}
@@ -278,13 +275,13 @@ export default function AdminDashboard() {
                           fill="#8884d8"
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
-                          {orderStatusData.map((entry, index) => (
+                          {stats.orderStatusData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value, name) => [`${value} orders`, name]} />
+                        <Tooltip formatter={(value: any, name: any) => [`${value} orders`, name]} />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
@@ -332,16 +329,16 @@ export default function AdminDashboard() {
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </td>
                       </tr>
-                    ) : stats?.recentOrders?.length ? (
-                      stats.recentOrders.map((order) => (
+                    ) : stats?.recentOrders && stats.recentOrders.length > 0 ? (
+                      stats.recentOrders.map((order: any) => (
                         <tr key={order.id} className="[&_td]:p-2">
                           <td className="font-medium">#{order.id}</td>
-                          <td>{order.user}</td>
-                          <td>{new Date(order.date).toLocaleDateString()}</td>
+                          <td>{order.user?.username || 'Unknown'}</td>
+                          <td>{new Date(order.createdAt || '').toLocaleDateString()}</td>
                           <td>
                             <span 
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                order.status === "completed" ? "bg-green-100 text-green-800" :
+                                order.status === "delivered" ? "bg-green-100 text-green-800" :
                                 order.status === "processing" ? "bg-blue-100 text-blue-800" :
                                 "bg-yellow-100 text-yellow-800"
                               }`}
@@ -350,7 +347,7 @@ export default function AdminDashboard() {
                             </span>
                           </td>
                           <td className="text-right">
-                            {formatCurrency(order.total)}
+                            {formatCurrency(order.totalAmount || 0)}
                           </td>
                           <td>
                             <Button 
@@ -358,7 +355,7 @@ export default function AdminDashboard() {
                               size="icon"
                               asChild
                             >
-                              <Link href="/admin/orders">
+                              <Link href={`/admin/orders/${order.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
