@@ -1,11 +1,11 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User } from "@shared/schema";
+import { User as UserSchema } from "@shared/schema";
 
 declare global {
   namespace Express {
@@ -69,12 +69,57 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Middleware to check if user is authenticated
+  const isAuthenticated = (req: Express.Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    return res.status(401).json({ message: "Unauthorized: Please log in to access this resource" });
+  };
+
+  // Middleware to check if user is an admin
+  const isAdmin = (req: Express.Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated() && req.user.role === "admin") {
+      return next();
+    }
+    return res.status(403).json({ message: "Forbidden: You don't have permission to access this resource" });
+  };
+
+  // Middleware to check if user is a designer or admin
+  const isDesignerOrAdmin = (req: Express.Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated() && (req.user.role === "designer" || req.user.role === "admin")) {
+      return next();
+    }
+    return res.status(403).json({ message: "Forbidden: Designer or admin role required" });
+  };
+  
+  // Register endpoint with enhanced security
   app.post("/api/register", async (req, res, next) => {
     try {
       const { username, email, password } = req.body;
       
       if (!username || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
+      }
+
+      // Check for suspicious patterns in username (potential security threat)
+      if (/[<>{}[\]\\=;:'"&$]/g.test(username)) {
+        return res.status(400).json({ 
+          message: "Username contains invalid characters"
+        });
+      }
+      
+      // Validate email domain before continuing
+      const allowedDomains = [
+        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", 
+        "icloud.com", "aol.com", "protonmail.com", "mail.com"
+      ];
+      
+      const emailDomain = email.split('@')[1];
+      if (!allowedDomains.includes(emailDomain)) {
+        return res.status(400).json({ 
+          message: "Only email addresses from trusted providers are allowed (gmail.com, yahoo.com, hotmail.com, etc.)"
+        });
       }
 
       const existingUser = await storage.getUserByUsername(username);
@@ -87,11 +132,34 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Email already in use" });
       }
 
+      // Enhanced password check with more stringent requirements
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        return res.status(400).json({ message: "Password must contain at least one uppercase letter" });
+      }
+      
+      if (!/[a-z]/.test(password)) {
+        return res.status(400).json({ message: "Password must contain at least one lowercase letter" });
+      }
+      
+      if (!/[0-9]/.test(password)) {
+        return res.status(400).json({ message: "Password must contain at least one number" });
+      }
+      
+      if (!/[^A-Za-z0-9]/.test(password)) {
+        return res.status(400).json({ message: "Password must contain at least one special character" });
+      }
+
       const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         username,
         email,
         password: hashedPassword,
+        // Default to user role, admin role should be assigned manually
+        role: "user"
       });
 
       req.login(user, (err) => {

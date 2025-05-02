@@ -1,9 +1,54 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import csrf from "csurf";
 
 const app = express();
-app.use(express.json());
+
+// Security middlewares
+// Apply helmet for secure headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://www.paypal.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https://www.paypalobjects.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://www.paypal.com"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://www.paypal.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+    },
+  },
+  // Allow iframes for payment providers
+  frameguard: { action: 'sameorigin' }
+}));
+
+// Rate limiting to prevent brute force attacks
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { message: "Too many requests from this IP, please try again later." }
+});
+
+// More aggressive rate limiting for auth routes to prevent brute force
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 attempts per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many login attempts, please try again later." }
+});
+
+// Apply rate limiting to API routes
+app.use("/api/", apiLimiter);
+app.use(["/api/login", "/api/register"], authLimiter);
+
+// Parse request bodies
+app.use(express.json({ limit: '1mb' })); // Limit size for DDoS protection
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
