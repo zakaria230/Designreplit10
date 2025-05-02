@@ -43,7 +43,7 @@ export const generateSitemap = async (req: Request, res: Response) => {
     products.forEach(product => {
       xml += '  <url>\n';
       xml += `    <loc>${req.protocol}://${req.get('host')}/product/${product.slug}</loc>\n`;
-      xml += `    <lastmod>${product.updatedAt ? new Date(product.updatedAt).toISOString().split('T')[0] : today}</lastmod>\n`;
+      xml += `    <lastmod>${product.createdAt ? new Date(product.createdAt).toISOString().split('T')[0] : today}</lastmod>\n`;
       xml += '    <changefreq>weekly</changefreq>\n';
       xml += '    <priority>0.8</priority>\n';
       xml += '  </url>\n';

@@ -13,6 +13,7 @@ import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import csrf from "csurf";
 import { isAuthenticated, isAdmin, isDesignerOrAdmin as isAdminOrDesigner } from "./middleware";
+import { generateSitemap } from "./routes/sitemap";
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
@@ -1749,6 +1750,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: `Failed to delete review: ${error.message}` });
     }
   });
+  
+  // SEO Related Routes
+  // Generate dynamic sitemap.xml
+  app.get("/sitemap.xml", generateSitemap);
+  
+  // Robots.txt - Static file is served by Vite in production
 
   const httpServer = createServer(app);
   return httpServer;
