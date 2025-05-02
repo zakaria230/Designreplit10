@@ -11,6 +11,7 @@ import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
 import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import csrf from "csurf";
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
@@ -162,6 +163,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup authentication routes
   setupAuth(app);
+
+  // Setup CSRF protection after authentication
+  // Create CSRF protection middleware
+  const csrfProtection = csrf({
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: 'strict'
+    }
+  });
+  
+  // Apply CSRF protection to non-GET routes that need it
+  // Exclude webhooks and other endpoints used by external services
+  app.use((req, res, next) => {
+    // Exclude API routes used by payment providers and other public APIs
+    const excludedPaths = [
+      '/api/webhook/stripe',
+      '/api/webhook/paypal',
+      '/api/create-payment-intent',
+      '/api/create-subscription'
+    ];
+    
+    if (
+      excludedPaths.includes(req.path) || 
+      req.method === 'GET' || 
+      req.method === 'HEAD' || 
+      req.method === 'OPTIONS'
+    ) {
+      next();
+    } else {
+      csrfProtection(req, res, next);
+    }
+  });
+  
+  // Add CSRF token to API responses for authenticated users
+  app.use((req, res, next) => {
+    if (req.isAuthenticated && req.isAuthenticated() && typeof req.csrfToken === 'function') {
+      res.cookie('XSRF-TOKEN', req.csrfToken(), {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        httpOnly: false // Frontend needs to read this
+      });
+    }
+    next();
+  });
 
   // API routes
   

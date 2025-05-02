@@ -7,14 +7,43 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Function to get CSRF token from cookies
+function getCsrfToken(): string | undefined {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; XSRF-TOKEN=`);
+  if (parts.length === 2) {
+    const csrfToken = parts.pop()?.split(';').shift();
+    return csrfToken;
+  }
+  return undefined;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Get CSRF token if method is not GET/HEAD (state changing operations)
+  let headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  // Add CSRF token to all state-changing requests (non-GET, non-HEAD)
+  if (method !== 'GET' && method !== 'HEAD') {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+  }
+  
+  // Add additional security headers
+  headers['X-Requested-With'] = 'XMLHttpRequest';
+  
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -49,8 +78,14 @@ export const getQueryFn: <T>(options: {
       }
     }
     
+    // Add headers for security
+    const headers: Record<string, string> = {
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    
     const res = await fetch(url, {
       credentials: "include",
+      headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

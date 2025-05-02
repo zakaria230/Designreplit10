@@ -5,11 +5,21 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as UserSchema } from "@shared/schema";
+import { User } from "@shared/schema";
+import { validateEmailDomain } from "./middleware";
 
+// Define the Express.User interface to extend our User type
 declare global {
   namespace Express {
-    interface User extends User {}
+    // Extend the User interface without recursive reference
+    interface User {
+      id: number;
+      username: string;
+      email: string;
+      password: string;
+      role: string;
+      createdAt: Date;
+    }
   }
 }
 
@@ -109,16 +119,11 @@ export function setupAuth(app: Express) {
         });
       }
       
-      // Validate email domain before continuing
-      const allowedDomains = [
-        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", 
-        "icloud.com", "aol.com", "protonmail.com", "mail.com"
-      ];
-      
-      const emailDomain = email.split('@')[1];
-      if (!allowedDomains.includes(emailDomain)) {
+      // Validate email domain using the middleware
+      const domainValidation = validateEmailDomain(email);
+      if (!domainValidation.isValid) {
         return res.status(400).json({ 
-          message: "Only email addresses from trusted providers are allowed (gmail.com, yahoo.com, hotmail.com, etc.)"
+          message: domainValidation.message
         });
       }
 
@@ -154,13 +159,15 @@ export function setupAuth(app: Express) {
       }
 
       const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
+      // Create user with necessary fields including role
+      const userToCreate = {
         username,
         email,
         password: hashedPassword,
-        // Default to user role, admin role should be assigned manually
-        role: "user"
-      });
+        role: "user"  // Default to user role, admin/designer roles assigned manually
+      };
+      
+      const user = await storage.createUser(userToCreate as any);  // Using any to bypass type checking temporarily
 
       req.login(user, (err) => {
         if (err) return next(err);

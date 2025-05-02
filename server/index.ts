@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import csrf from "csurf";
+import { createRateLimitMiddleware } from "./middleware";
 
 const app = express();
 
@@ -25,31 +26,44 @@ app.use(helmet({
   frameguard: { action: 'sameorigin' }
 }));
 
-// Rate limiting to prevent brute force attacks
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: { message: "Too many requests from this IP, please try again later." }
-});
+// Rate limiting to prevent brute force attacks and DDoS
+const apiLimiter = rateLimit(
+  createRateLimitMiddleware(
+    100, // 100 requests max
+    15 * 60 * 1000, // 15 minutes window
+    "Too many requests from this IP, please try again later."
+  )
+);
 
 // More aggressive rate limiting for auth routes to prevent brute force
-const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // 10 attempts per hour
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: "Too many login attempts, please try again later." }
-});
+const authLimiter = rateLimit(
+  createRateLimitMiddleware(
+    10, // 10 attempts max
+    60 * 60 * 1000, // 1 hour window
+    "Too many login attempts, please try again later."
+  )
+);
+
+// Even more restrictive rate limiting for sensitive operations
+const sensitiveOperationsLimiter = rateLimit(
+  createRateLimitMiddleware(
+    5, // 5 attempts max
+    60 * 60 * 1000, // 1 hour window
+    "Too many sensitive operations attempted. Please try again later."
+  )
+);
 
 // Apply rate limiting to API routes
 app.use("/api/", apiLimiter);
 app.use(["/api/login", "/api/register"], authLimiter);
+app.use(["/api/admin/users", "/api/admin/settings", "/api/reset-password"], sensitiveOperationsLimiter);
 
 // Parse request bodies
 app.use(express.json({ limit: '1mb' })); // Limit size for DDoS protection
 app.use(express.urlencoded({ extended: false }));
+
+// We'll move the CSRF protection to after routes.ts sets up auth
+// This allows the authentication middleware to be properly initialized first
 
 app.use((req, res, next) => {
   const start = Date.now();
