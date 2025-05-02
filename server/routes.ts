@@ -8,38 +8,80 @@ import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
 
-// Check for Stripe API key with more descriptive warning
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe payment functionality will be disabled.');
-  console.warn('You can still use the simulated checkout flow, but real payment processing will not work.');
-}
-
-// Initialize Stripe with a more robust approach for production environments
+// Define a global variable for Stripe instance
 let stripe: Stripe | null = null;
-try {
-  if (process.env.STRIPE_SECRET_KEY) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { 
-      apiVersion: "2023-10-16",
-      // Useful for debugging issues in production
-      telemetry: false,
-    });
-    console.log("Stripe payment processing initialized successfully");
+
+// Function to initialize payment gateways from database settings or environment variables
+async function initializePaymentGateways() {
+  try {
+    // Try to get payment settings from database first
+    const paymentSettings = await storage.getSettingsByCategory('payment');
+    
+    // Initialize Stripe
+    const stripeSecretKey = 
+      paymentSettings['payment_stripeSecretKey'] || 
+      process.env.STRIPE_SECRET_KEY;
+
+    if (stripeSecretKey) {
+      stripe = new Stripe(stripeSecretKey as string, { 
+        apiVersion: "2023-10-16",
+        telemetry: false,
+      });
+      console.log("Stripe payment processing initialized successfully");
+    } else {
+      console.warn('Warning: Stripe secret key not found. Stripe payment functionality will be disabled.');
+      console.warn('You can still use the simulated checkout flow, but real payment processing will not work.');
+    }
+    
+    // Log PayPal status
+    const paypalClientId = 
+      paymentSettings['payment_paypalClientId'] || 
+      process.env.PAYPAL_CLIENT_ID;
+
+    const paypalSecret = 
+      paymentSettings['payment_paypalClientSecret'] || 
+      process.env.PAYPAL_SECRET;
+    
+    if (!paypalClientId) {
+      console.warn('Warning: PayPal Client ID not found. Using test mode for PayPal.');
+    }
+    
+    if (!paypalSecret) {
+      console.warn('Warning: PayPal Secret not found. Using simulation for PayPal checkout.');
+    }
+    
+  } catch (error) {
+    console.error("Error initializing payment gateways:", error);
+    
+    // Fallback to environment variables if database fails
+    if (process.env.STRIPE_SECRET_KEY) {
+      try {
+        stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { 
+          apiVersion: "2023-10-16",
+          telemetry: false,
+        });
+        console.log("Stripe payment processing initialized from environment variables");
+      } catch (stripeError) {
+        console.error("Failed to initialize Stripe:", stripeError);
+      }
+    } else {
+      console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe payment functionality will be disabled.');
+    }
+    
+    if (!process.env.PAYPAL_CLIENT_ID) {
+      console.warn('Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.');
+    }
+    
+    if (!process.env.PAYPAL_SECRET) {
+      console.warn('Warning: PAYPAL_SECRET is not set. Using simulation for PayPal checkout.');
+    }
   }
-} catch (error) {
-  console.error("Failed to initialize Stripe:", error);
-}
-
-// PayPal client ID check (This would be needed for production, using test in development)
-if (!process.env.PAYPAL_CLIENT_ID) {
-  console.warn('Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.');
-}
-
-// PayPal secret check
-if (!process.env.PAYPAL_SECRET) {
-  console.warn('Warning: PAYPAL_SECRET is not set. Using simulation for PayPal checkout.');
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize payment gateways
+  await initializePaymentGateways();
+  
   // Create upload directories if they don't exist
   const uploadDir = path.join(process.cwd(), 'uploads');
   const productImagesDir = path.join(uploadDir, 'products');
