@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +7,15 @@ import { Product, Category, insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Cropper from 'react-easy-crop';
+
+// Define Area type since it doesn't get imported correctly
+interface Area {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 import {
   Table,
@@ -46,7 +55,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image } from "lucide-react";
+import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image, Scissors } from "lucide-react";
 import { Link } from "wouter";
 
 // Form schema for product
@@ -64,6 +73,11 @@ export default function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  
+  // Image cropping states
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
+  const [formContext, setFormContext] = useState<'add' | 'edit'>('add');
 
   // Fetch all products
   const {
@@ -349,6 +363,111 @@ export default function ProductManagement() {
     }).format(price);
   };
 
+  // Cropping functionality
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  // Show crop dialog
+  const startImageCrop = (imageUrl: string, context: 'add' | 'edit') => {
+    setImageToEdit(imageUrl);
+    setFormContext(context);
+    setCropDialogOpen(true);
+  };
+
+  // Function to create a data URL from a cropped area
+  const createImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', error => reject(error));
+      image.src = url;
+    });
+
+  function getRadianAngle(degreeValue: number) {
+    return (degreeValue * Math.PI) / 180;
+  }
+
+  // Function to get the cropped image
+  async function getCroppedImg(imageSrc: string, pixelCrop: Area, rotation = 0): Promise<Blob> {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Canvas context is not available');
+    }
+
+    const maxSize = Math.max(image.width, image.height);
+    const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
+
+    canvas.width = safeArea;
+    canvas.height = safeArea;
+
+    ctx.translate(safeArea / 2, safeArea / 2);
+    ctx.rotate(getRadianAngle(rotation));
+    ctx.translate(-safeArea / 2, -safeArea / 2);
+
+    ctx.drawImage(
+      image,
+      safeArea / 2 - image.width * 0.5,
+      safeArea / 2 - image.height * 0.5
+    );
+
+    const data = ctx.getImageData(0, 0, safeArea, safeArea);
+
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    ctx.putImageData(
+      data,
+      0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x,
+      0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y
+    );
+
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(file => {
+        if (file) resolve(file);
+        else reject(new Error('Canvas is empty'));
+      }, 'image/jpeg');
+    });
+  }
+
+  // Apply cropped image
+  const saveCroppedImage = async () => {
+    if (!imageToEdit || !croppedAreaPixels) return;
+
+    try {
+      const croppedImage = await getCroppedImg(imageToEdit, croppedAreaPixels);
+      const file = new File([croppedImage], 'cropped-image.jpg', { type: 'image/jpeg' });
+      
+      const result = await uploadImageMutation.mutateAsync(file);
+      
+      if (formContext === 'add') {
+        addForm.setValue('imageUrl', result.url);
+      } else {
+        editForm.setValue('imageUrl', result.url);
+      }
+      
+      setCropDialogOpen(false);
+      toast({
+        title: 'Image Cropped',
+        description: 'Image has been cropped and saved successfully.',
+      });
+    } catch (error) {
+      console.error('Error cropping image:', error);
+      toast({
+        title: 'Crop Failed',
+        description: 'Failed to crop and save the image.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const isLoading = isLoadingProducts || isLoadingCategories;
 
   return (
@@ -357,6 +476,59 @@ export default function ProductManagement() {
         <title>Product Management | DesignKorv Admin</title>
         <meta name="description" content="Manage products for the DesignKorv e-commerce platform." />
       </Helmet>
+      
+      {/* Image Crop Dialog */}
+      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Crop Image</DialogTitle>
+            <DialogDescription>
+              Adjust the image crop to focus on the most important part.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="relative h-96">
+            {imageToEdit && (
+              <Cropper
+                image={imageToEdit}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+              />
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">Zoom:</span>
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.1}
+              aria-label="Zoom"
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="flex-1"
+            />
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setCropDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={saveCroppedImage}>
+              Apply Crop
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex-1 p-8 pt-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -544,11 +716,12 @@ export default function ProductManagement() {
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8 bg-white hover:bg-white"
-                                    onClick={() => {
-                                      // Editing image would go here
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startImageCrop(field.value, 'add');
                                     }}
                                   >
-                                    <Pencil className="h-4 w-4" />
+                                    <Scissors className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     type="button"
