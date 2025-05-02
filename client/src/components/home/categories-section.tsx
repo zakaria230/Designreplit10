@@ -45,34 +45,7 @@ export function CategoriesSection() {
     queryKey: ["/api/categories"],
   });
 
-  const placeholderCategories = [
-    {
-      id: 1,
-      name: "Patterns",
-      slug: "patterns",
-      imageUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&h=640&q=80"
-    },
-    {
-      id: 2,
-      name: "Textures",
-      slug: "textures",
-      imageUrl: "https://images.unsplash.com/photo-1548126466-a78aaeb13da5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&h=640&q=80"
-    },
-    {
-      id: 3,
-      name: "Technical Drawings",
-      slug: "technical-drawings",
-      imageUrl: "https://images.unsplash.com/photo-1558244661-d248897f7bc4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&h=640&q=80"
-    },
-    {
-      id: 4,
-      name: "3D Models",
-      slug: "3d-models",
-      imageUrl: "https://images.unsplash.com/photo-1633059388132-f7e6f6afa77c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&h=640&q=80"
-    }
-  ];
-
-  const displayCategories = categories && categories.length > 0 ? categories : placeholderCategories;
+  // No placeholders - we'll show an empty state if no categories are available
 
   return (
     <section className="py-12 bg-white dark:bg-gray-900">
@@ -86,14 +59,24 @@ export function CategoriesSection() {
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {isLoading
-            ? Array(4).fill(0).map((_, index) => <CategorySkeleton key={index} />)
-            : displayCategories.map((category) => (
-                <CategoryCard key={category.id} category={category} />
-              ))
-          }
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Array(4).fill(0).map((_, index) => <CategorySkeleton key={index} />)}
+          </div>
+        ) : categories && categories.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
+            <h3 className="text-gray-500 dark:text-gray-400 text-lg mb-2">No categories available</h3>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-4">
+              Product categories will appear here when they are created
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

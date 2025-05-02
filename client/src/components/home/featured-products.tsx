@@ -29,58 +29,7 @@ export function FeaturedProducts() {
     queryKey: ["/api/products/featured"],
   });
 
-  const placeholderProducts = [
-    {
-      id: 1,
-      name: "Premium Dress Pattern",
-      slug: "premium-dress-pattern",
-      description: "Complete pattern with size variations included",
-      price: 49.99,
-      imageUrl: "https://images.unsplash.com/photo-1511556820780-d912e42b4980?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      rating: 4.5,
-      numReviews: 42,
-      isFeatured: true,
-      categoryId: 1,
-    },
-    {
-      id: 2,
-      name: "Technical Drawing Set",
-      slug: "technical-drawing-set",
-      description: "Professional technical drawings for manufacturers",
-      price: 34.99,
-      imageUrl: "https://images.unsplash.com/photo-1559664924-1b004d5c1f07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      rating: 4.0,
-      numReviews: 28,
-      isFeatured: true,
-      categoryId: 3,
-    },
-    {
-      id: 3,
-      name: "3D Apparel Model",
-      slug: "3d-apparel-model",
-      description: "High-quality 3D model for visualization",
-      price: 79.99,
-      imageUrl: "https://images.unsplash.com/photo-1605442786731-87518d4594c1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      rating: 5.0,
-      numReviews: 76,
-      isFeatured: true,
-      categoryId: 4,
-    },
-    {
-      id: 4,
-      name: "Textile Pattern Collection",
-      slug: "textile-pattern-collection",
-      description: "Set of 10 seamless fabric patterns",
-      price: 29.99,
-      imageUrl: "https://images.unsplash.com/photo-1596458397260-255807e979f0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      rating: 4.0,
-      numReviews: 31,
-      isFeatured: true,
-      categoryId: 2,
-    }
-  ];
-
-  const displayProducts = products && products.length > 0 ? products : placeholderProducts;
+  // No placeholders - we'll show an empty state if no products are available
 
   return (
     <section className="py-12 bg-gray-50 dark:bg-gray-950">
@@ -95,14 +44,30 @@ export function FeaturedProducts() {
           </Link>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {isLoading
-            ? Array(4).fill(0).map((_, index) => <ProductSkeleton key={index} />)
-            : displayProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))
-          }
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array(4).fill(0).map((_, index) => <ProductSkeleton key={index} />)}
+          </div>
+        ) : products && products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
+            <h3 className="text-gray-500 dark:text-gray-400 text-lg mb-2">No featured products available</h3>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-4">
+              Featured products will appear here when they are available
+            </p>
+            <Link 
+              href="/shop"
+              className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              Browse all products <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
