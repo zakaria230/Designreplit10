@@ -1046,6 +1046,24 @@ export default function ProductManagement() {
                           {categories?.find(c => c.id === product.categoryId)?.name || "—"}
                         </TableCell>
                         <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {product.tags && product.tags.length > 0 ? (
+                              product.tags.slice(0, 3).map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-muted-foreground text-xs">No tags</span>
+                            )}
+                            {product.tags && product.tags.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{product.tags.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           {product.isFeatured && (
                             <Badge>Featured</Badge>
                           )}
@@ -1078,7 +1096,7 @@ export default function ProductManagement() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={6} className="text-center py-8">
                         No products found. Add your first product to get started.
                       </TableCell>
                     </TableRow>
