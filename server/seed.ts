@@ -5,64 +5,41 @@ import { hashPassword } from "./auth";
 async function seed() {
   console.log("🌱 Starting database seeding...");
 
-  // Check if admin user exists
+  // Check if any admin user exists
   const adminExists = await db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.username, "admin")
+    where: (users, { eq }) => eq(users.role, "admin")
   });
 
   if (!adminExists) {
-    console.log("Creating admin user...");
-    const hashedPassword = await hashPassword("admin123");
+    console.log("No admin user found - please create one using the admin panel");
+    console.log("You can uncomment the below code to create a default admin user for testing");
+    console.log("WARNING: Make sure to change the default admin password in production!");
+    
+    // Uncomment and modify this code to create an admin user
+    /*
+    const adminUsername = "admin"; // Change this
+    const adminEmail = "admin@example.com"; // Change this
+    const adminPassword = "change-this-password"; // Change this
+    
+    const hashedPassword = await hashPassword(adminPassword);
     
     await db.insert(users).values({
-      username: "admin",
-      email: "admin@designkorv.com",
+      username: adminUsername,
+      email: adminEmail,
       password: hashedPassword,
       role: "admin"
     });
     
-    console.log("Admin user created");
+    console.log(`Admin user "${adminUsername}" created - REMEMBER TO CHANGE THE PASSWORD!`);
+    */
   } else {
     console.log("Admin user already exists, skipping...");
   }
 
-  // Check if categories exist
+  // We don't seed example categories for production
   const existingCategories = await db.query.categories.findMany();
-  
-  if (existingCategories.length === 0) {
-    console.log("Creating categories...");
-    
-    await db.insert(categories).values([
-      {
-        name: "Patterns",
-        slug: "patterns",
-        description: "Digital pattern files for fashion design",
-        imageUrl: "/uploads/categories/patterns.jpg"
-      },
-      {
-        name: "Technical Drawings",
-        slug: "technical-drawings",
-        description: "Professional technical drawings for garment production",
-        imageUrl: "/uploads/categories/technical-drawings.jpg"
-      },
-      {
-        name: "3D Models",
-        slug: "3d-models",
-        description: "3D garment models for digital fashion design",
-        imageUrl: "/uploads/categories/3d-models.jpg"
-      },
-      {
-        name: "Textures",
-        slug: "textures",
-        description: "High-quality fabric textures for digital design",
-        imageUrl: "/uploads/categories/textures.jpg"
-      }
-    ]);
-    
-    console.log("Categories created");
-  } else {
-    console.log(`${existingCategories.length} categories already exist, skipping...`);
-  }
+  console.log(`${existingCategories.length} categories found in the database`);
+  console.log("No sample categories are seeded for production deployment");
 
   // No example products are seeded for production deployment
 
