@@ -22,10 +22,20 @@ export function NewsletterSection() {
     
     setIsSubmitting(true);
     
-    // Simulate API call
+    // API call to subscribe 
     try {
-      // In a real implementation, this would be an API call to subscribe
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Add a proper API endpoint implementation here when ready
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Subscription failed');
+      }
       
       toast({
         title: "Subscription successful",

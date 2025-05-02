@@ -125,7 +125,7 @@ export default function AdminDashboard() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                +12.5% from last month
+                Track your user growth here
               </p>
             </CardContent>
           </Card>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                +18.2% from last month
+                Track your order metrics here
               </p>
             </CardContent>
           </Card>
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                +4 new this month
+                Track your product inventory here
               </p>
             </CardContent>
           </Card>
