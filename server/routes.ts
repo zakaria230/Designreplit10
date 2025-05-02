@@ -1339,8 +1339,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allProducts = await storage.getAllProducts();
       
       // Calculate sales summary
-      const totalRevenue = allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-      const totalOrders = allOrders.length;
+      const totalRevenue = allOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
+      const totalOrders = allOrders.filter(order => order.paymentStatus === "paid").length;
       
       // Calculate average order value
       const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -1365,7 +1365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         // Calculate total for this month
-        const total = monthOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        const total = monthOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
         
         return {
           name: monthNames[month.getMonth()],
