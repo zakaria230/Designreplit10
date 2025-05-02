@@ -10,6 +10,7 @@ import fs from 'fs';
 import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
 import { db } from "./db";
 import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
@@ -413,6 +414,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+  
+  // Update user
+  app.patch("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Get the current user to check if exists
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const { username, email, role, password } = req.body;
+      
+      // Update user in the database
+      const updateData: any = {};
+      
+      if (username) updateData.username = username;
+      if (email) updateData.email = email;
+      if (role) updateData.role = role;
+      
+      // Only hash and update password if provided
+      if (password && password.trim() !== '') {
+        const { hashPassword } = await import('./auth');
+        updateData.password = await hashPassword(password);
+      }
+      
+      // Perform the update
+      await db.update(users)
+        .set(updateData)
+        .where(eq(users.id, userId));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+  
+  // Delete user
+  app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Don't allow deleting the admin user
+      if (userId === 1) {
+        return res.status(403).json({ message: "Cannot delete admin user" });
+      }
+      
+      // Get the current user to check if exists
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Delete the user
+      await db.delete(users).where(eq(users.id, userId));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
     }
   });
 
