@@ -5,16 +5,20 @@ import {
   Facebook, 
   Linkedin 
 } from "lucide-react";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Footer() {
+  const { settings } = useSiteSettings();
   return (
     <footer className="bg-gray-100 dark:bg-gray-900 pt-12 pb-8 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">DesignKorv</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {settings?.siteName || 'DesignKorv'}
+            </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Premium digital fashion assets for professional designers.
+              {settings?.siteDescription || 'Premium digital fashion assets for professional designers.'}
             </p>
             <div className="flex space-x-4">
               <a
@@ -139,9 +143,12 @@ export function Footer() {
         </div>
         
         <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} DesignKorv. All rights reserved.
-          </p>
+          <p 
+            className="text-gray-500 dark:text-gray-400 text-sm"
+            dangerouslySetInnerHTML={{ 
+              __html: settings?.footerText || `&copy; ${new Date().getFullYear()} DesignKorv. All rights reserved.` 
+            }}
+          ></p>
           <div className="flex items-center mt-4 md:mt-0 space-x-4">
             <svg className="h-8 w-auto" viewBox="0 0 36 24" aria-label="Visa">
               <rect width="36" height="24" fill="#F3F4F6" rx="4"/>

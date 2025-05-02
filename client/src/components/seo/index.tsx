@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 interface SEOProps {
   title: string;
@@ -30,6 +31,9 @@ export default function SEO({
   keywords,
   structuredData
 }: SEOProps) {
+  const { settings } = useSiteSettings();
+  const siteName = settings?.siteName || 'DesignKorv';
+  
   // Base domain for canonical and OG URLs
   const domain = typeof window !== 'undefined' 
     ? window.location.origin 
@@ -61,7 +65,7 @@ export default function SEO({
       <meta property="og:description" content={description} />
       {fullOgImage && <meta property="og:image" content={fullOgImage} />}
       {fullCanonicalUrl && <meta property="og:url" content={fullCanonicalUrl} />}
-      <meta property="og:site_name" content="DesignKorv" />
+      <meta property="og:site_name" content={siteName} />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
