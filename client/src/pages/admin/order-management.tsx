@@ -236,8 +236,9 @@ export default function OrderManagement() {
   );
 
   // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateInput: Date | string) => {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -245,8 +246,9 @@ export default function OrderManagement() {
   };
 
   // Format time
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
+  const formatTime = (dateInput: Date | string) => {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -267,7 +269,8 @@ export default function OrderManagement() {
   };
 
   // Get payment status badge color
-  const getPaymentStatusBadgeClass = (status: string) => {
+  const getPaymentStatusBadgeClass = (status: string | null) => {
+    if (!status) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     const statusItem = PAYMENT_STATUSES.find((s) => s.value === status);
     return statusItem?.color || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
   };
@@ -406,9 +409,13 @@ export default function OrderManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getPaymentStatusBadgeClass(order.paymentStatus)}>
-                            {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
-                          </Badge>
+                          {order.paymentStatus ? (
+                            <Badge className={getPaymentStatusBadgeClass(order.paymentStatus)}>
+                              {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Unknown</Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
@@ -507,9 +514,13 @@ export default function OrderManagement() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500 dark:text-gray-400">Payment Status:</span>
-                      <Badge className={getPaymentStatusBadgeClass(selectedOrder.paymentStatus)}>
-                        {selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)}
-                      </Badge>
+                      {selectedOrder.paymentStatus ? (
+                        <Badge className={getPaymentStatusBadgeClass(selectedOrder.paymentStatus)}>
+                          {selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Unknown</Badge>
+                      )}
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">
@@ -533,7 +544,7 @@ export default function OrderManagement() {
                         </Select>
                         
                         <Select 
-                          value={selectedOrder.paymentStatus} 
+                          value={selectedOrder.paymentStatus || 'pending'} 
                           onValueChange={handlePaymentStatusUpdate}
                           disabled={updatePaymentStatusMutation.isPending}
                         >
