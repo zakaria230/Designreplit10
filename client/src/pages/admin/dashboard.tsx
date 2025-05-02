@@ -322,12 +322,13 @@ export default function AdminDashboard() {
                       <th>Date</th>
                       <th>Status</th>
                       <th className="text-right">Amount</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                     {isLoadingStats ? (
                       <tr>
-                        <td colSpan={5} className="p-4 text-center">
+                        <td colSpan={6} className="p-4 text-center">
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </td>
                       </tr>
@@ -366,7 +367,7 @@ export default function AdminDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                        <td colSpan={6} className="p-4 text-center text-muted-foreground">
                           No orders yet. Orders will appear here as they are placed.
                         </td>
                       </tr>
