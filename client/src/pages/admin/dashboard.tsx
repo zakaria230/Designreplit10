@@ -44,29 +44,10 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 
-// Mocked data for dashboard
-const salesData = [
-  { name: "Jan", sales: 1200 },
-  { name: "Feb", sales: 1900 },
-  { name: "Mar", sales: 1500 },
-  { name: "Apr", sales: 2400 },
-  { name: "May", sales: 2700 },
-  { name: "Jun", sales: 3500 },
-  { name: "Jul", sales: 3100 },
-];
-
-const categoryData = [
-  { name: "Patterns", value: 42 },
-  { name: "Textures", value: 28 },
-  { name: "Technical Drawings", value: 35 },
-  { name: "3D Models", value: 20 },
-];
-
-const orderStatusData = [
-  { name: "Completed", value: 65 },
-  { name: "Processing", value: 15 },
-  { name: "Pending", value: 20 },
-];
+// Empty data arrays for production ready deployment
+const salesData: Array<{ name: string; sales: number }> = [];
+const categoryData: Array<{ name: string; value: number }> = [];
+const orderStatusData: Array<{ name: string; value: number }> = [];
 
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b"];
 
@@ -74,23 +55,6 @@ export default function AdminDashboard() {
   // Fetch overview stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["/api/admin/stats"],
-    queryFn: async () => {
-      // In a real implementation, this would fetch from the API
-      // For now, return mock data
-      return {
-        totalRevenue: 15750,
-        totalUsers: 132,
-        totalOrders: 254,
-        totalProducts: 68,
-        recentOrders: [
-          { id: 1, user: "sarah.chen", date: "2023-07-15", status: "completed", total: 79.99 },
-          { id: 2, user: "michael.torres", date: "2023-07-14", status: "processing", total: 49.99 },
-          { id: 3, user: "emma.johnson", date: "2023-07-13", status: "completed", total: 129.98 },
-          { id: 4, user: "david.smith", date: "2023-07-12", status: "pending", total: 34.99 },
-          { id: 5, user: "lisa.brown", date: "2023-07-11", status: "completed", total: 89.97 },
-        ],
-      };
-    },
   });
 
   // Format currency
@@ -143,7 +107,7 @@ export default function AdminDashboard() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                +20.1% from last month
+                Track your revenue here
               </p>
             </CardContent>
           </Card>
@@ -231,24 +195,30 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={salesData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip 
-                        formatter={(value) => [`$${value}`, 'Sales']}
-                        labelFormatter={(label) => `Month: ${label}`}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="sales"
-                        stroke="#14b8a6"
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {salesData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={salesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value) => [`$${value}`, 'Sales']}
+                          labelFormatter={(label) => `Month: ${label}`}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="sales"
+                          stroke="#14b8a6"
+                          strokeWidth={2}
+                          activeDot={{ r: 8 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">No sales data available yet</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -263,19 +233,25 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={categoryData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#8b5cf6">
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {categoryData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={categoryData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#8b5cf6">
+                          {categoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">No category sales data available yet</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -290,26 +266,32 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={orderStatusData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        paddingAngle={5}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {orderStatusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value, name) => [`${value} orders`, name]} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {orderStatusData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={orderStatusData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {orderStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value, name) => [`${value} orders`, name]} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">No order status data available yet</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -349,8 +331,8 @@ export default function AdminDashboard() {
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </td>
                       </tr>
-                    ) : (
-                      stats?.recentOrders.map((order) => (
+                    ) : stats?.recentOrders?.length ? (
+                      stats.recentOrders.map((order) => (
                         <tr key={order.id} className="[&_td]:p-2">
                           <td className="font-medium">#{order.id}</td>
                           <td>{order.user}</td>
@@ -371,6 +353,12 @@ export default function AdminDashboard() {
                           </td>
                         </tr>
                       ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          No orders yet. Orders will appear here as they are placed.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
