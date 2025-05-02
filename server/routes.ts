@@ -1063,6 +1063,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Public payment settings for client - only shares necessary settings, not secrets
+  app.get("/api/payment-settings", async (req, res) => {
+    try {
+      const paymentSettings = await storage.getSettingsByCategory('payment');
+      
+      // Only send non-sensitive information to the client
+      const clientSettings = {
+        stripeEnabled: paymentSettings['payment_stripeEnabled'] === 'true',
+        paypalEnabled: paymentSettings['payment_paypalEnabled'] === 'true',
+        payoneerEnabled: paymentSettings['payment_payoneerEnabled'] === 'true',
+        stripePublicKey: paymentSettings['payment_stripePublicKey'] || process.env.VITE_STRIPE_PUBLIC_KEY || '',
+        paypalClientId: paymentSettings['payment_paypalClientId'] || process.env.PAYPAL_CLIENT_ID || '',
+      };
+      
+      res.json(clientSettings);
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      res.status(500).json({ message: "Failed to fetch payment settings" });
+    }
+  });
+  
   app.post("/api/reviews", isAuthenticated, async (req, res) => {
     try {
       const { productId, rating, title, comment } = req.body;

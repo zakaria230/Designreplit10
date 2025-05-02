@@ -40,20 +40,10 @@ import { Loader2, ShoppingCart, CreditCard, DollarSign } from "lucide-react";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  console.warn('Missing VITE_STRIPE_PUBLIC_KEY. Stripe payments will not work correctly.');
-}
-
-// Safe Stripe initialization for production environments
 let stripePromise: Promise<any> | null = null;
-try {
-  if (import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-  }
-} catch (error) {
-  console.error('Failed to initialize Stripe:', error);
-  stripePromise = null;
-}
+
+// This will be initialized with the public key from the server settings
+// We'll do this in the CheckoutPage component using the useEffect hook
 
 // Checkout form schema
 const checkoutFormSchema = z.object({
@@ -393,8 +383,17 @@ export default function CheckoutPage() {
     },
   });
 
+  // State to track payment settings
+  const [paymentSettings, setPaymentSettings] = useState({
+    stripeEnabled: false,
+    paypalEnabled: false,
+    payoneerEnabled: false,
+    stripePublicKey: '',
+    paypalClientId: ''
+  });
+  
   // Flag to check if Stripe is properly configured
-  const isStripeConfigured = import.meta.env.VITE_STRIPE_PUBLIC_KEY && stripePromise;
+  const isStripeConfigured = paymentSettings.stripeEnabled && stripePromise;
 
   // Format price to display with 2 decimal places
   const formatPrice = (price: number) => {
@@ -444,6 +443,43 @@ export default function CheckoutPage() {
       });
     }
   };
+
+  // Fetch payment settings from the server
+  useEffect(() => {
+    const fetchPaymentSettings = async () => {
+      try {
+        const response = await fetch('/api/payment-settings');
+        if (response.ok) {
+          const settings = await response.json();
+          setPaymentSettings(settings);
+          
+          // Initialize Stripe with the public key from settings
+          if (settings.stripeEnabled && settings.stripePublicKey) {
+            try {
+              stripePromise = loadStripe(settings.stripePublicKey);
+            } catch (error) {
+              console.error('Failed to initialize Stripe:', error);
+            }
+          }
+          
+          // Set active tab based on available payment methods
+          if (settings.stripeEnabled) {
+            setActiveTab('stripe');
+          } else if (settings.paypalEnabled) {
+            setActiveTab('paypal');
+          } else if (settings.payoneerEnabled) {
+            setActiveTab('payoneer');
+          }
+        } else {
+          console.error('Failed to fetch payment settings');
+        }
+      } catch (error) {
+        console.error('Error fetching payment settings:', error);
+      }
+    };
+    
+    fetchPaymentSettings();
+  }, []);
 
   useEffect(() => {
     // Redirect to cart if cart is empty
@@ -675,7 +711,10 @@ export default function CheckoutPage() {
                             
                             <TabsContent value="paypal">
                               <div className="py-4">
-                                <PayPalScriptProvider options={{ clientId: "test", currency: "USD" }}>
+                                <PayPalScriptProvider options={{ 
+                                  clientId: paymentSettings.paypalClientId || "test", 
+                                  currency: "USD" 
+                                }}>
                                   <PayPalCheckout 
                                     amount={totalPrice} 
                                     items={items} 
