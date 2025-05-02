@@ -358,7 +358,9 @@ export default function AdminUsers() {
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 user.role === "admin" 
                                   ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
-                                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                  : user.role === "designer"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                               }`}
                             >
                               {user.role}
@@ -463,6 +465,7 @@ export default function AdminUsers() {
                       <SelectContent>
                         <SelectItem value="user">User</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="designer">Designer</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -565,6 +568,7 @@ export default function AdminUsers() {
                       <SelectContent>
                         <SelectItem value="user">User</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="designer">Designer</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
