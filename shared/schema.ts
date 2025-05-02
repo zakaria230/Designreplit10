@@ -21,6 +21,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const userRelations = relations(users, ({ many }) => ({
   orders: many(orders),
+  reviews: many(reviews),
 }));
 
 // Category model
@@ -78,6 +79,38 @@ export const productRelations = relations(products, ({ one, many }) => ({
     references: [categories.id],
   }),
   orderItems: many(orderItems),
+  reviews: many(reviews),
+}));
+
+// Reviews model
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  title: text("title"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviews).pick({
+  userId: true,
+  productId: true,
+  rating: true,
+  comment: true,
+  title: true,
+});
+
+export const reviewRelations = relations(reviews, ({ one }) => ({
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [reviews.productId],
+    references: [products.id],
+  }),
 }));
 
 // Order model
@@ -174,6 +207,9 @@ export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type Cart = typeof carts.$inferSelect;
 export type InsertCart = z.infer<typeof insertCartSchema>;
 
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+
 // Extended schemas for validation
 export const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -199,3 +235,9 @@ export const cartItemSchema = z.object({
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;
+
+export const reviewSchema = insertReviewSchema.extend({
+  rating: z.number().min(1, "Rating must be at least 1").max(5, "Rating cannot be more than 5"),
+  comment: z.string().optional(),
+  title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title cannot exceed 100 characters"),
+});
