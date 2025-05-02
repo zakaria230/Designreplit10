@@ -470,37 +470,46 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={visitorData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tickFormatter={formatDate}
-                            />
-                            <YAxis />
-                            <Tooltip 
-                              labelFormatter={(label) => formatDate(label.toString())}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="newUsers" 
-                              stackId="1"
-                              stroke="#3b82f6" 
-                              fill="#3b82f6" 
-                              fillOpacity={0.6} 
-                              name="New Users"
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="returningUsers" 
-                              stackId="1"
-                              stroke="#f59e0b" 
-                              fill="#f59e0b" 
-                              fillOpacity={0.6} 
-                              name="Returning Users"
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                        {visitorData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={visitorData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="date" 
+                                tickFormatter={formatDate}
+                              />
+                              <YAxis />
+                              <Tooltip 
+                                labelFormatter={(label) => formatDate(label.toString())}
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="newUsers" 
+                                stackId="1"
+                                stroke="#3b82f6" 
+                                fill="#3b82f6" 
+                                fillOpacity={0.6} 
+                                name="New Users"
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="returningUsers" 
+                                stackId="1"
+                                stroke="#f59e0b" 
+                                fill="#f59e0b" 
+                                fillOpacity={0.6} 
+                                name="Returning Users"
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center text-gray-500">
+                            <div className="flex flex-col items-center space-y-2">
+                              <p>No user type data available</p>
+                              <p className="text-sm">New vs returning user breakdown will appear once your store has visitor data</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
