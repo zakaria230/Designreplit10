@@ -92,8 +92,8 @@ export default function ThankYouPage() {
           
           <CardFooter className="pt-6 flex flex-col sm:flex-row gap-4">
             <Button asChild className="flex-1" variant="outline">
-              <Link to="/orders">
-                View All Orders
+              <Link to="/profile/downloads">
+                View Downloads
                 <User className="ml-2 h-4 w-4" />
               </Link>
             </Button>
