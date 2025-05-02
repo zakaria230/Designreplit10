@@ -1,5 +1,8 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// API Base URL - use environment variable in production, fallback to relative path in development
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -30,7 +33,7 @@ async function getCsrfToken(): Promise<string | undefined> {
   
   // If not in cookies, fetch from API
   try {
-    const response = await fetch('/api/csrf-token');
+    const response = await fetch(`${API_BASE_URL}/api/csrf-token`);
     if (response.ok) {
       const data = await response.json();
       if (data.csrfToken) {
@@ -68,7 +71,10 @@ export async function apiRequest(
   // Add additional security headers
   headers['X-Requested-With'] = 'XMLHttpRequest';
   
-  const res = await fetch(url, {
+  // Add API base URL if URL starts with /api
+  const fullUrl = url.startsWith('/api') ? `${API_BASE_URL}${url}` : url;
+  
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -103,6 +109,11 @@ export const getQueryFn: <T>(options: {
       if (queryString) {
         url = `${baseUrl}?${queryString}`;
       }
+    }
+    
+    // Add API base URL if URL starts with /api
+    if (url.startsWith('/api')) {
+      url = `${API_BASE_URL}${url}`;
     }
     
     // Add headers for security
