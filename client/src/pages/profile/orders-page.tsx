@@ -6,7 +6,7 @@ import { ProfileLayout } from "@/components/profile/profile-layout";
 import { getQueryFn } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Filter, Inbox, Eye, Package } from "lucide-react";
+import { Loader2, Search, Filter, Inbox, Eye, Package, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +14,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Order, OrderItem, Product } from "@shared/schema";
+
+interface OrderWithItems extends Order {
+  items?: (OrderItem & { product?: Product })[];
+  notes?: string | null;
+}
 
 export default function OrdersPage() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["/api/orders"],
@@ -28,8 +34,8 @@ export default function OrdersPage() {
   });
 
   // Format date to display in readable format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
@@ -46,7 +52,7 @@ export default function OrdersPage() {
   };
 
   // Filter orders based on search term and status
-  const filteredOrders = orders ? orders.filter(order => {
+  const filteredOrders = orders ? (orders as OrderWithItems[]).filter(order => {
     const matchesSearch = searchTerm === "" || 
       String(order.id).includes(searchTerm) || 
       (order.notes && order.notes.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -196,7 +202,9 @@ export default function OrdersPage() {
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                       : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                   }`}>
-                    {selectedOrder.paymentStatus?.charAt(0).toUpperCase() + selectedOrder.paymentStatus?.slice(1) || 'Pending'}
+                    {selectedOrder.paymentStatus 
+                      ? selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)
+                      : 'Pending'}
                   </span>
                 </div>
               </div>
@@ -237,9 +245,11 @@ export default function OrdersPage() {
                             {formatPrice(item.quantity * item.price)}
                           </span>
                           {item.product && item.product.downloadUrl && (
-                            <Button size="sm" variant="outline">
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={item.product.downloadUrl} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </a>
                             </Button>
                           )}
                         </div>
@@ -270,7 +280,7 @@ export default function OrdersPage() {
               </div>
               
               {/* Notes */}
-              {selectedOrder.notes && (
+              {selectedOrder.notes && selectedOrder.notes.trim() !== "" && (
                 <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium mb-1">Notes</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.notes}</p>
