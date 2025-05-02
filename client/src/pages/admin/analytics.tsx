@@ -44,13 +44,7 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2, Download, Calendar } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
-// Empty data arrays for production deployment
-const salesData: Array<{ date: string; revenue: number; orders: number }> = [];
-const visitorData: Array<{ date: string; visitors: number; newUsers: number; returningUsers: number }> = [];
-const categoryData: Array<{ name: string; value: number }> = [];
-const deviceData: Array<{ name: string; value: number }> = [];
-const countryData: Array<{ name: string; value: number }> = [];
-
+// Chart color configurations
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b", "#3b82f6", "#a3a3a3"];
 
 export default function AdminAnalytics() {
@@ -288,20 +282,18 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        {salesData.length > 0 ? (
+                        {analyticsData?.timeSeriesData?.revenueByMonth && analyticsData.timeSeriesData.revenueByMonth.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={salesData}>
+                            <AreaChart data={analyticsData.timeSeriesData.revenueByMonth}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis 
-                                dataKey="date" 
-                                tickFormatter={formatDate}
+                                dataKey="name" 
                               />
                               <YAxis 
                                 tickFormatter={(value) => `$${value}`} 
                               />
                               <Tooltip 
                                 formatter={(value: any) => [`$${value}`, 'Revenue']}
-                                labelFormatter={(label) => formatDate(label.toString())}
                               />
                               <Area 
                                 type="monotone" 
@@ -331,13 +323,12 @@ export default function AdminAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
-                        {salesData.length > 0 ? (
+                        {analyticsData?.timeSeriesData?.revenueByMonth && analyticsData.timeSeriesData.revenueByMonth.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={salesData}>
+                            <LineChart data={analyticsData.timeSeriesData.revenueByMonth}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis 
-                                dataKey="date" 
-                                tickFormatter={formatDate} 
+                                dataKey="name"
                               />
                               <YAxis 
                                 yAxisId="left" 
@@ -350,7 +341,6 @@ export default function AdminAnalytics() {
                                 tickFormatter={(value) => `${value}`}
                               />
                               <Tooltip 
-                                labelFormatter={(label) => formatDate(label.toString())}
                                 formatter={(value, name) => {
                                   return name === 'revenue' 
                                     ? [`$${value}`, 'Revenue'] 
