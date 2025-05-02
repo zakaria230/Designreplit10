@@ -38,14 +38,16 @@ export default function ShopPage() {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortOrder, setSortOrder] = useState<string>("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [searchDelay, setSearchDelay] = useState<NodeJS.Timeout | null>(null);
 
-  // Fetch all products
+  // Fetch all products with search and category filters
   const {
     data: products,
     isLoading: isLoadingProducts,
     error: productsError,
+    refetch: refetchProducts
   } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", { search: searchQuery, categoryId: selectedCategory }],
   });
 
   // Fetch all categories
@@ -149,6 +151,12 @@ export default function ShopPage() {
     setSelectedCategory(null);
     setPriceRange([0, maxPrice]);
     setActiveFilters([]);
+    
+    // Clear any pending search debounce
+    if (searchDelay) {
+      clearTimeout(searchDelay);
+      setSearchDelay(null);
+    }
   };
 
   // Remove a specific filter
@@ -190,7 +198,20 @@ export default function ShopPage() {
                 <Input
                   placeholder="Search products..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    // Implement debounce for search to avoid too many API calls
+                    if (searchDelay) clearTimeout(searchDelay);
+                    
+                    const newSearchQuery = e.target.value;
+                    
+                    // Update the display value immediately for better UX
+                    setSearchQuery(newSearchQuery);
+                    
+                    // Debounce the actual API call
+                    setSearchDelay(setTimeout(() => {
+                      setSearchQuery(newSearchQuery);
+                    }, 300));
+                  }}
                   className="pl-10"
                 />
               </div>

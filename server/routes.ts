@@ -190,9 +190,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Products
   app.get("/api/products", async (req, res) => {
     try {
-      const products = await storage.getAllProducts();
-      res.json(products);
+      // Get search query from request if it exists
+      const searchQuery = req.query.search as string;
+      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      
+      if (searchQuery || categoryId) {
+        // If we have a search query or category filter, use a filtered approach
+        let products = await storage.getAllProducts();
+        
+        // Filter by search query if provided
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase().trim();
+          products = products.filter(product => {
+            const nameMatch = product.name.toLowerCase().includes(query);
+            const descMatch = product.description ? product.description.toLowerCase().includes(query) : false;
+            return nameMatch || descMatch;
+          });
+        }
+        
+        // Filter by category if provided
+        if (categoryId && !isNaN(categoryId)) {
+          products = products.filter(product => product.categoryId === categoryId);
+        }
+        
+        res.json(products);
+      } else {
+        // If no filters, get all products
+        const products = await storage.getAllProducts();
+        res.json(products);
+      }
     } catch (error) {
+      console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
