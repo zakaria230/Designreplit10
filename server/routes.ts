@@ -690,6 +690,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update payment status" });
     }
   });
+  
+  app.delete("/api/admin/orders/:id", isAdminOrDesigner, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
+      // Check if order exists
+      const order = await storage.getOrderById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Delete the order
+      await storage.deleteOrder(orderId);
+      
+      res.status(200).json({ message: "Order deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      res.status(500).json({ message: "Failed to delete order" });
+    }
+  });
 
   // Admin Products
   app.post("/api/admin/products", isAdminOrDesigner, async (req, res) => {
