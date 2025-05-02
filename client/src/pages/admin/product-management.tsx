@@ -46,7 +46,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus } from "lucide-react";
+import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image } from "lucide-react";
 import { Link } from "wouter";
 
 // Form schema for product
@@ -606,41 +606,64 @@ export default function ProductManagement() {
                     name="downloadUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Downloadable File</FormLabel>
-                        <div className="flex items-center gap-4">
-                          <FormControl>
-                            <Input 
-                              placeholder="File path" 
-                              {...field} 
-                              readOnly 
-                              className="flex-1"
-                            />
-                          </FormControl>
-                          <div className="flex gap-2">
+                        <FormLabel>Product files <span className="text-red-500">*</span></FormLabel>
+                        <FormDescription>
+                          Upload the design files that customers will download after purchase.
+                        </FormDescription>
+                        
+                        {!field.value ? (
+                          <div 
+                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => addFileInputRef.current?.click()}
+                          >
+                            <div className="p-4 bg-primary/10 rounded-full">
+                              <Image className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="text-center space-y-2">
+                              <p className="font-medium">Drag and drop files here or click to browse</p>
+                              <p className="text-sm text-muted-foreground">
+                                Supported file types: ZIP, PDF, AI, PSD, EPS, SVG
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="rounded-lg border bg-card">
+                              <div className="flex items-center gap-2 p-4">
+                                <div className="bg-primary/10 p-2 rounded">
+                                  <Image className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{field.value.split('/').pop()}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {/* You can add file size here if available */}
+                                    Ready for download
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="flex-shrink-0"
+                                  onClick={() => addForm.setValue("downloadUrl", "")}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
                             <Button
                               type="button"
                               variant="outline"
+                              className="flex gap-2 items-center"
                               onClick={() => addFileInputRef.current?.click()}
-                              disabled={uploadFileMutation.isPending}
                             >
-                              {uploadFileMutation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                "Upload File"
-                              )}
+                              <Plus className="h-4 w-4" />
+                              Replace file
                             </Button>
-                            {field.value && (
-                              <Button 
-                                type="button" 
-                                variant="destructive" 
-                                size="icon" 
-                                onClick={() => addForm.setValue("downloadUrl", "")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
                           </div>
-                        </div>
+                        )}
+                        
                         <input 
                           type="file" 
                           accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
@@ -648,15 +671,7 @@ export default function ProductManagement() {
                           className="hidden"
                           onChange={(e) => handleFileUpload(e, 'add')}
                         />
-                        {field.value && (
-                          <div className="mt-2 px-2 py-1 rounded-md border border-input inline-block">
-                            <span className="font-medium">File Ready: </span>
-                            {field.value.split('/').pop()}
-                          </div>
-                        )}
-                        <FormDescription>
-                          Upload the downloadable product file (ZIP, PDF, AI, PSD, EPS, or SVG).
-                        </FormDescription>
+                        
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1029,41 +1044,64 @@ export default function ProductManagement() {
                   name="downloadUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Downloadable File</FormLabel>
-                      <div className="flex items-center gap-4">
-                        <FormControl>
-                          <Input 
-                            placeholder="File path" 
-                            {...field} 
-                            readOnly 
-                            className="flex-1"
-                          />
-                        </FormControl>
-                        <div className="flex gap-2">
+                      <FormLabel>Product files <span className="text-red-500">*</span></FormLabel>
+                      <FormDescription>
+                        Upload the design files that customers will download after purchase.
+                      </FormDescription>
+                      
+                      {!field.value ? (
+                        <div 
+                          className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => editFileInputRef.current?.click()}
+                        >
+                          <div className="p-4 bg-primary/10 rounded-full">
+                            <Image className="h-8 w-8 text-primary" />
+                          </div>
+                          <div className="text-center space-y-2">
+                            <p className="font-medium">Drag and drop files here or click to browse</p>
+                            <p className="text-sm text-muted-foreground">
+                              Supported file types: ZIP, PDF, AI, PSD, EPS, SVG
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="rounded-lg border bg-card">
+                            <div className="flex items-center gap-2 p-4">
+                              <div className="bg-primary/10 p-2 rounded">
+                                <Image className="h-6 w-6 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{field.value.split('/').pop()}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {/* You can add file size here if available */}
+                                  Ready for download
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="flex-shrink-0"
+                                onClick={() => editForm.setValue("downloadUrl", "")}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
                           <Button
                             type="button"
                             variant="outline"
+                            className="flex gap-2 items-center"
                             onClick={() => editFileInputRef.current?.click()}
-                            disabled={uploadFileMutation.isPending}
                           >
-                            {uploadFileMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              "Upload File"
-                            )}
+                            <Plus className="h-4 w-4" />
+                            Replace file
                           </Button>
-                          {field.value && (
-                            <Button 
-                              type="button" 
-                              variant="destructive" 
-                              size="icon" 
-                              onClick={() => editForm.setValue("downloadUrl", "")}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
                         </div>
-                      </div>
+                      )}
+                      
                       <input 
                         type="file" 
                         accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
@@ -1071,15 +1109,7 @@ export default function ProductManagement() {
                         className="hidden"
                         onChange={(e) => handleFileUpload(e, 'edit')}
                       />
-                      {field.value && (
-                        <div className="mt-2 px-2 py-1 rounded-md border border-input inline-block">
-                          <span className="font-medium">File Ready: </span>
-                          {field.value.split('/').pop()}
-                        </div>
-                      )}
-                      <FormDescription>
-                        Upload the downloadable product file (ZIP, PDF, AI, PSD, EPS, or SVG).
-                      </FormDescription>
+                      
                       <FormMessage />
                     </FormItem>
                   )}
