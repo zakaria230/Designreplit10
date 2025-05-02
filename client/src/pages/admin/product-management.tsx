@@ -46,7 +46,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus } from "lucide-react";
 import { Link } from "wouter";
 
 // Form schema for product
@@ -501,41 +501,93 @@ export default function ProductManagement() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Image</FormLabel>
-                        <div className="flex items-center gap-4">
-                          <FormControl>
-                            <Input 
-                              placeholder="Image path" 
-                              {...field} 
-                              readOnly 
-                              className="flex-1"
-                            />
-                          </FormControl>
-                          <div className="flex gap-2">
+                        <FormLabel>Photos and video <span className="text-red-500">*</span></FormLabel>
+                        <FormDescription>
+                          Add up to 10 photos and 1 video.
+                        </FormDescription>
+                        
+                        {!field.value ? (
+                          <div 
+                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => addImageInputRef.current?.click()}
+                          >
+                            <p className="text-center text-muted-foreground">Drag & Drop or</p>
+                            
                             <Button
                               type="button"
-                              variant="outline"
-                              onClick={() => addImageInputRef.current?.click()}
-                              disabled={uploadImageMutation.isPending}
+                              variant="secondary"
+                              className="flex gap-2 items-center"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addImageInputRef.current?.click();
+                              }}
                             >
-                              {uploadImageMutation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                "Upload Image"
-                              )}
+                              <Plus className="h-4 w-4" />
+                              Add up to 10 photos and 1 video
                             </Button>
-                            {field.value && (
-                              <Button 
-                                type="button" 
-                                variant="destructive" 
-                                size="icon" 
-                                onClick={() => addForm.setValue("imageUrl", "")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
                           </div>
-                        </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-6 gap-2">
+                              <div className="relative group aspect-square overflow-hidden rounded-md border border-input">
+                                <img 
+                                  src={field.value} 
+                                  alt="Product preview" 
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-2 right-2 z-10">
+                                  <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                                </div>
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 bg-white hover:bg-white"
+                                    onClick={() => {
+                                      // Editing image would go here
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 bg-white hover:bg-white"
+                                    onClick={() => addForm.setValue("imageUrl", "")}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {/* Empty placeholder slots */}
+                              {Array.from({ length: 5 }).map((_, index) => (
+                                <div 
+                                  key={`empty-${index}`}
+                                  className="aspect-square rounded-md border border-input flex items-center justify-center bg-muted/30 cursor-pointer"
+                                  onClick={() => addImageInputRef.current?.click()}
+                                >
+                                  <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              ))}
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="flex gap-2 items-center"
+                                onClick={() => addImageInputRef.current?.click()}
+                              >
+                                <Plus className="h-4 w-4" />
+                                Add more photos or video
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -543,18 +595,7 @@ export default function ProductManagement() {
                           className="hidden"
                           onChange={(e) => handleImageUpload(e, 'add')}
                         />
-                        {field.value && (
-                          <div className="mt-2 overflow-hidden rounded-md border border-input h-40 flex items-center justify-center">
-                            <img 
-                              src={field.value} 
-                              alt="Product preview" 
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
-                        )}
-                        <FormDescription>
-                          Upload a product image (JPG, PNG, or SVG).
-                        </FormDescription>
+                        
                         <FormMessage />
                       </FormItem>
                     )}
@@ -883,41 +924,93 @@ export default function ProductManagement() {
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Image</FormLabel>
-                      <div className="flex items-center gap-4">
-                        <FormControl>
-                          <Input 
-                            placeholder="Image path" 
-                            {...field} 
-                            readOnly 
-                            className="flex-1"
-                          />
-                        </FormControl>
-                        <div className="flex gap-2">
+                      <FormLabel>Photos and video <span className="text-red-500">*</span></FormLabel>
+                      <FormDescription>
+                        Add up to 10 photos and 1 video.
+                      </FormDescription>
+                      
+                      {!field.value ? (
+                        <div 
+                          className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => editImageInputRef.current?.click()}
+                        >
+                          <p className="text-center text-muted-foreground">Drag & Drop or</p>
+                          
                           <Button
                             type="button"
-                            variant="outline"
-                            onClick={() => editImageInputRef.current?.click()}
-                            disabled={uploadImageMutation.isPending}
+                            variant="secondary"
+                            className="flex gap-2 items-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              editImageInputRef.current?.click();
+                            }}
                           >
-                            {uploadImageMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              "Upload Image"
-                            )}
+                            <Plus className="h-4 w-4" />
+                            Add up to 10 photos and 1 video
                           </Button>
-                          {field.value && (
-                            <Button 
-                              type="button" 
-                              variant="destructive" 
-                              size="icon" 
-                              onClick={() => editForm.setValue("imageUrl", "")}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-6 gap-2">
+                            <div className="relative group aspect-square overflow-hidden rounded-md border border-input">
+                              <img 
+                                src={field.value} 
+                                alt="Product preview" 
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-2 right-2 z-10">
+                                <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                              </div>
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white"
+                                  onClick={() => {
+                                    // Editing image would go here
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white"
+                                  onClick={() => editForm.setValue("imageUrl", "")}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Empty placeholder slots */}
+                            {Array.from({ length: 5 }).map((_, index) => (
+                              <div 
+                                key={`empty-edit-${index}`}
+                                className="aspect-square rounded-md border border-input flex items-center justify-center bg-muted/30 cursor-pointer"
+                                onClick={() => editImageInputRef.current?.click()}
+                              >
+                                <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="flex gap-2 items-center"
+                              onClick={() => editImageInputRef.current?.click()}
+                            >
+                              <Plus className="h-4 w-4" />
+                              Add more photos or video
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -925,18 +1018,7 @@ export default function ProductManagement() {
                         className="hidden"
                         onChange={(e) => handleImageUpload(e, 'edit')}
                       />
-                      {field.value && (
-                        <div className="mt-2 overflow-hidden rounded-md border border-input h-40 flex items-center justify-center">
-                          <img 
-                            src={field.value} 
-                            alt="Product preview" 
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      )}
-                      <FormDescription>
-                        Upload a product image (JPG, PNG, or SVG).
-                      </FormDescription>
+                      
                       <FormMessage />
                     </FormItem>
                   )}
