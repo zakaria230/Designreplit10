@@ -1074,7 +1074,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save each payment setting to the database
       for (const [key, value] of Object.entries(req.body)) {
-        await storage.updateSetting(`payment_${key}`, value, 'payment');
+        // The keys might already have the prefix if sent from the client
+        const settingKey = key.startsWith('payment_') ? key : `payment_${key}`;
+        await storage.updateSetting(settingKey, value, 'payment');
       }
       
       // Re-initialize payment gateways with the new settings
