@@ -1,59 +1,58 @@
-// Script to clear all example/demo data from the database
-import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import * as schema from './shared/schema.ts';
-import { eq } from 'drizzle-orm';
+/**
+ * Database clearing script for DesignKorv
+ * This script drops all tables except for core settings to prepare for clean deployment
+ */
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle({ client: pool, schema });
+import { db, pool } from './server/db.js';
+import { users, products, categories, orders, orderItems, carts, reviews, settings } from './shared/schema.js';
+import { sql } from 'drizzle-orm';
 
 async function clearDatabase() {
-  console.log('Starting database cleanup...');
-  
   try {
-    // First remove order items (due to foreign key constraints)
-    console.log('Deleting order items...');
-    await db.delete(schema.orderItems);
+    console.log('Starting database cleanup...');
     
-    // Then remove orders
-    console.log('Deleting orders...');
-    await db.delete(schema.orders);
+    // Drop all tables except for settings
+    await db.delete(reviews);
+    console.log('✓ Cleared reviews table');
     
-    // Clear cart items
-    console.log('Clearing cart items...');
-    await db.update(schema.carts).set({ items: [] });
+    await db.delete(orderItems);
+    console.log('✓ Cleared order items table');
     
-    // Remove products
-    console.log('Deleting products...');
-    await db.delete(schema.products);
+    await db.delete(orders);
+    console.log('✓ Cleared orders table');
     
-    // Keep categories but empty the table
-    console.log('Deleting categories...');
-    await db.delete(schema.categories);
+    await db.delete(carts);
+    console.log('✓ Cleared carts table');
     
-    console.log('Database cleanup completed successfully!');
+    await db.delete(products);
+    console.log('✓ Cleared products table');
+    
+    await db.delete(categories);
+    console.log('✓ Cleared categories table');
+    
+    // Do not clear site settings to keep your configuration
+    
+    // Delete all users except the admin user (user with id=1)
+    await db.delete(users).where(sql`id != 1`);
+    console.log('✓ Cleared non-admin users');
+    
+    // Optional: Clear sessions table if exists
+    try {
+      await db.execute(sql`TRUNCATE TABLE session`);
+      console.log('✓ Cleared sessions');
+    } catch (err) {
+      console.log('Note: Session table not found or could not be cleared.');
+    }
+    
+    console.log('\nDatabase cleanup completed successfully!');
+    console.log('Your database is now ready for a fresh deployment, while preserving site settings and admin account.');
+    
   } catch (error) {
     console.error('Error during database cleanup:', error);
+    process.exit(1);
   } finally {
-    // Close the database connection
-    console.log('Closing database connection...');
     await pool.end();
-    console.log('Database connection closed.');
   }
 }
 
-// Only run if explicitly executed, not if imported
-if (process.argv[1].endsWith('clear-database.js')) {
-  console.log('\x1b[31m%s\x1b[0m', '⚠️  WARNING: This will delete ALL data from the database! ⚠️');
-  console.log('\x1b[31m%s\x1b[0m', 'This action is intended to prepare the database for deployment.');
-  console.log('\x1b[31m%s\x1b[0m', 'All products, orders, categories and cart items will be removed.');
-  console.log('\x1b[33m%s\x1b[0m', '\nTo proceed, run this script with the --confirm flag:');
-  console.log('\x1b[33m%s\x1b[0m', 'npx tsx clear-database.js --confirm');
-  
-  if (process.argv.includes('--confirm')) {
-    console.log('\x1b[36m%s\x1b[0m', '\nProceeding with database cleanup...');
-    clearDatabase();
-  } else {
-    console.log('\x1b[31m%s\x1b[0m', '\nOperation aborted. No data was deleted.');
-  }
-}
+clearDatabase();

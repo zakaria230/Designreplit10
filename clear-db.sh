@@ -1,21 +1,22 @@
 #!/bin/bash
-echo -e "\033[1;33mDesignKorv Database Cleanup Utility\033[0m"
-echo -e "\033[1;33m--------------------------------\033[0m"
-echo ""
-echo -e "\033[0;31mThis will remove all example/demo data from the database.\033[0m"
-echo "Products, orders, categories, and cart items will be deleted."
-echo ""
-echo -n "Do you want to proceed? (y/N): "
-read -r response
 
-if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
-then
-    echo ""
-    echo "Running database clearing script with confirmation..."
-    npx tsx clear-database.js --confirm
-    echo ""
-    echo -e "\033[1;32mDatabase cleanup completed.\033[0m"
-else
-    echo ""
-    echo -e "\033[1;31mOperation cancelled. No data was deleted.\033[0m"
+# Clear database script for DesignKorv before deployment
+# Warning: This script will DELETE ALL DATA from your database
+
+echo "WARNING: This script will DELETE ALL DATA from your database."
+echo "This is meant for preparing a clean deployment."
+echo "Make sure you have a backup if you need to preserve any data."
+echo ""
+read -p "Are you sure you want to continue? (y/n): " confirm
+
+if [ "$confirm" != "y" ]; then
+  echo "Operation canceled."
+  exit 1
 fi
+
+# Execute the clear-database.js script
+echo "Clearing database..."
+node clear-database.js
+
+echo "Database cleared successfully."
+echo "Your database is now ready for a fresh deployment."

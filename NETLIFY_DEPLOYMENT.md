@@ -2,6 +2,15 @@
 
 This guide outlines the steps to deploy the DesignKorv e-commerce platform to Netlify, splitting it into a frontend (Netlify) and backend (separate service) architecture.
 
+> **IMPORTANT**: Before deploying, consider clearing test data from your database to start fresh. Use the provided script by running:
+> ```bash
+> # Make the script executable
+> chmod +x clear-db.sh
+> # Run the script
+> ./clear-db.sh
+> ```
+> This will keep your admin account and site settings but clear all products, orders, and other test data.
+
 ## Prerequisites
 
 1. A Netlify account (sign up at [netlify.com](https://netlify.com))
@@ -94,14 +103,56 @@ Replace `https://your-backend-api-url.com` with your actual backend URL.
 
 ### 6. Configure CORS on your backend
 
-Update your backend server to allow requests from your Netlify domain:
+Add the CORS middleware to your backend server (`server/index.ts`) to allow requests from your Netlify domain:
 
-```javascript
-// In your Express server:
-app.use(cors({
-  origin: ['https://your-netlify-app.netlify.app', 'http://localhost:5000'],
-  credentials: true
-}));
+```typescript
+// Import the CORS middleware
+import { corsMiddleware } from './cors';
+
+// Add this to the top of your express app configuration, before other middlewares
+// For production deployment with separate frontend/backend
+app.use(corsMiddleware);
+
+// Make sure to update the allowed origins in server/cors.ts with your Netlify domain
+```
+
+The CORS middleware (in `server/cors.ts`) should be configured with your Netlify domain:
+
+```typescript
+const allowedOrigins = [
+  'https://your-netlify-app.netlify.app', // Replace with your actual Netlify URL
+  'http://localhost:5000',
+  'http://localhost:3000'
+];
+```
+
+### 7. Update session configuration for cross-domain cookies
+
+When your frontend and backend are on different domains, you need to configure session cookies properly. Add the following changes to your `server/auth.ts` or wherever you set up your session configuration:
+
+```typescript
+// Update session configuration to work across domains
+const sessionSettings: session.SessionOptions = {
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  store: storage.sessionStore,
+  cookie: { 
+    secure: true, // Use secure cookies in production
+    sameSite: 'none', // Required for cross-domain cookies
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
+};
+
+// Use secure cookies only in production
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // Trust first proxy
+  sessionSettings.cookie!.secure = true;
+} else {
+  sessionSettings.cookie!.secure = false;
+}
+
+app.use(session(sessionSettings));
 ```
 
 ## Troubleshooting
@@ -110,7 +161,10 @@ app.use(cors({
 
 1. **API calls failing**: Check CORS settings on your backend server
 2. **Authentication not working**: Ensure your cookies are set with the appropriate settings for cross-domain requests
+   - Check that `sameSite: 'none'` and `secure: true` are set in production
+   - Verify that your backend domain is configured as a trusted origin
 3. **Environment variables not working**: Verify they are set correctly in Netlify's environment settings
+4. **Session cookies not persisting**: Make sure your backend sets the proper cookie attributes and that the browsers aren't blocking third-party cookies
 
 ## Additional Resources
 
