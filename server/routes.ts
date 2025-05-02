@@ -395,9 +395,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Users Endpoint
   app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {
-      // Return empty users array
-      res.json([]);
+      // Fetch all users from the database
+      const allUsers = await db.select().from(users);
+      
+      // Map the users to remove sensitive information like passwords
+      const safeUsers = allUsers.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt
+      }));
+      
+      res.json(safeUsers);
     } catch (error) {
+      console.error("Error fetching users:", error);
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
