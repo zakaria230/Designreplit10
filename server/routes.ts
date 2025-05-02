@@ -490,19 +490,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Stats
   app.get("/api/admin/stats", isAdminOrDesigner, async (req, res) => {
     try {
-      // Return zeroed-out stats data
+      // Fetch real data from the database
+      const allOrders = await storage.getAllOrders();
+      const allUsers = await db.select().from(users);
+      const allProducts = await storage.getAllProducts();
+      
+      // Calculate total revenue
+      const totalRevenue = allOrders.reduce((sum, order) => {
+        return sum + (order.totalAmount || 0);
+      }, 0);
+      
+      // Get recent orders with additional info
+      const recentOrders = await Promise.all(
+        allOrders.slice(0, 5).map(async (order) => {
+          const user = await storage.getUser(order.userId);
+          const items = await storage.getOrderItemsByOrder(order.id);
+          return {
+            ...order,
+            user: {
+              id: user?.id || 0,
+              username: user?.username || 'Unknown',
+              email: user?.email || 'unknown@example.com'
+            },
+            itemCount: items.length
+          };
+        })
+      );
+      
+      // Generate monthly sales data for the chart
+      const currentDate = new Date();
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const salesData = Array.from({ length: 6 }, (_, i) => {
+        const month = new Date(currentDate);
+        month.setMonth(currentDate.getMonth() - (5 - i));
+        
+        // Filter orders for this month
+        const monthOrders = allOrders.filter(order => {
+          const orderDate = new Date(order.createdAt || '');
+          return orderDate.getMonth() === month.getMonth() && 
+                orderDate.getFullYear() === month.getFullYear();
+        });
+        
+        // Calculate total for this month
+        const total = monthOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        
+        return {
+          name: monthNames[month.getMonth()],
+          total
+        };
+      });
+      
+      // Order status data for chart
+      const orderStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+      const orderStatusData = orderStatuses.map(status => {
+        const count = allOrders.filter(order => order.status === status).length;
+        return { name: status, value: count };
+      });
+      
+      // Category data for chart
+      const categoryData = await Promise.all((await storage.getAllCategories()).map(async (category) => {
+        const productCount = (await storage.getProductsByCategory(category.id)).length;
+        return {
+          name: category.name,
+          value: productCount
+        };
+      }));
+      
       const stats = {
-        totalRevenue: 0,
-        totalOrders: 0,
-        totalUsers: 0,
-        totalProducts: 0,
-        recentOrders: [],
-        salesData: [],
-        categoryData: [],
-        orderStatusData: []
+        totalRevenue,
+        totalOrders: allOrders.length,
+        totalUsers: allUsers.length,
+        totalProducts: allProducts.length,
+        recentOrders,
+        salesData,
+        categoryData,
+        orderStatusData
       };
+      
       res.json(stats);
     } catch (error) {
+      console.error("Error fetching admin stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
     }
   });
@@ -510,9 +577,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Orders
   app.get("/api/admin/orders", isAdminOrDesigner, async (req, res) => {
     try {
+      // Get all orders
       const orders = await storage.getAllOrders();
-      res.json(orders);
+      
+      // Fetch more details for each order
+      const ordersWithDetails = await Promise.all(orders.map(async (order) => {
+        // Get user info
+        const user = await storage.getUser(order.userId);
+        
+        // Get order items
+        const items = await storage.getOrderItemsByOrder(order.id);
+        
+        // Get product details for each item
+        const itemsWithProducts = await Promise.all(items.map(async (item) => {
+          const product = await storage.getProductById(item.productId);
+          return {
+            ...item,
+            product: product || { name: 'Unknown Product' }
+          };
+        }));
+        
+        // Return enhanced order object
+        return {
+          ...order,
+          user: {
+            id: user?.id,
+            username: user?.username || 'Unknown',
+            email: user?.email || 'unknown@example.com'
+          },
+          items: itemsWithProducts,
+          itemCount: items.length
+        };
+      }));
+      
+      // Sort orders by creation date (newest first)
+      ordersWithDetails.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      res.json(ordersWithDetails);
     } catch (error) {
+      console.error("Error fetching admin orders:", error);
       res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
