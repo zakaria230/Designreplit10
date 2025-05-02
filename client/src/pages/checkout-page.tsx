@@ -60,19 +60,38 @@ function PayPalCheckout({
   
   const createOrder = async () => {
     try {
+      // Validate inputs before making the request
+      if (!amount || amount <= 0) {
+        throw new Error("Invalid order amount");
+      }
+      
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        throw new Error("No items in cart");
+      }
+      
+      if (!email) {
+        throw new Error("Email is required for checkout");
+      }
+      
+      console.log("Creating PayPal order with:", { amount, email, itemCount: items.length });
+      
       const response = await apiRequest("POST", "/api/create-paypal-order", {
         amount,
         items,
         email
       });
       
-      if (!response.ok) {
-        throw new Error("Failed to create PayPal order");
+      const data = await response.json();
+      
+      if (!data.id) {
+        console.error("Invalid PayPal order response:", data);
+        throw new Error("Invalid response from PayPal");
       }
       
-      const data = await response.json();
+      console.log("PayPal order created successfully:", data.id);
       return data.id;
     } catch (error: any) {
+      console.error("PayPal order creation error:", error);
       toast({
         title: "PayPal Error",
         description: error.message || "Failed to initialize PayPal payment",
@@ -84,16 +103,26 @@ function PayPalCheckout({
   
   const onApprove = async (data: any) => {
     try {
+      // Validate input
+      if (!data || !data.orderID) {
+        throw new Error("Invalid PayPal response");
+      }
+      
+      console.log("Capturing PayPal payment:", data.orderID);
+      
       const response = await apiRequest("POST", "/api/capture-paypal-order", {
         orderId: data.orderID,
         items
       });
       
-      if (!response.ok) {
-        throw new Error("Failed to capture PayPal payment");
+      const orderData = await response.json();
+      
+      if (!orderData || (orderData.success === false)) {
+        console.error("Invalid order capture response:", orderData);
+        throw new Error(orderData.message || "Failed to process payment");
       }
       
-      const orderData = await response.json();
+      console.log("PayPal payment captured successfully:", orderData);
       
       toast({
         title: "Payment Successful!",
@@ -102,6 +131,7 @@ function PayPalCheckout({
       
       onSuccess(orderData);
     } catch (error: any) {
+      console.error("PayPal payment capture error:", error);
       toast({
         title: "Payment Capture Failed",
         description: error.message || "Failed to complete payment",
@@ -295,22 +325,42 @@ export default function CheckoutPage() {
                         <h3 className="text-base font-medium mb-4">Payment with PayPal</h3>
                         
                         <div className="py-4">
-                          <PayPalScriptProvider options={{ 
-                            clientId: paymentSettings.paypalClientId || "test", 
-                            currency: "USD" 
-                          }}>
-                            <PayPalCheckout 
-                              amount={totalPrice} 
-                              items={items} 
-                              email={form.getValues().email}
-                              onSuccess={(orderData) => {
-                                clearCart();
-                                // Navigate to thank you page
-                                // The captured order ID will come from a response from the API (if available)
-                                navigate(`/thank-you${orderData?.orderId ? `?orderId=${orderData.orderId}` : ''}`);
-                              }} 
-                            />
-                          </PayPalScriptProvider>
+                          {paymentSettings.paypalClientId ? (
+                            <PayPalScriptProvider options={{ 
+                              clientId: paymentSettings.paypalClientId,
+                              currency: "USD",
+                              intent: "capture"
+                            }}>
+                              <PayPalCheckout 
+                                amount={totalPrice} 
+                                items={items} 
+                                email={form.getValues().email}
+                                onSuccess={(orderData) => {
+                                  clearCart();
+                                  // Navigate to thank you page with order ID if available
+                                  navigate(`/thank-you${orderData?.orderId ? `?orderId=${orderData.orderId}` : ''}`);
+                                }} 
+                              />
+                            </PayPalScriptProvider>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-4 text-center">
+                              <p className="text-amber-600 dark:text-amber-400 mb-2">
+                                PayPal checkout is temporarily unavailable.
+                              </p>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  toast({
+                                    title: "Loading PayPal...",
+                                    description: "Refreshing payment options. Please wait.",
+                                  });
+                                  window.location.reload();
+                                }}
+                              >
+                                Retry Payment
+                              </Button>
+                            </div>
+                          )}
                           
                           <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
                             By clicking the PayPal button, you agree to the terms of service and privacy policy.

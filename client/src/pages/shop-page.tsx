@@ -47,7 +47,13 @@ export default function ShopPage() {
     error: productsError,
     refetch: refetchProducts
   } = useQuery<Product[]>({
-    queryKey: ["/api/products", { search: searchQuery, categoryId: selectedCategory }],
+    queryKey: ["/api/products", { 
+      search: searchQuery || undefined, 
+      categoryId: selectedCategory || undefined 
+    }],
+    // Make sure to refetch when query parameters change
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch all categories
