@@ -62,6 +62,7 @@ import { Link } from "wouter";
 const productFormSchema = insertProductSchema.extend({
   price: z.coerce.number().positive("Price must be a positive number"),
   categoryId: z.coerce.number().nullable(),
+  tags: z.array(z.string()).optional().default([]),
   isFeatured: z.boolean().default(false),
 });
 
@@ -73,6 +74,10 @@ export default function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  
+  // Tag input states
+  const [tagInput, setTagInput] = useState("");
+  const [editTagInput, setEditTagInput] = useState("");
   
   // Image cropping states
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -280,6 +285,7 @@ export default function ProductManagement() {
       imageUrl: "",
       downloadUrl: "",
       categoryId: null,
+      tags: [],
       isFeatured: false,
     },
   });
@@ -295,6 +301,7 @@ export default function ProductManagement() {
       imageUrl: "",
       downloadUrl: "",
       categoryId: null,
+      tags: [],
       isFeatured: false,
     },
   });
@@ -326,6 +333,7 @@ export default function ProductManagement() {
       imageUrl: product.imageUrl || "",
       downloadUrl: product.downloadUrl || "",
       categoryId: product.categoryId || null,
+      tags: product.tags || [],
       isFeatured: product.isFeatured || false,
     });
   };
@@ -361,6 +369,38 @@ export default function ProductManagement() {
       style: 'currency',
       currency: 'USD',
     }).format(price);
+  };
+  
+  // Handle tags for add form
+  const handleAddTag = () => {
+    if (tagInput.trim() === "") return;
+    
+    const currentTags = addForm.getValues("tags") || [];
+    if (!currentTags.includes(tagInput.trim())) {
+      addForm.setValue("tags", [...currentTags, tagInput.trim()]);
+    }
+    setTagInput("");
+  };
+  
+  const handleRemoveTag = (tag: string) => {
+    const currentTags = addForm.getValues("tags") || [];
+    addForm.setValue("tags", currentTags.filter(t => t !== tag));
+  };
+  
+  // Handle tags for edit form
+  const handleEditTag = () => {
+    if (editTagInput.trim() === "") return;
+    
+    const currentTags = editForm.getValues("tags") || [];
+    if (!currentTags.includes(editTagInput.trim())) {
+      editForm.setValue("tags", [...currentTags, editTagInput.trim()]);
+    }
+    setEditTagInput("");
+  };
+  
+  const handleRemoveEditTag = (tag: string) => {
+    const currentTags = editForm.getValues("tags") || [];
+    editForm.setValue("tags", currentTags.filter(t => t !== tag));
   };
 
   // Cropping functionality
