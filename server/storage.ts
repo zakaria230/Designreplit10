@@ -4,7 +4,8 @@ import {
   categories, Category, InsertCategory,
   orders, Order, InsertOrder,
   orderItems, OrderItem, InsertOrderItem,
-  carts, Cart, InsertCart
+  carts, Cart, InsertCart,
+  reviews, Review, InsertReview
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -56,19 +57,28 @@ export interface IStorage {
   getCartByUser(userId: number): Promise<Cart | undefined>;
   createOrUpdateCart(userId: number, items: any[]): Promise<Cart>;
 
+  // Review methods
+  getReviewsByProduct(productId: number): Promise<Review[]>;
+  getReviewsByUser(userId: number): Promise<Review[]>;
+  getReviewById(id: number): Promise<Review | undefined>;
+  createReview(review: InsertReview): Promise<Review>;
+  updateReview(id: number, review: Partial<InsertReview>): Promise<Review | undefined>;
+  deleteReview(id: number): Promise<boolean>;
+  updateProductRatingAndCount(productId: number): Promise<Product | undefined>;
+
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     // Type assertion to satisfy the SessionStore interface
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true
-    }) as session.SessionStore;
+    }) as session.Store;
   }
 
   // User methods
@@ -273,6 +283,102 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return newCart;
     }
+  }
+
+  // Review methods
+  async getReviewsByProduct(productId: number): Promise<Review[]> {
+    return db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.productId, productId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getReviewsByUser(userId: number): Promise<Review[]> {
+    return db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getReviewById(id: number): Promise<Review | undefined> {
+    const [review] = await db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.id, id));
+    return review;
+  }
+
+  async createReview(review: InsertReview): Promise<Review> {
+    const [newReview] = await db
+      .insert(reviews)
+      .values(review)
+      .returning();
+    
+    // Update product rating and review count
+    await this.updateProductRatingAndCount(review.productId);
+    
+    return newReview;
+  }
+
+  async updateReview(id: number, review: Partial<InsertReview>): Promise<Review | undefined> {
+    const [updatedReview] = await db
+      .update(reviews)
+      .set({ ...review, updatedAt: new Date() })
+      .where(eq(reviews.id, id))
+      .returning();
+    
+    if (updatedReview && review.rating) {
+      // Update product rating
+      await this.updateProductRatingAndCount(updatedReview.productId);
+    }
+    
+    return updatedReview;
+  }
+
+  async deleteReview(id: number): Promise<boolean> {
+    const [deletedReview] = await db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.id, id));
+    
+    await db
+      .delete(reviews)
+      .where(eq(reviews.id, id));
+    
+    if (deletedReview) {
+      // Update product rating
+      await this.updateProductRatingAndCount(deletedReview.productId);
+    }
+    
+    return true;
+  }
+
+  async updateProductRatingAndCount(productId: number): Promise<Product | undefined> {
+    // Calculate average rating and count
+    const result = await db
+      .select({
+        avgRating: sql`AVG(${reviews.rating})`.as("avgRating"),
+        count: sql`COUNT(*)`.as("count")
+      })
+      .from(reviews)
+      .where(eq(reviews.productId, productId));
+    
+    const avgRating = result[0]?.avgRating || 0;
+    const numReviews = result[0]?.count || 0;
+    
+    // Update product
+    const [updatedProduct] = await db
+      .update(products)
+      .set({
+        rating: avgRating,
+        numReviews: numReviews
+      })
+      .where(eq(products.id, productId))
+      .returning();
+    
+    return updatedProduct;
   }
 }
 
