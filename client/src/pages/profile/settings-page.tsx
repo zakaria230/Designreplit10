@@ -168,7 +168,7 @@ export default function SettingsPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to update password");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Password Update Failed",
         description: error.message || "An error occurred while updating your password.",
@@ -191,7 +191,7 @@ export default function SettingsPage() {
         title: "Notification Settings Updated",
         description: "Your notification preferences have been saved.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Update Failed",
         description: "An error occurred while updating your notification preferences.",
