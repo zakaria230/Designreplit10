@@ -302,6 +302,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
+  // Admin Users Endpoint
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      // Return empty users array
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Admin Stats
+  app.get("/api/admin/stats", isAdmin, async (req, res) => {
+    try {
+      // Return zeroed-out stats data
+      const stats = {
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalUsers: 0,
+        totalProducts: 0,
+        recentOrders: [],
+        salesData: [],
+        categoryData: [],
+        orderStatusData: []
+      };
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
   // Admin Orders
   app.get("/api/admin/orders", isAdmin, async (req, res) => {
     try {
@@ -604,6 +634,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.status(200).json({ received: true });
+  });
+
+  // Admin Analytics Endpoint
+  app.get("/api/admin/analytics", isAdmin, async (req, res) => {
+    try {
+      // Return zeroed-out analytics data
+      res.json({
+        salesSummary: {
+          totalRevenue: 0,
+          totalOrders: 0,
+          averageOrderValue: 0,
+          conversionRate: 0,
+        },
+        trafficSummary: {
+          totalVisitors: 0,
+          newUsers: 0,
+          returningUsers: 0,
+          averageSessionDuration: "0m 0s",
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch analytics data" });
+    }
   });
 
   // Admin Settings Routes
