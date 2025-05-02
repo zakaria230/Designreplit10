@@ -137,7 +137,7 @@ export default function DownloadsPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => window.open(`/profile/orders/${item.orderId}`, '_blank')}
+                        onClick={() => window.location.href = '/profile'}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View Order</span>

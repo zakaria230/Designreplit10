@@ -243,11 +243,9 @@ export default function PurchasesPage() {
                         Download
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`/profile/orders/${item.orderId}`}>
-                        View Order
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </a>
+                    <Button variant="outline" size="sm" onClick={() => window.location.href=`/profile`}>
+                      View Order
+                      <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
                 </div>
