@@ -430,14 +430,20 @@ export default function AdminSettings() {
           <h1 className="text-3xl font-bold tracking-tight">Website Settings</h1>
         </div>
 
-        <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="payment">Payment</TabsTrigger>
-            <TabsTrigger value="email">Email</TabsTrigger>
-            <TabsTrigger value="social">Social Media</TabsTrigger>
-          </TabsList>
+        {isLoadingSettings ? (
+          <div className="flex flex-col items-center justify-center p-12">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Loading settings...</p>
+          </div>
+        ) : (
+          <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="payment">Payment</TabsTrigger>
+              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="social">Social Media</TabsTrigger>
+            </TabsList>
 
           {/* General Settings */}
           <TabsContent value="general">
@@ -1437,6 +1443,7 @@ export default function AdminSettings() {
             </Card>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </AdminLayout>
   );
