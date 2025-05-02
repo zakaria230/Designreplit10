@@ -19,9 +19,10 @@ export default function ContactPage() {
   const siteName = settings?.siteName || 'DesignKorv';
   const domain = typeof window !== 'undefined' ? window.location.origin : 'https://designkorv.com';
   const contactEmail = settings?.contactEmail || 'info@designkorv.com';
-  const supportEmail = settings?.supportEmail || 'support@designkorv.com';
-  const phone = settings?.phone || '+46 123 456 789';
-  const address = settings?.address || 'Sveavägen 123, 113 50 Stockholm, Sweden';
+  const contactPhone = settings?.contactPhone || '+46 123 456 789';
+  
+  // Parse the address from settings or use a default
+  const addressLines = ['Sveavägen 123', '113 50 Stockholm, Sweden'];
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,7 +46,7 @@ export default function ContactPage() {
         title={`Contact Us | ${siteName}`}
         description={`Get in touch with the ${siteName} team for questions, support, or partnership inquiries.`}
         canonicalUrl="/contact"
-        structuredData={getOrganizationSchema(siteName, domain, contactEmail, phone)}
+        structuredData={getOrganizationSchema(siteName, domain, contactEmail, contactPhone)}
       />
 
       {/* Hero Section */}
@@ -84,10 +85,7 @@ export default function ContactPage() {
                       Email
                     </h3>
                     <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      info@designkorv.com
-                    </p>
-                    <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      support@designkorv.com
+                      {contactEmail}
                     </p>
                   </div>
                 </div>
@@ -103,7 +101,7 @@ export default function ContactPage() {
                       Phone
                     </h3>
                     <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      +46 123 456 789
+                      {contactPhone}
                     </p>
                   </div>
                 </div>
@@ -118,12 +116,11 @@ export default function ContactPage() {
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                       Office
                     </h3>
-                    <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      Sveavägen 123
-                    </p>
-                    <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      113 50 Stockholm, Sweden
-                    </p>
+                    {addressLines.map((line, index) => (
+                      <p key={index} className="mt-1 text-gray-600 dark:text-gray-300">
+                        {line}
+                      </p>
+                    ))}
                   </div>
                 </div>
                 
@@ -317,7 +314,7 @@ export default function ContactPage() {
                   How can I get support for a purchased item?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  You can reach our support team at support@designkorv.com or visit our Help Center for detailed assistance with your purchases.
+                  You can reach our support team at {contactEmail} or visit our Help Center for detailed assistance with your purchases.
                 </p>
               </div>
               
@@ -341,11 +338,9 @@ export default function ContactPage() {
             </div>
             
             <div className="text-center mt-8">
-              <Button variant="outline" asChild>
-                <Link href="/faq">
-                  View All FAQs
-                </Link>
-              </Button>
+              <Link to="/faq">
+                <Button variant="outline">View All FAQs</Button>
+              </Link>
             </div>
           </div>
         </div>
