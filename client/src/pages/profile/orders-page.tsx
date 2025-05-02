@@ -244,14 +244,21 @@ export default function OrdersPage() {
                           <span className="font-medium mr-3">
                             {formatPrice(item.quantity * item.price)}
                           </span>
-                          {item.product && item.product.downloadUrl && (
+                          {item.product && 
+                          item.product.downloadUrl && 
+                          selectedOrder.paymentStatus === 'paid' ? (
                             <Button size="sm" variant="outline" asChild>
                               <a href={item.product.downloadUrl} target="_blank" rel="noopener noreferrer">
                                 <Download className="h-4 w-4 mr-1" />
                                 Download
                               </a>
                             </Button>
-                          )}
+                          ) : item.product && item.product.downloadUrl ? (
+                            <Button size="sm" variant="outline" disabled title="Payment pending">
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                          ) : null}
                         </div>
                       </div>
                     ))}
