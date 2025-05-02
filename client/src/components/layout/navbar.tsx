@@ -93,15 +93,17 @@ export function Navbar() {
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 <span className="sr-only">Toggle theme</span>
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="Search"
-              >
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search</span>
-              </Button>
+              <Link href="/shop">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  aria-label="Search"
+                >
+                  <Search className="h-5 w-5" />
+                  <span className="sr-only">Search</span>
+                </Button>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
@@ -305,15 +307,17 @@ export function Navbar() {
                       {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                       <span className="sr-only">Toggle theme</span>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      aria-label="Search"
-                    >
-                      <Search className="h-5 w-5" />
-                      <span className="sr-only">Search</span>
-                    </Button>
+                    <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        aria-label="Search"
+                      >
+                        <Search className="h-5 w-5" />
+                        <span className="sr-only">Search</span>
+                      </Button>
+                    </Link>
                     <Button
                       variant="ghost"
                       size="icon"
