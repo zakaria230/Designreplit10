@@ -48,7 +48,7 @@ import { apiRequest } from "@/lib/queryClient";
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b", "#3b82f6", "#a3a3a3"];
 
 export default function AdminAnalytics() {
-  const [timeRange, setTimeRange] = useState("last7days");
+  const [timeRange, setTimeRange] = useState("today");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
