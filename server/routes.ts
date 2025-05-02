@@ -827,6 +827,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reviews API routes
+  app.get("/api/reviews/product/:productId", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      if (isNaN(productId)) {
+        return res.status(400).json({ message: "Invalid product ID" });
+      }
+      
+      const reviews = await storage.getReviewsByProduct(productId);
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+  
+  app.get("/api/reviews/user", isAuthenticated, async (req, res) => {
+    try {
+      const reviews = await storage.getReviewsByUser(req.user.id);
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+  
+  app.post("/api/reviews", isAuthenticated, async (req, res) => {
+    try {
+      const { productId, rating, title, comment } = req.body;
+      
+      // Validate required fields
+      if (!productId || !rating) {
+        return res.status(400).json({ message: "Product ID and rating are required" });
+      }
+      
+      // Check if product exists
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      // Check if user already reviewed this product
+      const existingReviews = await storage.getReviewsByProduct(productId);
+      const userReview = existingReviews.find(review => review.userId === req.user.id);
+      
+      if (userReview) {
+        return res.status(400).json({ 
+          message: "You have already reviewed this product",
+          reviewId: userReview.id
+        });
+      }
+      
+      // Create review
+      const review = await storage.createReview({
+        userId: req.user.id,
+        productId,
+        rating,
+        title: title || "",
+        comment: comment || "",
+      });
+      
+      res.status(201).json(review);
+    } catch (error: any) {
+      res.status(500).json({ message: `Failed to create review: ${error.message}` });
+    }
+  });
+  
+  app.put("/api/reviews/:id", isAuthenticated, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      // Check if review exists
+      const review = await storage.getReviewById(reviewId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      // Check if user owns this review
+      if (review.userId !== req.user.id && req.user.role !== "admin") {
+        return res.status(403).json({ message: "You can only edit your own reviews" });
+      }
+      
+      // Update review
+      const { rating, title, comment } = req.body;
+      const updatedReview = await storage.updateReview(reviewId, {
+        rating,
+        title,
+        comment,
+      });
+      
+      res.json(updatedReview);
+    } catch (error: any) {
+      res.status(500).json({ message: `Failed to update review: ${error.message}` });
+    }
+  });
+  
+  app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      // Check if review exists
+      const review = await storage.getReviewById(reviewId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      // Check if user owns this review or is admin
+      if (review.userId !== req.user.id && req.user.role !== "admin") {
+        return res.status(403).json({ message: "You can only delete your own reviews" });
+      }
+      
+      // Delete review
+      await storage.deleteReview(reviewId);
+      
+      res.status(204).end();
+    } catch (error: any) {
+      res.status(500).json({ message: `Failed to delete review: ${error.message}` });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
