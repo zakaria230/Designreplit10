@@ -1,5 +1,5 @@
 {
-  "script": "server.js",
+  "script": "cjs-adapter.cjs",
   "args": [],
   "env": {
     "NODE_ENV": "production"
@@ -8,5 +8,6 @@
   "instances": 1,
   "mergeLogs": true,
   "watch": false,
-  "autorestart": true
+  "autorestart": true,
+  "max_memory_restart": "150M"
 }

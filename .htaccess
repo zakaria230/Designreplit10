@@ -24,10 +24,11 @@ RewriteRule ^(.*)$ /index.html [L]
 
 # Passenger configuration for Node.js
 <IfModule mod_passenger.c>
-    PassengerNodejs /usr/local/bin/node
+    PassengerNodejs /opt/alt/alt-nodejs18/root/usr/bin/node
     PassengerAppType node
     PassengerStartupFile cjs-adapter.cjs
-    PassengerAppRoot /home/username/public_html
+    # Use correct path with no leading slash
+    PassengerAppRoot public_html
     PassengerFriendlyErrorPages on
 </IfModule>
 
