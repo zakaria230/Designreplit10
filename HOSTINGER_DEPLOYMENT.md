@@ -13,110 +13,200 @@ This guide outlines the steps to deploy the DesignKorv e-commerce platform to Ho
 
 ## Prerequisites
 
-1. A Hostinger hosting account (Either Premium or Business plan)
+1. A Hostinger hosting account (Business or Premium plan recommended)
 2. Access to your Hostinger cPanel
 3. Domain configured with Hostinger
-4. Node.js support enabled on your hosting plan
+4. Node.js support enabled on your Hostinger plan
 
-## Setup Steps
+## Step 1: Prepare Your Application for Deployment
 
-### 1. Prepare your project for deployment
-
-1. Build your project locally:
+1. Build your application locally:
    ```bash
    npm run build
    ```
 
-2. Create a ZIP archive of your project:
+2. Then run the cPanel preparation script:
    ```bash
-   # Make sure node_modules is not included
-   zip -r designkorv.zip . -x "node_modules/*" ".git/*"
+   node build-for-cpanel.js
    ```
+   This script will create the necessary files for cPanel deployment.
 
-### 2. Set up your database on Hostinger
+## Step 2: Set Up PostgreSQL Database on Hostinger
+
+Hostinger offers PostgreSQL databases on their higher-tier plans:
 
 1. Log in to your Hostinger cPanel
-2. Navigate to the MySQL Databases section
-3. Create a new database named `designkorv`
-4. Create a new user with a strong password
-5. Add the user to the database with all privileges
-6. Note down the database name, username, password, and host for later use
+2. Navigate to "PostgreSQL Databases"
+3. Create a new database (e.g., `designkorv`)
+4. Create a new database user with a strong password
+5. Assign the user to the database with all privileges
+6. Note down the database details:
+   - Database name
+   - Database username
+   - Database password
+   - Database host (usually localhost)
+   - Database port (usually 5432)
 
-### 3. Upload your project to Hostinger
+## Step 3: Upload Your Files to Hostinger
 
-#### Option 1: Using cPanel File Manager
+You can upload files using either FTP or the cPanel File Manager:
+
+### Using File Manager:
 
 1. Log in to your Hostinger cPanel
-2. Navigate to the File Manager
-3. Navigate to the public_html directory (or a subdirectory if you want to install in a subfolder)
-4. Click on "Upload" and select your designkorv.zip file
-5. Once uploaded, extract the ZIP file
-6. Delete the ZIP file after extraction
+2. Open the File Manager
+3. Navigate to the `public_html` directory (or a subdirectory if you prefer)
+4. Upload the following files/folders:
+   - `dist/` (contains server and client build)
+   - `node_modules/` (dependencies)
+   - `uploads/` (user uploaded files)
+   - `.htaccess` (Apache configuration)
+   - `cjs-adapter.cjs` (entry point for cPanel)
+   - `index.html` (main HTML file)
+   - `passenger-nodejs.json` (Node.js configuration)
+   - `.cpanel.yml` (cPanel deployment configuration)
 
-#### Option 2: Using FTP
+### Using FTP:
 
-1. Use an FTP client (like FileZilla)
-2. Connect to your Hostinger server using your FTP credentials
-3. Navigate to the public_html directory (or your preferred installation directory)
-4. Upload all your project files (excluding node_modules and .git directories)
+1. Connect to your Hostinger server using an FTP client (like FileZilla)
+2. Upload the same files/folders listed above to your website directory
 
-### 4. Configure your environment
+## Step 4: Configure Your Environment
 
-1. Create or update the `.env` file in your project root with your Hostinger database credentials:
+1. Create a `.env` file in your website root directory (based on `.env.cpanel`):
    ```
-   DATABASE_URL=mysql://username:password@hostname:3306/database_name
-   SESSION_SECRET=your_session_secret
+   # Database Configuration
+   DATABASE_URL=postgresql://username:password@hostname:port/database_name
+   PGUSER=username
+   PGPASSWORD=password
+   PGHOST=hostname
+   PGPORT=5432
+   PGDATABASE=database_name
+   
+   # Security
+   SESSION_SECRET=your_random_secure_session_secret_here
+   
+   # Payment Gateways
    PAYPAL_CLIENT_ID=your_paypal_client_id
    PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-   # Other environment variables as needed
+   
+   # Production Settings
+   NODE_ENV=production
+   PORT=3000
    ```
 
-2. Make sure your Node.js setup is configured. Create or update the `passenger-nodejs.json` file:
-   ```json
-   {
-     "script": "dist/index.js",
-     "environment": "production",
-     "port": null
-   }
-   ```
+2. Replace the placeholder values with your actual database credentials and API keys.
 
-### 5. Set up Node.js on Hostinger
+## Step 5: Set Up Node.js Application
 
-1. In your Hostinger cPanel, locate the Node.js Application Manager
-2. Click on "Create Application"
-3. Set the application path to your project directory
-4. Set the Node.js version to a compatible version (preferably 20.x)
-5. Set the application startup file to `dist/index.js`
-6. Set the application Environment to `production`
-7. Save the configuration
+Hostinger provides a Node.js Application Manager in cPanel:
 
-### 6. Install dependencies and start the application
+1. Log in to your Hostinger cPanel
+2. Navigate to "Node.js" or "Setup Node.js App"
+3. Click "Create Application"
+4. Configure the application:
+   - Application Path: Your website directory path (e.g., `/home/username/public_html` or your subdirectory)
+   - Application URL: Your domain or subdomain
+   - Application Root: The directory containing your application files
+   - Application Startup File: `cjs-adapter.cjs`
+   - Node.js Version: Select version 18.x or higher
+   - Application Environment: Select "Production"
+   - Passenger Log File: Leave default or specify a custom path
+   - Enable "Run NPM Install" if available
 
-1. Access the SSH terminal in cPanel or use Hostinger's Terminal
-2. Navigate to your project directory
-3. Run the following commands:
+5. Click "Create" to set up your Node.js application
+
+## Step 6: Set Up Database Schema
+
+To initialize your database schema:
+
+1. Access SSH terminal in cPanel (Terminal feature)
+2. Navigate to your website directory
+3. Run the database migration command:
    ```bash
-   npm install --production
-   npm run start
+   npx drizzle-kit push
    ```
 
-### 7. Configure your domain
+## Step 7: Verify Deployment
 
-1. In the Hostinger cPanel, navigate to the "Domains" section
-2. Point your domain or subdomain to the directory where you uploaded your project
-3. Make sure SSL is enabled for your domain
+1. Open your website in a browser
+2. Check that all pages load correctly
+3. Test functionality (user login, product browsing, etc.)
+4. Check the error logs in cPanel if you encounter any issues
+
+## Step 8: Set Up SSL (HTTPS)
+
+1. In Hostinger cPanel, navigate to "SSL/TLS Status"
+2. Install/enable SSL for your domain
+3. Force HTTPS redirection by ensuring your `.htaccess` file contains:
+   ```
+   RewriteEngine On
+   RewriteCond %{HTTPS} off
+   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+   ```
 
 ## Troubleshooting
 
 ### Common Issues:
 
-1. **Node.js version issues**: Make sure your Hostinger plan supports the Node.js version required by your application
-2. **Port binding errors**: Your application may need to use the specific port provided by Hostinger's environment
-3. **Database connection issues**: Double-check your database credentials and connection string
-4. **Permission errors**: You may need to set the correct file permissions (typically 755 for directories and 644 for files)
+1. **Application not starting**: Check the Node.js application logs in cPanel
+2. **Database connection errors**: Verify your database credentials and connection string
+3. **File permission issues**: Set proper permissions (755 for directories, 644 for files)
+4. **Node.js version compatibility**: Ensure Hostinger supports your required Node.js version
+5. **Passenger errors**: If using Passenger, check Passenger configuration and logs
+
+### Hostinger-Specific Solutions:
+
+- If your app won't start or shows 503 errors, try creating a `passenger-nodejs.json` file:
+  ```json
+  {
+    "script": "cjs-adapter.cjs",
+    "environment": "production",
+    "port": 3000
+  }
+  ```
+
+- For memory issues, consider upgrading your Hostinger plan to a higher tier for more resources
+
+## Hostinger-Specific Notes
+
+### Selecting the Right Hostinger Plan
+
+For the DesignKorv application, you'll need these features:
+- Node.js support
+- PostgreSQL database 
+- SSH access
+
+These features are typically available on Hostinger's Business or Premium hosting plans. The Cloud VPS plans would also work well for this application.
+
+### Application Root Directory
+
+After logging in to Hostinger cPanel, you might find your website's root directory at:
+```
+/home/username/public_html/
+```
+
+Replace `username` with your actual Hostinger username. This is where you should upload all your application files.
+
+### Database Connection
+
+Hostinger's PostgreSQL connection string follows this format:
+```
+postgresql://username:password@localhost:5432/database_name
+```
+
+If you experience database connection issues, try these troubleshooting steps:
+1. Confirm the database service is running in your Hostinger plan
+2. Verify the PostgreSQL port (usually 5432, but may be different)
+3. Check that your database user has the correct permissions
+
+### Node.js Version Support
+
+Hostinger typically supports Node.js versions 14, 16, 18, and 20. Make sure to select a version compatible with your application (18.x or higher recommended for DesignKorv).
 
 ## Additional Resources
 
-- [Hostinger Node.js Hosting Documentation](https://www.hostinger.com/tutorials/how-to-install-node-js)
-- [cPanel Documentation](https://docs.cpanel.net/)
-- [Node.js Deployment Best Practices](https://nodejs.org/en/docs/guides/nodejs-docker-webapp/)
+- [Hostinger cPanel Guide](https://www.hostinger.com/tutorials/cpanel/how-to-use-cpanel)
+- [Hostinger Node.js Hosting](https://www.hostinger.com/tutorials/how-to-install-node-js)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Hostinger PostgreSQL Setup](https://support.hostinger.com/en/articles/4455931-how-to-set-up-and-access-postgresql)
