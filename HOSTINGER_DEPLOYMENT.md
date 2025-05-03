@@ -1,6 +1,6 @@
 # Deploying DesignKorv to Hostinger
 
-This guide outlines the steps to deploy the DesignKorv e-commerce platform to Hostinger web hosting.
+This guide outlines the steps to deploy the DesignKorv e-commerce platform to Hostinger web hosting, with specific focus on preventing 503 Service Unavailable errors.
 
 > **IMPORTANT**: Before deploying, consider clearing test data from your database to start fresh. Use the provided script by running:
 > ```bash
@@ -25,11 +25,11 @@ This guide outlines the steps to deploy the DesignKorv e-commerce platform to Ho
    npm run build
    ```
 
-2. Then run the cPanel preparation script:
+2. Then run the specialized Hostinger preparation script:
    ```bash
-   node build-for-cpanel.js
+   node build-for-hostinger.js
    ```
-   This script will create the necessary files for cPanel deployment.
+   This script will create the necessary files for Hostinger deployment and ensure that the critical `index.html` file is properly included (this file is often missing and causes 503 errors).
 
 ## Step 2: Set Up PostgreSQL Database on Hostinger
 
@@ -155,18 +155,61 @@ To initialize your database schema:
 4. **Node.js version compatibility**: Ensure Hostinger supports your required Node.js version
 5. **Passenger errors**: If using Passenger, check Passenger configuration and logs
 
-### Hostinger-Specific Solutions:
+### Fixing 503 Service Unavailable Errors:
 
-- If your app won't start or shows 503 errors, try creating a `passenger-nodejs.json` file:
-  ```json
-  {
-    "script": "cjs-adapter.cjs",
-    "environment": "production",
-    "port": 3000
-  }
-  ```
+If you encounter a 503 Service Unavailable error, which is common with Node.js on Hostinger, follow these steps:
 
-- For memory issues, consider upgrading your Hostinger plan to a higher tier for more resources
+1. **Check for the index.html file**: 
+   The most common cause of 503 errors is a missing index.html file in your public_html directory. Make sure this file exists.
+
+2. **Verify passenger-nodejs.json configuration**:
+   Make sure your passenger-nodejs.json file is set up correctly:
+   ```json
+   {
+     "script": "cjs-adapter.cjs",
+     "args": [],
+     "env": {
+       "NODE_ENV": "production"
+     },
+     "exec_mode": "fork",
+     "instances": 1,
+     "mergeLogs": true,
+     "watch": false,
+     "autorestart": true,
+     "max_memory_restart": "150M"
+   }
+   ```
+
+3. **Check your .htaccess file**:
+   Ensure your .htaccess has the correct Passenger configuration:
+   ```apache
+   # Passenger configuration for Node.js
+   <IfModule mod_passenger.c>
+       PassengerNodejs /opt/alt/alt-nodejs18/root/usr/bin/node
+       PassengerAppType node
+       PassengerStartupFile cjs-adapter.cjs
+       PassengerAppRoot public_html
+       PassengerFriendlyErrorPages on
+   </IfModule>
+   ```
+
+4. **Set proper file permissions**:
+   ```bash
+   chmod 755 public_html
+   chmod 644 public_html/.htaccess
+   chmod 755 public_html/cjs-adapter.cjs
+   ```
+
+5. **Check error logs in cPanel**:
+   Go to "Logs" > "Error Log" to see detailed error messages.
+
+6. **Restart the Node.js application**:
+   In cPanel, go to the Node.js Application Manager and restart your application.
+
+7. **Memory limitations**:
+   For memory issues, consider upgrading your Hostinger plan to a higher tier for more resources.
+
+For detailed steps, refer to the `HOSTINGER_503_FIX.md` file in your project.
 
 ## Hostinger-Specific Notes
 
