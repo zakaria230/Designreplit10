@@ -172,7 +172,11 @@ export default function DownloadsPage() {
                       </Button>
                       <Button 
                         size="sm"
-                        onClick={() => window.open(item.downloadUrl, '_blank')}
+                        onClick={() => {
+                          const fileName = item.downloadUrl.split('/').pop();
+                          const downloadUrl = `/uploads/downloads/${fileName}`;
+                          window.open(downloadUrl, '_blank');
+                        }}
                       >
                         <Download className="h-4 w-4 mr-1" />
                         Download
