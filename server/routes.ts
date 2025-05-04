@@ -953,7 +953,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalUsers: allUsers.length,
         totalProducts: allProducts.length,
         recentOrders,
-        salesData,
+        salesData: monthlySalesData, // Use the newly generated sales data
         categoryData,
         orderStatusData,
       };
