@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
@@ -37,6 +38,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   DollarSign, 
   Users, 
@@ -49,7 +58,8 @@ import {
   BarChart3,
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
-  Eye
+  Eye,
+  Receipt
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 
@@ -57,6 +67,9 @@ import { AdminLayout } from "@/components/admin/admin-layout";
 const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b"];
 
 export default function AdminDashboard() {
+  // Selected order for the dialog
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  
   // Fetch overview stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["/api/admin/stats"],
@@ -70,6 +83,15 @@ export default function AdminDashboard() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+  };
+  
+  // Format date
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -361,11 +383,9 @@ export default function AdminDashboard() {
                               <Button 
                                 variant="ghost" 
                                 size="icon"
-                                asChild
+                                onClick={() => setSelectedOrder(order)}
                               >
-                                <Link href={`/admin/orders/${order.id}`}>
-                                  <Eye className="h-4 w-4" />
-                                </Link>
+                                <Eye className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
@@ -385,6 +405,107 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+      
+      {/* Order Details Dialog */}
+      <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle>Order #{selectedOrder?.id}</DialogTitle>
+            <DialogDescription>
+              Placed on {selectedOrder?.createdAt && formatDate(selectedOrder.createdAt)}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Customer Information */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Customer Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <p className="font-medium">{selectedOrder.user?.username || "Unknown User"}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {selectedOrder.user?.email || "Email not available"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Order Details */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Order Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                      <p className="font-medium capitalize">{selectedOrder.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Payment Status</p>
+                      <p className="font-medium capitalize">{selectedOrder.paymentStatus}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Payment Method</p>
+                      <p className="font-medium">PayPal</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
+                      <p className="font-medium">{formatCurrency(selectedOrder.totalAmount || 0)}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Order Items */}
+                  <div>
+                    <p className="font-medium mb-2">Order Items</p>
+                    {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                      <div className="space-y-2">
+                        {selectedOrder.items.map((item: any) => (
+                          <div 
+                            key={item.id} 
+                            className="border rounded p-3 flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="font-medium">{item.product?.name || `Product #${item.productId}`}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Quantity: {item.quantity} × {formatCurrency(item.price || 0)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="font-medium">
+                              {formatCurrency((item.price * item.quantity) || 0)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No items found</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Notes */}
+              {selectedOrder.notes && selectedOrder.notes.trim() !== "" && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium mb-1">Notes</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
