@@ -860,6 +860,59 @@ export default function ProductManagement() {
                               name={field.name}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Short description that appears on the product card and summary.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="details"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Details</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Detailed product information" 
+                              className="h-32"
+                              value={field.value || ''}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              ref={field.ref}
+                              name={field.name}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Detailed information about the product that appears in the Details tab. Can include HTML formatting.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="specifications"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Specifications</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Technical specifications, file formats, dimensions, etc." 
+                              className="h-32"
+                              value={field.value || ''}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              ref={field.ref}
+                              name={field.name}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Technical specifications that appear in the Specifications tab. Include file formats, dimensions, etc.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1369,6 +1422,59 @@ export default function ProductManagement() {
                             name={field.name}
                           />
                         </FormControl>
+                        <FormDescription>
+                          Short description that appears on the product card and summary.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="details"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Details</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Detailed product information" 
+                            className="h-32"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            name={field.name}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Detailed information about the product that appears in the Details tab. Can include HTML formatting.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="specifications"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Specifications</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Technical specifications, file formats, dimensions, etc." 
+                            className="h-32"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            name={field.name}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Technical specifications that appear in the Specifications tab. Include file formats, dimensions, etc.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

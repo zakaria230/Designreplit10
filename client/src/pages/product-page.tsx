@@ -302,24 +302,36 @@ export default function ProductPage() {
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
               <TabsContent value="details" className="prose dark:prose-invert max-w-none">
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No additional details have been provided for this product.
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                    The basic product information is shown in the main product section.
-                  </p>
-                </div>
+                {product.details ? (
+                  <div className="py-6" dangerouslySetInnerHTML={{ __html: product.details }} />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No additional details have been provided for this product.
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                      The basic product information is shown in the main product section.
+                    </p>
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="specifications">
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No specifications provided for this product.
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                    Specifications include file formats, dimensions, compatibility, and license details.
-                  </p>
-                </div>
+                {product.specifications ? (
+                  <div className="py-6">
+                    <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300">
+                      {product.specifications}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No specifications provided for this product.
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                      Specifications include file formats, dimensions, compatibility, and license details.
+                    </p>
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="reviews">
                 <ReviewList productId={product.id} />
