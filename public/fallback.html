@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/" />
+  <title>DesignKorv | Premium Design Assets Marketplace</title>
+  <meta name="description" content="Premium e-commerce platform for digital fashion design files, providing designers with comprehensive tools for showcasing, selling, and collaborating on creative design assets.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <!-- Diagnostic styles -->
+  <link rel="stylesheet" href="/diagnostic.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    pre {
+      background: #f1f5f9;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .alert {
+      background: #fee2e2;
+      border-left: 4px solid #ef4444;
+      padding: 10px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>DesignKorv - Fallback Page</h1>
+  <p>This is a fallback page that is displayed when the main application fails to load. This indicates there might be an issue with the deployment or configuration.</p>
+  
+  <div class="alert">
+    <strong>Deployment Issue Detected</strong>
+    <p>The main application could not be loaded. This could be due to missing JavaScript files, environment variables, or database connection issues.</p>
+  </div>
+  
+  <h2>Troubleshooting Steps</h2>
+  <pre>
+1. Check browser console for errors (F12 > Console)
+2. Try accessing the diagnostic endpoint: /diagnose
+3. Verify that all environment variables are set in Netlify
+4. Check if the database is correctly connected
+5. Ensure all assets were properly built and deployed
+  </pre>
+  
+  <h2>Additional Information</h2>
+  <p>Current URL: <script>document.write(window.location.href)</script></p>
+  <p>Browser: <script>document.write(navigator.userAgent)</script></p>
+  <p>Time: <script>document.write(new Date().toISOString())</script></p>
+  
+  <div class="buttons">
+    <button onclick="window.location.reload()">Refresh Page</button>
+    <button onclick="window.location.href='/diagnose'">Run Diagnostics</button>
+    <button onclick="window.location.href='/.netlify/functions/api/user'">Test API</button>
+  </div>
+  
+  <script>
+    console.log('Fallback page loaded at', new Date().toISOString());
+    console.log('User agent:', navigator.userAgent);
+    console.log('URL:', window.location.href);
+    
+    // Try to fetch diagnostic information
+    fetch('/diagnose')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Diagnostic data:', data);
+        const diagInfo = document.createElement('pre');
+        diagInfo.textContent = JSON.stringify(data, null, 2);
+        document.body.appendChild(diagInfo);
+      })
+      .catch(error => {
+        console.error('Failed to fetch diagnostics:', error);
+      });
+  </script>
+</body>
+</html>

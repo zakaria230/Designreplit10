@@ -1,6 +1,6 @@
 [build]
   publish = "dist/client"
-  command = "npm ci && CI=false npm run build && node build-for-netlify.cjs"
+  command = "npm ci && CI=false node build-for-production.cjs"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -23,6 +23,11 @@
 [[redirects]]
   from = "/server/*"
   to = "/.netlify/functions/server/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/fallback"
+  to = "/fallback.html"
   status = 200
 
 [[redirects]]
