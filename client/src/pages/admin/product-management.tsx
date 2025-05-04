@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cropper from 'react-easy-crop';
+import { AdminLayout } from "@/components/admin/admin-layout";
 
 // Define Area type since it doesn't get imported correctly
 interface Area {
@@ -55,8 +56,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image, Scissors } from "lucide-react";
+import { 
+  Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image, 
+  Scissors, Search, Filter, Tag, CheckCircle, XCircle, Star, SlidersHorizontal, RefreshCcw
+} from "lucide-react";
 import { Link } from "wouter";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Form schema for product
 const productFormSchema = insertProductSchema.extend({
@@ -83,6 +102,12 @@ export default function ProductManagement() {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imageToEdit, setImageToEdit] = useState<string | null>(null);
   const [formContext, setFormContext] = useState<'add' | 'edit'>('add');
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+  const [priceRange, setPriceRange] = useState<{ min: number | null; max: number | null }>({ min: null, max: null });
 
   // Fetch all products
   const {
@@ -519,10 +544,56 @@ export default function ProductManagement() {
     }
   };
 
+  // Filter methods
+  const handleCategoryToggle = (categoryId: number) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedCategories([]);
+    setShowFeaturedOnly(false);
+    setPriceRange({ min: null, max: null });
+  };
+  
+  // Apply filters to products
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    
+    return products.filter(product => {
+      // Search term filter
+      const matchesSearch = searchTerm 
+        ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
+        : true;
+      
+      // Category filter
+      const matchesCategory = selectedCategories.length > 0 
+        ? selectedCategories.includes(product.categoryId || 0)
+        : true;
+      
+      // Featured only filter
+      const matchesFeatured = showFeaturedOnly 
+        ? product.isFeatured 
+        : true;
+      
+      // Price range filter
+      const matchesPrice = 
+        (!priceRange.min || product.price >= priceRange.min) && 
+        (!priceRange.max || product.price <= priceRange.max);
+      
+      return matchesSearch && matchesCategory && matchesFeatured && matchesPrice;
+    });
+  }, [products, searchTerm, selectedCategories, showFeaturedOnly, priceRange]);
+
   const isLoading = isLoadingProducts || isLoadingCategories;
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Product Management | DesignKorv Admin</title>
         <meta name="description" content="Manage products for the DesignKorv e-commerce platform." />
@@ -581,37 +652,652 @@ export default function ProductManagement() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex-1 p-8 pt-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Button variant="ghost" size="sm" asChild className="mr-2">
-              <Link href="/admin">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back to Dashboard
-              </Link>
-            </Button>
-            <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="hidden md:block w-64 border-r p-6 h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-medium mb-3 flex items-center">
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </h3>
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-2"
+              />
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-3 flex items-center">
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </h3>
+              <Card>
+                <CardContent className="p-4 space-y-6">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="categories">
+                      <AccordionTrigger className="text-sm font-medium py-2">
+                        Categories
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-2">
+                        {isLoadingCategories ? (
+                          <div className="flex items-center justify-center p-4">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : categories && categories.length > 0 ? (
+                          <div className="space-y-2">
+                            {categories.map((category) => (
+                              <div key={category.id} className="flex items-center space-x-2">
+                                <Checkbox 
+                                  id={`category-${category.id}`}
+                                  checked={selectedCategories.includes(category.id)}
+                                  onCheckedChange={() => handleCategoryToggle(category.id)}
+                                />
+                                <label
+                                  htmlFor={`category-${category.id}`}
+                                  className="text-sm cursor-pointer"
+                                >
+                                  {category.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground py-2">
+                            No categories found
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="price">
+                      <AccordionTrigger className="text-sm font-medium py-2">
+                        Price Range
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground">Minimum Price</label>
+                          <Input
+                            type="number"
+                            placeholder="Min $"
+                            min={0}
+                            value={priceRange.min || ''}
+                            onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value ? Number(e.target.value) : null })}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">Maximum Price</label>
+                          <Input
+                            type="number"
+                            placeholder="Max $"
+                            min={0}
+                            value={priceRange.max || ''}
+                            onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value ? Number(e.target.value) : null })}
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="featured">
+                      <AccordionTrigger className="text-sm font-medium py-2">
+                        Featured Status
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="featured-only"
+                            checked={showFeaturedOnly}
+                            onCheckedChange={(checked) => setShowFeaturedOnly(!!checked)}
+                          />
+                          <label
+                            htmlFor="featured-only"
+                            className="text-sm cursor-pointer flex items-center"
+                          >
+                            <Star className="h-3.5 w-3.5 mr-1 text-amber-500" />
+                            Featured only
+                          </label>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm" 
+                    onClick={resetFilters}
+                    size="sm"
+                  >
+                    <RefreshCcw className="h-3.5 w-3.5 mr-2" />
+                    Reset Filters
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8 pt-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
+            </div>
           
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Product
-              </Button>
-            </DialogTrigger>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Product
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Product</DialogTitle>
+                  <DialogDescription>
+                    Enter the details for the new product. Click save when you're done.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <Form {...addForm}>
+                  <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
+                    <FormField
+                      control={addForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Product name" 
+                              {...field} 
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (!addForm.getValues("slug")) {
+                                  generateSlug(e.target.value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="slug"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Slug</FormLabel>
+                          <FormControl>
+                            <Input placeholder="product-slug" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Used in the URL. Auto-generated from the name.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Product description" 
+                              className="h-24"
+                              value={field.value || ''}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              ref={field.ref}
+                              name={field.name}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={addForm.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Price ($)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={addForm.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select
+                              value={field.value?.toString() || "0"}
+                              onValueChange={(value) => field.onChange(value === "0" ? null : parseInt(value))}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="0">No category</SelectItem>
+                                {categories?.map((category) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="tags"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tags</FormLabel>
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {field.value?.map((tag) => (
+                                <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
+                                  {tag}
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleRemoveTag(tag)}
+                                    className="text-muted-foreground hover:text-foreground"
+                                  >
+                                    ✕
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Add a tag"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddTag();
+                                  }
+                                }}
+                              />
+                              <Button 
+                                type="button" 
+                                size="sm"
+                                onClick={handleAddTag}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          </div>
+                          <FormDescription>
+                            Tags help customers find your products. Press Enter or click Add to add a tag.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Image</FormLabel>
+                          <FormDescription>
+                            Upload a product image. This will be shown on the product page.
+                          </FormDescription>
+                          
+                          {!field.value ? (
+                            <div 
+                              className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={() => addImageInputRef.current?.click()}
+                            >
+                              <div className="p-4 bg-primary/10 rounded-full">
+                                <ImagePlus className="h-8 w-8 text-primary" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-medium">Click to upload</p>
+                                <p className="text-xs text-muted-foreground">
+                                  PNG, JPG or WebP (max. 5MB)
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative aspect-square w-48 rounded-md overflow-hidden border group">
+                              <img 
+                                src={field.value} 
+                                alt="Product preview" 
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-2 right-2 z-10">
+                                <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                              </div>
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startImageCrop(field.value, 'add');
+                                  }}
+                                >
+                                  <Scissors className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addImageInputRef.current?.click();
+                                  }}
+                                >
+                                  <ImagePlus className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addForm.setValue('imageUrl', '');
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            ref={addImageInputRef}
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e, 'add')}
+                          />
+                          
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="downloadUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Downloadable File</FormLabel>
+                          <FormDescription>
+                            Upload the design files that customers will download after purchase.
+                          </FormDescription>
+                          
+                          {!field.value ? (
+                            <div 
+                              className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={() => addFileInputRef.current?.click()}
+                            >
+                              <div className="p-4 bg-primary/10 rounded-full">
+                                <Image className="h-8 w-8 text-primary" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-medium">Click to upload</p>
+                                <p className="text-xs text-muted-foreground">
+                                  ZIP, PDF, AI, PSD, EPS or SVG (max. 50MB)
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="border rounded-lg p-4 flex justify-between items-center">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-primary/10 rounded">
+                                  <Image className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">
+                                    {field.value.split('/').pop() || 'File uploaded'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Ready for download</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                  onClick={() => addForm.setValue('downloadUrl', '')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => addFileInputRef.current?.click()}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                  Replace file
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <input 
+                            type="file" 
+                            accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
+                            ref={addFileInputRef}
+                            className="hidden"
+                            onChange={(e) => handleFileUpload(e, 'add')}
+                          />
+                          
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={addForm.control}
+                      name="isFeatured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Featured Product</FormLabel>
+                            <FormDescription>
+                              Featured products appear on the homepage.
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={addProductMutation.isPending}>
+                        {addProductMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save Product"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Product list table */}
+          <div className="border rounded-lg">
+            {productsError ? (
+              <div className="p-8 text-center">
+                <p className="text-red-500 dark:text-red-400">
+                  Error loading products. Please try again later.
+                </p>
+              </div>
+            ) : isLoading ? (
+              <div className="p-8 flex justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Tags</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.length > 0 ? (
+                      filteredProducts.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center">
+                              <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 mr-3">
+                                {product.imageUrl ? (
+                                  <img
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                    No img
+                                  </div>
+                                )}
+                              </div>
+                              <span>{product.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{formatPrice(product.price)}</TableCell>
+                          <TableCell>
+                            {categories?.find(c => c.id === product.categoryId)?.name || "—"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {product.tags && product.tags.length > 0 ? (
+                                product.tags.slice(0, 3).map((tag) => (
+                                  <Badge key={tag} variant="outline" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-muted-foreground text-xs">No tags</span>
+                              )}
+                              {product.tags && product.tags.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{product.tags.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {product.isFeatured && (
+                              <Badge>Featured</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => handleEdit(product)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
+                                onClick={() => {
+                                  setProductToDelete(product);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No products found. Add your first product to get started.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+
+          {/* Edit Product Dialog */}
+          <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
             <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
+                <DialogTitle>Edit Product</DialogTitle>
                 <DialogDescription>
-                  Enter the details for the new product. Click save when you're done.
+                  Update the product details. Click save when you're done.
                 </DialogDescription>
               </DialogHeader>
               
-              <Form {...addForm}>
-                <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
+              <Form {...editForm}>
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -622,8 +1308,8 @@ export default function ProductManagement() {
                             {...field} 
                             onChange={(e) => {
                               field.onChange(e);
-                              if (!addForm.getValues("slug")) {
-                                generateSlug(e.target.value);
+                              if (editForm.getValues("slug") === editingProduct?.slug) {
+                                generateEditSlug(e.target.value);
                               }
                             }}
                           />
@@ -634,7 +1320,7 @@ export default function ProductManagement() {
                   />
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="slug"
                     render={({ field }) => (
                       <FormItem>
@@ -651,7 +1337,7 @@ export default function ProductManagement() {
                   />
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
@@ -674,7 +1360,7 @@ export default function ProductManagement() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
-                      control={addForm.control}
+                      control={editForm.control}
                       name="price"
                       render={({ field }) => (
                         <FormItem>
@@ -694,7 +1380,7 @@ export default function ProductManagement() {
                     />
                     
                     <FormField
-                      control={addForm.control}
+                      control={editForm.control}
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem>
@@ -724,7 +1410,7 @@ export default function ProductManagement() {
                   </div>
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="tags"
                     render={({ field }) => (
                       <FormItem>
@@ -747,19 +1433,19 @@ export default function ProductManagement() {
                           <div className="flex gap-2">
                             <Input
                               placeholder="Add a tag"
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
+                              value={editTagInput}
+                              onChange={(e) => setEditTagInput(e.target.value)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   e.preventDefault();
-                                  handleAddTag();
+                                  handleAddEditTag();
                                 }
                               }}
                             />
                             <Button 
                               type="button" 
                               size="sm"
-                              onClick={handleAddTag}
+                              onClick={handleAddEditTag}
                             >
                               Add
                             </Button>
@@ -774,93 +1460,76 @@ export default function ProductManagement() {
                   />
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Photos and video <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Product Image</FormLabel>
                         <FormDescription>
-                          Add up to 10 photos and 1 video.
+                          Upload a product image. This will be shown on the product page.
                         </FormDescription>
                         
                         {!field.value ? (
                           <div 
                             className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => addImageInputRef.current?.click()}
+                            onClick={() => editImageInputRef.current?.click()}
                           >
-                            <p className="text-center text-muted-foreground">Drag & Drop or</p>
-                            
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              className="flex gap-2 items-center"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addImageInputRef.current?.click();
-                              }}
-                            >
-                              <Plus className="h-4 w-4" />
-                              Add up to 10 photos and 1 video
-                            </Button>
+                            <div className="p-4 bg-primary/10 rounded-full">
+                              <ImagePlus className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-medium">Click to upload</p>
+                              <p className="text-xs text-muted-foreground">
+                                PNG, JPG or WebP (max. 5MB)
+                              </p>
+                            </div>
                           </div>
                         ) : (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-6 gap-2">
-                              <div className="relative group aspect-square overflow-hidden rounded-md border border-input">
-                                <img 
-                                  src={field.value} 
-                                  alt="Product preview" 
-                                  className="w-full h-full object-cover"
-                                />
-                                <div className="absolute top-2 right-2 z-10">
-                                  <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
-                                </div>
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 bg-white hover:bg-white"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      startImageCrop(field.value, 'add');
-                                    }}
-                                  >
-                                    <Scissors className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 bg-white hover:bg-white"
-                                    onClick={() => addForm.setValue("imageUrl", "")}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              {/* Empty placeholder slots */}
-                              {Array.from({ length: 5 }).map((_, index) => (
-                                <div 
-                                  key={`empty-${index}`}
-                                  className="aspect-square rounded-md border border-input flex items-center justify-center bg-muted/30 cursor-pointer"
-                                  onClick={() => addImageInputRef.current?.click()}
-                                >
-                                  <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                              ))}
+                          <div className="relative aspect-square w-48 rounded-md overflow-hidden border group">
+                            <img 
+                              src={field.value} 
+                              alt="Product preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 right-2 z-10">
+                              <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
                             </div>
-                            
-                            <div className="flex gap-2">
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <Button
                                 type="button"
                                 variant="outline"
-                                className="flex gap-2 items-center"
-                                onClick={() => addImageInputRef.current?.click()}
+                                size="icon"
+                                className="h-8 w-8 bg-white hover:bg-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startImageCrop(field.value, 'edit');
+                                }}
                               >
-                                <Plus className="h-4 w-4" />
-                                Add more photos or video
+                                <Scissors className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 bg-white hover:bg-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  editImageInputRef.current?.click();
+                                }}
+                              >
+                                <ImagePlus className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  editForm.setValue('imageUrl', '');
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
@@ -869,9 +1538,9 @@ export default function ProductManagement() {
                         <input 
                           type="file" 
                           accept="image/*" 
-                          ref={addImageInputRef}
+                          ref={editImageInputRef}
                           className="hidden"
-                          onChange={(e) => handleImageUpload(e, 'add')}
+                          onChange={(e) => handleImageUpload(e, 'edit')}
                         />
                         
                         <FormMessage />
@@ -880,11 +1549,11 @@ export default function ProductManagement() {
                   />
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="downloadUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product files <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Downloadable File</FormLabel>
                         <FormDescription>
                           Upload the design files that customers will download after purchase.
                         </FormDescription>
@@ -892,62 +1561,60 @@ export default function ProductManagement() {
                         {!field.value ? (
                           <div 
                             className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => addFileInputRef.current?.click()}
+                            onClick={() => editFileInputRef.current?.click()}
                           >
                             <div className="p-4 bg-primary/10 rounded-full">
                               <Image className="h-8 w-8 text-primary" />
                             </div>
-                            <div className="text-center space-y-2">
-                              <p className="font-medium">Drag and drop files here or click to browse</p>
-                              <p className="text-sm text-muted-foreground">
-                                Supported file types: ZIP, PDF, AI, PSD, EPS, SVG
+                            <div className="text-center">
+                              <p className="text-sm font-medium">Click to upload</p>
+                              <p className="text-xs text-muted-foreground">
+                                ZIP, PDF, AI, PSD, EPS or SVG (max. 50MB)
                               </p>
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-4">
-                            <div className="rounded-lg border bg-card">
-                              <div className="flex items-center gap-2 p-4">
-                                <div className="bg-primary/10 p-2 rounded">
-                                  <Image className="h-6 w-6 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate">{field.value.split('/').pop()}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {/* You can add file size here if available */}
-                                    Ready for download
-                                  </p>
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="flex-shrink-0"
-                                  onClick={() => addForm.setValue("downloadUrl", "")}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                          <div className="border rounded-lg p-4 flex justify-between items-center">
+                            <div className="flex items-center space-x-3">
+                              <div className="p-2 bg-primary/10 rounded">
+                                <Image className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {field.value.split('/').pop() || 'File uploaded'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Ready for download</p>
                               </div>
                             </div>
-                            
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="flex gap-2 items-center"
-                              onClick={() => addFileInputRef.current?.click()}
-                            >
-                              <Plus className="h-4 w-4" />
-                              Replace file
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => editForm.setValue('downloadUrl', '')}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => editFileInputRef.current?.click()}
+                              >
+                                <Plus className="h-4 w-4" />
+                                Replace file
+                              </Button>
+                            </div>
                           </div>
                         )}
                         
                         <input 
                           type="file" 
                           accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
-                          ref={addFileInputRef}
+                          ref={editFileInputRef}
                           className="hidden"
-                          onChange={(e) => handleFileUpload(e, 'add')}
+                          onChange={(e) => handleFileUpload(e, 'edit')}
                         />
                         
                         <FormMessage />
@@ -956,7 +1623,7 @@ export default function ProductManagement() {
                   />
                   
                   <FormField
-                    control={addForm.control}
+                    control={editForm.control}
                     name="isFeatured"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -976,68 +1643,18 @@ export default function ProductManagement() {
                     )}
                   />
                   
-                  <FormField
-                    control={addForm.control}
-                    name="tags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tags</FormLabel>
-                        <div className="flex flex-col space-y-2">
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {field.value?.map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
-                                {tag}
-                                <button 
-                                  type="button"
-                                  onClick={() => handleRemoveTag(tag)}
-                                  className="text-muted-foreground hover:text-foreground"
-                                >
-                                  ✕
-                                </button>
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="Add a tag"
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddTag();
-                                }
-                              }}
-                            />
-                            <Button 
-                              type="button" 
-                              size="sm"
-                              onClick={handleAddTag}
-                            >
-                              Add
-                            </Button>
-                          </div>
-                        </div>
-                        <FormDescription>
-                          Tags help customers find your products. Press Enter or click Add to add a tag.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                    <Button type="button" variant="outline" onClick={() => setEditingProduct(null)}>
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={addProductMutation.isPending}>
-                      {addProductMutation.isPending ? (
+                    <Button type="submit" disabled={updateProductMutation.isPending}>
+                      {updateProductMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
+                          Updating...
                         </>
                       ) : (
-                        "Save Product"
+                        "Update Product"
                       )}
                     </Button>
                   </DialogFooter>
@@ -1045,609 +1662,44 @@ export default function ProductManagement() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
-
-        {/* Product list */}
-        <div className="border rounded-lg">
-          {productsError ? (
-            <div className="p-8 text-center">
-              <p className="text-red-500 dark:text-red-400">
-                Error loading products. Please try again later.
-              </p>
-            </div>
-          ) : isLoading ? (
-            <div className="p-8 flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Tags</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products && products.length > 0 ? (
-                    products.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center">
-                            <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 mr-3">
-                              {product.imageUrl ? (
-                                <img
-                                  src={product.imageUrl}
-                                  alt={product.name}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="h-full w-full flex items-center justify-center text-gray-400">
-                                  No img
-                                </div>
-                              )}
-                            </div>
-                            <span>{product.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatPrice(product.price)}</TableCell>
-                        <TableCell>
-                          {categories?.find(c => c.id === product.categoryId)?.name || "—"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {product.tags && product.tags.length > 0 ? (
-                              product.tags.slice(0, 3).map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))
-                            ) : (
-                              <span className="text-muted-foreground text-xs">No tags</span>
-                            )}
-                            {product.tags && product.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{product.tags.length - 3}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {product.isFeatured && (
-                            <Badge>Featured</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={() => handleEdit(product)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
-                              onClick={() => {
-                                setProductToDelete(product);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+          
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete the product "{productToDelete?.name}"? 
+                  This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteProductMutation.isPending}
+                >
+                  {deleteProductMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
                   ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        No products found. Add your first product to get started.
-                      </TableCell>
-                    </TableRow>
+                    "Delete Product"
                   )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-
-        {/* Edit Product Dialog */}
-        <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
-          <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Product</DialogTitle>
-              <DialogDescription>
-                Update the product details. Click save when you're done.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                <FormField
-                  control={editForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Product name" 
-                          {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            if (editForm.getValues("slug") === editingProduct?.slug) {
-                              generateEditSlug(e.target.value);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Slug</FormLabel>
-                      <FormControl>
-                        <Input placeholder="product-slug" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Used in the URL. Auto-generated from the name.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Product description" 
-                          className="h-24"
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                          name={field.name}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Price ($)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.01"
-                            min="0"
-                            placeholder="0.00" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select
-                          value={field.value?.toString() || "0"}
-                          onValueChange={(value) => field.onChange(value === "0" ? null : parseInt(value))}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="0">No category</SelectItem>
-                            {categories?.map((category) => (
-                              <SelectItem key={category.id} value={category.id.toString()}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={editForm.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {field.value?.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
-                              {tag}
-                              <button 
-                                type="button"
-                                onClick={() => handleRemoveTag(tag)}
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                ✕
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add a tag"
-                            value={editTagInput}
-                            onChange={(e) => setEditTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddEditTag();
-                              }
-                            }}
-                          />
-                          <Button 
-                            type="button" 
-                            size="sm"
-                            onClick={handleAddEditTag}
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                      <FormDescription>
-                        Tags help customers find your products. Press Enter or click Add to add a tag.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Photos and video <span className="text-red-500">*</span></FormLabel>
-                      <FormDescription>
-                        Add up to 10 photos and 1 video.
-                      </FormDescription>
-                      
-                      {!field.value ? (
-                        <div 
-                          className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => editImageInputRef.current?.click()}
-                        >
-                          <p className="text-center text-muted-foreground">Drag & Drop or</p>
-                          
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            className="flex gap-2 items-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              editImageInputRef.current?.click();
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add up to 10 photos and 1 video
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-6 gap-2">
-                            <div className="relative group aspect-square overflow-hidden rounded-md border border-input">
-                              <img 
-                                src={field.value} 
-                                alt="Product preview" 
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-2 right-2 z-10">
-                                <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
-                              </div>
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 bg-white hover:bg-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    startImageCrop(field.value, 'edit');
-                                  }}
-                                >
-                                  <Scissors className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 bg-white hover:bg-white"
-                                  onClick={() => editForm.setValue("imageUrl", "")}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {/* Empty placeholder slots */}
-                            {Array.from({ length: 5 }).map((_, index) => (
-                              <div 
-                                key={`empty-edit-${index}`}
-                                className="aspect-square rounded-md border border-input flex items-center justify-center bg-muted/30 cursor-pointer"
-                                onClick={() => editImageInputRef.current?.click()}
-                              >
-                                <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                              </div>
-                            ))}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="flex gap-2 items-center"
-                              onClick={() => editImageInputRef.current?.click()}
-                            >
-                              <Plus className="h-4 w-4" />
-                              Add more photos or video
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        ref={editImageInputRef}
-                        className="hidden"
-                        onChange={(e) => handleImageUpload(e, 'edit')}
-                      />
-                      
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="downloadUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product files <span className="text-red-500">*</span></FormLabel>
-                      <FormDescription>
-                        Upload the design files that customers will download after purchase.
-                      </FormDescription>
-                      
-                      {!field.value ? (
-                        <div 
-                          className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => editFileInputRef.current?.click()}
-                        >
-                          <div className="p-4 bg-primary/10 rounded-full">
-                            <Image className="h-8 w-8 text-primary" />
-                          </div>
-                          <div className="text-center space-y-2">
-                            <p className="font-medium">Drag and drop files here or click to browse</p>
-                            <p className="text-sm text-muted-foreground">
-                              Supported file types: ZIP, PDF, AI, PSD, EPS, SVG
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="rounded-lg border bg-card">
-                            <div className="flex items-center gap-2 p-4">
-                              <div className="bg-primary/10 p-2 rounded">
-                                <Image className="h-6 w-6 text-primary" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate">{field.value.split('/').pop()}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {/* You can add file size here if available */}
-                                  Ready for download
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="flex-shrink-0"
-                                onClick={() => editForm.setValue("downloadUrl", "")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="flex gap-2 items-center"
-                            onClick={() => editFileInputRef.current?.click()}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Replace file
-                          </Button>
-                        </div>
-                      )}
-                      
-                      <input 
-                        type="file" 
-                        accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
-                        ref={editFileInputRef}
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, 'edit')}
-                      />
-                      
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="isFeatured"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Featured Product</FormLabel>
-                        <FormDescription>
-                          Featured products appear on the homepage.
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {field.value?.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
-                              {tag}
-                              <button 
-                                type="button"
-                                onClick={() => handleRemoveTag(tag)}
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                ✕
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add a tag"
-                            value={editTagInput}
-                            onChange={(e) => setEditTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddEditTag();
-                              }
-                            }}
-                          />
-                          <Button 
-                            type="button" 
-                            size="sm"
-                            onClick={handleAddEditTag}
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                      <FormDescription>
-                        Tags help customers find your products. Press Enter or click Add to add a tag.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setEditingProduct(null)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={updateProductMutation.isPending}>
-                    {updateProductMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Updating...
-                      </>
-                    ) : (
-                      "Update Product"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Delete Product</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this product? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-900">
-              <p className="font-medium">{productToDelete?.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {formatPrice(productToDelete?.price || 0)}
-              </p>
-            </div>
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsDeleteDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteConfirm}
-                disabled={deleteProductMutation.isPending}
-              >
-                {deleteProductMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete Product"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
-    </>
+    </AdminLayout>
   );
 }
