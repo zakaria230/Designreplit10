@@ -58,7 +58,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Loader2, PlusCircle, Pencil, Trash2, ArrowLeft, Plus, ImagePlus, Image, 
-  Scissors, Search, Filter, Tag, CheckCircle, XCircle, Star, SlidersHorizontal, RefreshCcw
+  Scissors, Search, Filter, Tag, CheckCircle, XCircle, Star, SlidersHorizontal, RefreshCcw, 
+  File as FileIcon
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -1953,96 +1954,63 @@ export default function ProductManagement() {
                     )}
                   />
                   
-                  <FormField
-                    control={editForm.control}
-                    name="downloadUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Downloadable File</FormLabel>
-                        <FormDescription>
-                          Upload the design files that customers will download after purchase.
-                        </FormDescription>
-                        
-                        {!field.value ? (
-                          <div 
-                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => editFileInputRef.current?.click()}
-                          >
-                            <div className="p-4 bg-primary/10 rounded-full">
-                              <Image className="h-8 w-8 text-primary" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-medium">Click to upload</p>
-                              <p className="text-xs text-muted-foreground">
-                                ZIP, PDF, AI, PSD, EPS or SVG (max. 50MB)
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="border rounded-lg p-4 flex justify-between items-center">
-                            <div className="flex items-center space-x-3">
-                              <div className="p-2 bg-primary/10 rounded">
-                                <Image className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {field.value.split('/').pop() || 'File uploaded'}
-                                </p>
-                                <p className="text-xs text-muted-foreground">Ready for download</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => editForm.setValue('downloadUrl', '')}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => editFileInputRef.current?.click()}
-                              >
-                                <Plus className="h-4 w-4" />
-                                Replace file
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <input 
-                          type="file" 
-                          accept=".zip,.pdf,.ai,.psd,.eps,.svg" 
-                          ref={editFileInputRef}
-                          className="hidden"
-                          onChange={(e) => handleFileUpload(e, 'edit')}
-                        />
-                        
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {/* Additional Images Section for Edit Form */}
+                  {/* Images Section for Edit Form */}
                   <FormField
                     control={editForm.control}
                     name="images"
                     render={({ field }) => (
                       <FormItem className="space-y-3">
-                        <FormLabel>Additional Images/Videos</FormLabel>
+                        <FormLabel>Images/Videos</FormLabel>
                         <FormDescription>
-                          Upload additional images or videos for the product.
+                          Upload images or videos for the product.
                         </FormDescription>
                         
                         <div className="space-y-4">
                           {/* Image gallery grid */}
-                          {field.value && field.value.length > 0 && (
+                          {(editForm.getValues('imageUrl') || (field.value && field.value.length > 0)) && (
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                              {field.value.map((image, index) => (
+                              {/* Main image if exists */}
+                              {editForm.getValues('imageUrl') && (
+                                <div className="relative group rounded-md overflow-hidden border aspect-square">
+                                  <img 
+                                    src={editForm.getValues('imageUrl')} 
+                                    alt="Product preview" 
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute top-2 right-2 z-10">
+                                    <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                                  </div>
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white hover:bg-white"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        startImageCrop(editForm.getValues('imageUrl') || '', 'edit');
+                                      }}
+                                    >
+                                      <Scissors className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        editForm.setValue('imageUrl', '');
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Additional images */}
+                              {field.value && field.value.map((image, index) => (
                                 <div key={index} className="relative group rounded-md overflow-hidden border aspect-square">
                                   {image.type === 'video' ? (
                                     <video 
@@ -2101,52 +2069,99 @@ export default function ProductManagement() {
                             </div>
                           )}
                           
-                          {/* Upload new image button */}
+                          {/* Upload image button */}
                           <div
-                            className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
                             onClick={() => {
-                              const fileInput = document.createElement('input');
-                              fileInput.type = 'file';
-                              fileInput.accept = 'image/*,video/*';
-                              fileInput.onchange = (e) => handleAdditionalImageUpload(e as any, 'edit');
-                              fileInput.click();
+                              if (!editForm.getValues('imageUrl')) {
+                                // If no main image exists, use main image uploader
+                                editImageInputRef.current?.click();
+                              } else {
+                                // Otherwise, add as additional image
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = 'image/*,video/*';
+                                fileInput.onchange = (e) => handleAdditionalImageUpload(e as any, 'edit');
+                                fileInput.click();
+                              }
                             }}
                           >
-                            <div className="p-2 bg-primary/10 rounded-full">
-                              <Plus className="h-5 w-5 text-primary" />
+                            <div className="p-4 bg-primary/10 rounded-full">
+                              <ImagePlus className="h-8 w-8 text-primary" />
                             </div>
-                            <p className="text-sm font-medium">Add Image/Video</p>
+                            <div className="text-center">
+                              <p className="text-sm font-medium">Click to upload</p>
+                              <p className="text-xs text-muted-foreground">
+                                PNG, JPG or WebP (max. 5MB)
+                              </p>
+                            </div>
                             {uploadingImage && (
                               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             )}
                           </div>
                         </div>
                         
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          ref={editImageInputRef}
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, 'edit')}
+                        />
+                        
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-                  {/* Additional Downloadable Files for Edit Form */}
+                  {/* Downloadable Files for Edit Form */}
                   <FormField
                     control={editForm.control}
                     name="downloadFiles"
                     render={({ field }) => (
                       <FormItem className="space-y-3">
-                        <FormLabel>Additional Downloadable Files</FormLabel>
+                        <FormLabel>Downloadable Files</FormLabel>
                         <FormDescription>
-                          Upload additional design files that customers will download after purchase.
+                          Upload design files that customers will download after purchase.
                         </FormDescription>
                         
                         <div className="space-y-4">
-                          {/* File list */}
+                          {/* Main downloadable file if exists */}
+                          {editForm.getValues('downloadUrl') && (
+                            <div className="border rounded-lg p-4 flex justify-between items-center">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-primary/10 rounded">
+                                  <FileIcon className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">
+                                    {editForm.getValues('downloadUrl').split('/').pop() || 'Main file'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Primary download file</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                  onClick={() => editForm.setValue('downloadUrl', '')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Additional files list */}
                           {field.value && field.value.length > 0 && (
                             <div className="space-y-2">
                               {field.value.map((file, index) => (
                                 <div key={index} className="border rounded-lg p-3 flex justify-between items-center">
                                   <div className="flex items-center space-x-3">
                                     <div className="p-2 bg-primary/10 rounded">
-                                      <Image className="h-5 w-5 text-primary" />
+                                      <FileIcon className="h-5 w-5 text-primary" />
                                     </div>
                                     <div>
                                       <p className="text-sm font-medium">
@@ -2171,26 +2186,45 @@ export default function ProductManagement() {
                             </div>
                           )}
                           
-                          {/* Upload new file button */}
+                          {/* Upload file button */}
                           <div
-                            className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
                             onClick={() => {
-                              const fileInput = document.createElement('input');
-                              fileInput.type = 'file';
-                              fileInput.accept = '.zip,.pdf,.ai,.psd,.eps,.svg';
-                              fileInput.onchange = (e) => handleAdditionalFileUpload(e as any, 'edit');
-                              fileInput.click();
+                              if (!editForm.getValues('downloadUrl')) {
+                                // If no main file exists, use main file uploader
+                                editFileInputRef.current?.click();
+                              } else {
+                                // Otherwise, add as additional file
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = '.zip,.pdf,.ai,.psd,.eps,.svg';
+                                fileInput.onchange = (e) => handleAdditionalFileUpload(e as any, 'edit');
+                                fileInput.click();
+                              }
                             }}
                           >
-                            <div className="p-2 bg-primary/10 rounded-full">
-                              <Plus className="h-5 w-5 text-primary" />
+                            <div className="p-4 bg-primary/10 rounded-full">
+                              <FileIcon className="h-8 w-8 text-primary" />
                             </div>
-                            <p className="text-sm font-medium">Add File</p>
+                            <div className="text-center">
+                              <p className="text-sm font-medium">Click to upload</p>
+                              <p className="text-xs text-muted-foreground">
+                                ZIP, PDF, AI, PSD, EPS or SVG (max. 50MB)
+                              </p>
+                            </div>
                             {uploadingFile && (
                               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             )}
                           </div>
                         </div>
+                        
+                        <input 
+                          type="file"
+                          accept=".zip,.pdf,.ai,.psd,.eps,.svg"
+                          ref={editFileInputRef}
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, 'edit')}
+                        />
                         
                         <FormMessage />
                       </FormItem>
