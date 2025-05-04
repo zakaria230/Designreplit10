@@ -1,15 +1,25 @@
-# Deploying DesignKorv to Netlify - No-Problems Guide
+# دليل نشر DesignKorv على Netlify (محدّث)
 
-This comprehensive guide will help you deploy the DesignKorv e-commerce platform to Netlify with zero deployment issues. Unlike the previous approach, we'll deploy **both frontend and backend on Netlify** using Netlify Functions to keep everything in one place.
+هذا الدليل الشامل يساعدك على نشر منصة DesignKorv للتجارة الإلكترونية على Netlify بدون أي مشاكل. نحن نستخدم نهجًا محسنًا يتم فيه نشر **واجهة المستخدم والخادم معًا على Netlify** باستخدام Netlify Functions بأفضل الممارسات.
 
-> **IMPORTANT**: Before deploying, consider clearing test data from your database to start fresh. Use the provided script by running:
+> **هام**: قبل النشر، نوصي بمسح بيانات الاختبار من قاعدة البيانات للبدء من جديد. استخدم السكريبت المقدم:
 > ```bash
-> # Make the script executable
+> # اجعل السكريبت قابل للتنفيذ
 > chmod +x clear-db.sh
-> # Run the script
+> # قم بتشغيل السكريبت
 > ./clear-db.sh
 > ```
-> This will keep your admin account and site settings but clear all products, orders, and other test data.
+> هذا سيحتفظ بحساب المسؤول وإعدادات الموقع ولكنه سيمسح جميع المنتجات والطلبات وبيانات الاختبار الأخرى.
+
+## تحديثات وإصلاحات جديدة في هذا الإصدار (v1.2)
+
+- ✅ تحسين ملف `netlify.toml` لمعالجة مشاكل التبعيات
+- ✅ تحويل سكريبت البناء إلى تنسيق CommonJS لتجنب مشاكل ES Modules
+- ✅ إضافة ملفات _redirects بشكل صحيح
+- ✅ إعداد وظيفة API بشكل أفضل باستخدام serverless-http
+- ✅ تحسين إعدادات الجلسات لتعمل في بيئة Netlify
+- ✅ إضافة وظيفة إعداد قاعدة البيانات
+- ✅ تعليمات محسنة لاستكشاف الأخطاء وإصلاحها
 
 ## Prerequisites
 
@@ -35,16 +45,16 @@ This approach keeps your entire application - both frontend and backend - on Net
    - [Railway](https://railway.app)
    - Any other PostgreSQL provider
 
-### 2. Run Our Improved Netlify Build Script
+### 2. قم بتشغيل سكريبت البناء المحسّن لـ Netlify
 
-This script prepares everything for Netlify deployment:
+هذا السكريبت يقوم بإعداد كل ما هو مطلوب لنشر التطبيق على Netlify:
 
 ```bash
-# First build the application
+# أولاً قم ببناء التطبيق
 npm run build
 
-# Then run our specialized Netlify preparation script
-node build-for-netlify.js
+# ثم قم بتشغيل سكريبت الإعداد المتخصص لـ Netlify
+node build-for-netlify.cjs
 ```
 
 This will:
@@ -68,7 +78,7 @@ git push
 2. Click "Add new site" > "Import an existing project"
 3. Connect to your GitHub account and select your repository
 4. Use these build settings:
-   - Build command: `npm run build && node build-for-netlify.js`
+   - Build command: `npm run build && node build-for-netlify.cjs`
    - Publish directory: `dist/client`
    - Functions directory: `netlify/functions`
 
