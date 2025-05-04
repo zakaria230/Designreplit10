@@ -1001,6 +1001,22 @@ export default function ProductManagement() {
                               <div className="absolute top-2 right-2 z-10">
                                 <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
                               </div>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-white/80 rounded-full p-2 shadow-md">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 bg-white hover:bg-white"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startImageCrop(field.value, 'add');
+                                    }}
+                                  >
+                                    <Scissors className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <Button
                                   type="button"
@@ -1493,6 +1509,22 @@ export default function ProductManagement() {
                             />
                             <div className="absolute top-2 right-2 z-10">
                               <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-white/80 rounded-full p-2 shadow-md">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-white hover:bg-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startImageCrop(field.value, 'edit');
+                                  }}
+                                >
+                                  <Scissors className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <Button
