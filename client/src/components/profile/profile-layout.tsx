@@ -58,16 +58,6 @@ export function ProfileLayout({ children, title, description }: ProfileLayoutPro
   
   const navLinks = [
     {
-      href: "/profile",
-      icon: <User className="h-5 w-5" />,
-      label: "Overview",
-    },
-    {
-      href: "/profile/orders",
-      icon: <ShoppingBag className="h-5 w-5" />,
-      label: "Orders",
-    },
-    {
       href: "/profile/purchases",
       icon: <Receipt className="h-5 w-5" />,
       label: "Purchases",

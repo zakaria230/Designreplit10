@@ -67,8 +67,7 @@ function Router() {
         <Route path="/privacy" component={PrivacyPage} />
         
         {/* Profile Routes */}
-        <ProtectedRoute path="/profile" component={ProfilePage} />
-        <ProtectedRoute path="/profile/orders" component={OrdersPage} />
+        <ProtectedRoute path="/profile" component={PurchasesPage} />
         <ProtectedRoute path="/profile/purchases" component={PurchasesPage} />
         <ProtectedRoute path="/profile/downloads" component={DownloadsPage} />
         <ProtectedRoute path="/profile/settings" component={SettingsPage} />
