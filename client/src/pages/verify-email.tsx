@@ -66,9 +66,10 @@ export default function VerifyEmailPage() {
   }, [token, toast]);
   
   return (
-    <Layout title="Email Verification" description="Verify your email address">
+    <Layout>
       <div className="container max-w-md mx-auto py-12 px-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Email Verification</h1>
           {status === "loading" && (
             <>
               <div className="flex justify-center mb-4">

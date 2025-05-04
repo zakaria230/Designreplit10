@@ -36,7 +36,8 @@ interface OrderWithItems extends Order {
 function EmailVerificationButton() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   
   const sendVerificationEmailMutation = useMutation({
     mutationFn: async () => {
@@ -44,9 +45,12 @@ function EmailVerificationButton() {
       return await res.json();
     },
     onSuccess: (data) => {
+      setVerificationSent(true);
+      setShowVerificationMessage(true);
       toast({
-        title: "Verification Email Sent",
-        description: "Please check your email for the verification link.",
+        title: "Verification Link Generated",
+        description: "Check the server logs (or dialog box) for the verification link.",
+        duration: 10000,
       });
     },
     onError: (error) => {
@@ -63,24 +67,54 @@ function EmailVerificationButton() {
   };
   
   return (
-    <Button 
-      variant="outline"
-      className="flex items-center gap-2"
-      onClick={handleSendVerificationEmail}
-      disabled={sendVerificationEmailMutation.isPending}
-    >
-      {sendVerificationEmailMutation.isPending ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Sending...
-        </>
-      ) : (
-        <>
-          <Mail className="h-4 w-4" />
-          Send Verification Email
-        </>
-      )}
-    </Button>
+    <>
+      <Button 
+        variant="outline"
+        className="flex items-center gap-2"
+        onClick={handleSendVerificationEmail}
+        disabled={sendVerificationEmailMutation.isPending}
+      >
+        {sendVerificationEmailMutation.isPending ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Generating link...
+          </>
+        ) : (
+          <>
+            <Mail className="h-4 w-4" />
+            Generate Verification Link
+          </>
+        )}
+      </Button>
+      
+      {/* Information dialog about email simulation */}
+      <Dialog open={showVerificationMessage} onOpenChange={setShowVerificationMessage}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Email Verification Link Generated</DialogTitle>
+            <DialogDescription>
+              Since we're not using a real email service in this demo, the verification link is displayed in the server logs. 
+              Please check the console logs where the server is running to find your verification link.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md text-sm font-mono overflow-auto max-h-40">
+            <p className="mb-2 text-green-600 dark:text-green-400">Look for this section in the server logs:</p>
+            <p>==================================================</p>
+            <p>VERIFICATION EMAIL (SIMULATION)</p>
+            <p>==================================================</p>
+            <p>...</p>
+            <p>http://localhost:5000/verify-email?token=TOKEN_VALUE</p>
+            <p>...</p>
+          </div>
+          <p className="mt-2 text-sm">
+            Copy the full verification URL from the server logs and paste it in your browser to verify your email.
+          </p>
+          <div className="mt-4 flex justify-end">
+            <Button onClick={() => setShowVerificationMessage(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
