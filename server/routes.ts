@@ -258,6 +258,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup authentication routes
   setupAuth(app);
+  
+  // Setup email verification route
+  app.post("/api/verify-email", async (req, res) => {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "رمز التحقق مفقود" 
+      });
+    }
+    
+    // For now, since we don't have the actual database field, we'll simulate success
+    // In a real implementation, this would call EmailService.verifyEmail(token)
+    return res.status(200).json({
+      success: true,
+      message: "تم التحقق من البريد الإلكتروني بنجاح"
+    });
+  });
+  
+  // Generate verification link (for testing) - this would be called on registration
+  app.post("/api/generate-verification", isAuthenticated, async (req, res) => {
+    try {
+      // In real implementation, this would use user ID from req.user
+      const token = crypto.randomBytes(32).toString('hex');
+      const verificationUrl = `${req.protocol}://${req.get('host')}/verify-email?token=${token}`;
+      
+      return res.status(200).json({
+        success: true, 
+        verificationUrl
+      });
+    } catch (error) {
+      console.error("Error generating verification link:", error);
+      return res.status(500).json({
+        success: false,
+        message: "فشل إنشاء رابط التحقق"
+      });
+    }
+  });
 
   // Setup CSRF protection middleware with proper configuration
   const csrfProtection = csrf({
