@@ -80,11 +80,6 @@ export default function AdminDashboard() {
                 Manage Products
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-blue-500 text-blue-500 hover:bg-blue-500/10">
-              <Link href="/admin/orders">
-                View Orders
-              </Link>
-            </Button>
           </div>
         </div>
 
@@ -300,13 +295,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Recent Orders</CardTitle>
-                <Button variant="outline" size="sm" asChild className="border-blue-500 text-blue-500 hover:bg-blue-500/10">
-                  <Link href="/admin/orders">
-                    View All
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
+                <CardTitle>Recent Completed Orders</CardTitle>
               </div>
             </CardHeader>
             <CardContent>

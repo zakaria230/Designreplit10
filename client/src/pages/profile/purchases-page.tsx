@@ -237,15 +237,11 @@ export default function PurchasesPage() {
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    {item.downloadUrl && (
-                      <Button size="sm">
-                        <Download className="h-4 w-4 mr-1.5" />
-                        Download
-                      </Button>
-                    )}
-                    <Button variant="outline" size="sm" onClick={() => window.location.href=`/profile`}>
-                      View Order
-                      <ArrowRight className="h-4 w-4 ml-1" />
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="/profile/downloads">
+                        Go to Downloads
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </a>
                     </Button>
                   </div>
                 </div>
