@@ -1849,101 +1849,156 @@ export default function ProductManagement() {
                     )}
                   />
                   
+                  {/* Images for Edit Form */}
                   <FormField
                     control={editForm.control}
-                    name="imageUrl"
+                    name="images"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Image</FormLabel>
+                      <FormItem className="space-y-3">
+                        <FormLabel className="text-base">Photos and video <span className="text-red-500">*</span></FormLabel>
                         <FormDescription>
-                          Upload a product image. This will be shown on the product page.
+                          Add up to 10 photos and 1 video.
                         </FormDescription>
                         
-                        {!field.value ? (
-                          <div 
-                            className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => editImageInputRef.current?.click()}
-                          >
-                            <div className="p-4 bg-primary/10 rounded-full">
-                              <ImagePlus className="h-8 w-8 text-primary" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-medium">Click to upload</p>
-                              <p className="text-xs text-muted-foreground">
-                                PNG, JPG or WebP (max. 5MB)
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative aspect-square w-48 rounded-md overflow-hidden border group">
-                            <img 
-                              src={field.value} 
-                              alt="Product preview" 
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-2 right-2 z-10">
-                              <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
-                            </div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-white/80 rounded-full p-2 shadow-md">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 bg-white hover:bg-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    startImageCrop(field.value, 'edit');
-                                  }}
-                                >
-                                  <Scissors className="h-4 w-4" />
-                                </Button>
+                        <div className="space-y-4">
+                          {/* Grid layout for images */}
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                            {/* Main product image if exists */}
+                            {editForm.getValues('imageUrl') && (
+                              <div className="relative border rounded-lg overflow-hidden bg-gray-100 aspect-square group">
+                                <img 
+                                  src={editForm.getValues('imageUrl')} 
+                                  alt="Main product image" 
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className="absolute top-2 left-2">
+                                  <span className="bg-black text-white text-xs font-medium px-2 py-1 rounded-full">
+                                    Primary
+                                  </span>
+                                </div>
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                  <div className="flex gap-1">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white rounded-full hover:bg-gray-100"
+                                      onClick={() => {
+                                        startImageCrop(editForm.getValues('imageUrl'), 'edit');
+                                      }}
+                                    >
+                                      <Scissors className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white text-red-500 rounded-full hover:bg-red-50"
+                                      onClick={() => editForm.setValue('imageUrl', '')}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 bg-white hover:bg-white"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startImageCrop(field.value, 'edit');
+                            )}
+                            
+                            {/* Additional images */}
+                            {field.value && field.value.map((image, index) => (
+                              <div key={index} className="relative border rounded-lg overflow-hidden bg-gray-100 aspect-square group">
+                                {image.type === 'video' ? (
+                                  <video 
+                                    src={image.url} 
+                                    className="h-full w-full object-cover"
+                                    controls={false}
+                                  />
+                                ) : (
+                                  <img 
+                                    src={image.url} 
+                                    alt={`Product image ${index + 1}`} 
+                                    className="h-full w-full object-cover"
+                                  />
+                                )}
+                                
+                                {image.isPrimary && (
+                                  <div className="absolute top-2 left-2">
+                                    <span className="bg-black text-white text-xs font-medium px-2 py-1 rounded-full">
+                                      Primary
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                  <div className="flex gap-1">
+                                    {image.type !== 'video' && (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8 bg-white rounded-full hover:bg-gray-100"
+                                        onClick={() => {
+                                          startImageCrop(image.url, 'edit');
+                                        }}
+                                      >
+                                        <Scissors className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white rounded-full hover:bg-gray-100"
+                                      onClick={() => handleSetPrimaryImage(index, 'edit')}
+                                    >
+                                      <Star className={`h-4 w-4 ${image.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white text-red-500 rounded-full hover:bg-red-50"
+                                      onClick={() => handleRemoveImage(index, 'edit')}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {/* Upload image button */}
+                            {((!editForm.getValues('imageUrl') && (!field.value || field.value.length === 0)) || 
+                              (editForm.getValues('imageUrl') || (field.value && field.value.length > 0))) && (
+                              <div
+                                className="border-2 border-dashed rounded-lg aspect-square flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => {
+                                  if (!editForm.getValues('imageUrl')) {
+                                    // If no main image, use main image uploader
+                                    editImageInputRef.current?.click();
+                                  } else {
+                                    // Otherwise add as additional image
+                                    const fileInput = document.createElement('input');
+                                    fileInput.type = 'file';
+                                    fileInput.accept = 'image/*,video/*';
+                                    fileInput.onchange = (e) => handleAdditionalImageUpload(e as any, 'edit');
+                                    fileInput.click();
+                                  }
                                 }}
                               >
-                                <Scissors className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 bg-white hover:bg-white"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  editImageInputRef.current?.click();
-                                }}
-                              >
-                                <ImagePlus className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  editForm.setValue('imageUrl', '');
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                                <div className="p-2 bg-gray-100 rounded-full">
+                                  <ImagePlus className="h-5 w-5 text-gray-600" />
+                                </div>
+                                {uploadingImage && (
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                         
                         <input 
-                          type="file" 
-                          accept="image/*" 
+                          type="file"
+                          accept="image/*"
                           ref={editImageInputRef}
                           className="hidden"
                           onChange={(e) => handleImageUpload(e, 'edit')}
