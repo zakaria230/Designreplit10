@@ -1,11 +1,27 @@
 [build]
   publish = "dist/client"
-  command = "npm run build"
+  command = "npm run build && node build-for-netlify.js"
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--no-audit --production"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[dev]
+  command = "npm run dev"
+  port = 8888
+  targetPort = 5000
+  publish = "dist/client"
+  autoLaunch = true

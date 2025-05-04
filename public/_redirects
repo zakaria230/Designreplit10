@@ -1,5 +1,8 @@
 # Netlify redirects file
 # This file ensures that all routes are handled by the React application
 
-/api/*  https://your-backend-api-url.com/api/:splat  200
-/*      /index.html                                   200
+# API requests are handled by Netlify Functions
+/api/*  /.netlify/functions/api/:splat  200
+
+# All other routes go to the React app
+/*      /index.html                     200

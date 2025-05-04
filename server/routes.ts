@@ -1,18 +1,27 @@
-import express, { type Express, Request, Response, NextFunction } from "express";
+import express, {
+  type Express,
+  Request,
+  Response,
+  NextFunction,
+} from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import Stripe from "stripe";
 import { z } from "zod";
-import fileUpload from 'express-fileupload';
-import path from 'path';
-import fs from 'fs';
-import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
+import fileUpload from "express-fileupload";
+import path from "path";
+import fs from "fs";
+import checkoutNodeJssdk from "@paypal/checkout-server-sdk";
 import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import csrf from "csurf";
-import { isAuthenticated, isAdmin, isDesignerOrAdmin as isAdminOrDesigner } from "./middleware";
+import {
+  isAuthenticated,
+  isAdmin,
+  isDesignerOrAdmin as isAdminOrDesigner,
+} from "./middleware";
 import { generateSitemap } from "./routes/sitemap";
 
 // Define global variables for payment gateways
@@ -20,11 +29,15 @@ let stripe: Stripe | null = null;
 let paypalClient: any = null;
 
 // Helper function to setup PayPal
-function getPayPalClient(clientId: string, clientSecret: string, isSandbox = true) {
+function getPayPalClient(
+  clientId: string,
+  clientSecret: string,
+  isSandbox = true,
+) {
   const environment = isSandbox
     ? new checkoutNodeJssdk.core.SandboxEnvironment(clientId, clientSecret)
     : new checkoutNodeJssdk.core.LiveEnvironment(clientId, clientSecret);
-  
+
   return new checkoutNodeJssdk.core.PayPalHttpClient(environment);
 }
 
@@ -32,84 +45,99 @@ function getPayPalClient(clientId: string, clientSecret: string, isSandbox = tru
 async function initializePaymentGateways() {
   try {
     // Try to get payment settings from database first
-    const paymentSettings = await storage.getSettingsByCategory('payment');
-    
+    const paymentSettings = await storage.getSettingsByCategory("payment");
+
     // Initialize Stripe
-    const stripeSecretKey = 
-      paymentSettings['payment_stripeSecretKey'] || 
+    const stripeSecretKey =
+      paymentSettings["payment_stripeSecretKey"] ||
       process.env.STRIPE_SECRET_KEY;
 
     if (stripeSecretKey) {
-      stripe = new Stripe(stripeSecretKey as string, { 
+      stripe = new Stripe(stripeSecretKey as string, {
         apiVersion: "2023-10-16",
         telemetry: false,
       });
       console.log("Stripe payment processing initialized successfully");
     } else {
-      console.warn('Warning: Stripe secret key not found. Stripe payment functionality will be disabled.');
-      console.warn('You can still use the simulated checkout flow, but real payment processing will not work.');
+      console.warn(
+        "Warning: Stripe secret key not found. Stripe payment functionality will be disabled.",
+      );
+      console.warn(
+        "You can still use the simulated checkout flow, but real payment processing will not work.",
+      );
     }
-    
-    // Initialize PayPal
-    const paypalClientId = 
-      paymentSettings['payment_paypalClientId'] || 
-      process.env.PAYPAL_CLIENT_ID;
 
-    const paypalClientSecret = 
-      paymentSettings['payment_paypalClientSecret'] || 
+    // Initialize PayPal
+    const paypalClientId =
+      paymentSettings["payment_paypalClientId"] || process.env.PAYPAL_CLIENT_ID;
+
+    const paypalClientSecret =
+      paymentSettings["payment_paypalClientSecret"] ||
       process.env.PAYPAL_CLIENT_SECRET;
-    
+
     // Determine PayPal sandbox mode from settings
     let paypalSandboxMode = true; // Default to sandbox mode for safety
-    
-    if (paymentSettings['payment_paypalSandboxMode'] !== undefined) {
+
+    if (paymentSettings["payment_paypalSandboxMode"] !== undefined) {
       // Convert string 'true'/'false' to boolean
-      paypalSandboxMode = paymentSettings['payment_paypalSandboxMode'] === 'true' || 
-                         paymentSettings['payment_paypalSandboxMode'] === true;
+      paypalSandboxMode =
+        paymentSettings["payment_paypalSandboxMode"] === "true" ||
+        paymentSettings["payment_paypalSandboxMode"] === true;
     }
-    
+
     if (paypalClientId && paypalClientSecret) {
       // Create PayPal client
       paypalClient = getPayPalClient(
         paypalClientId,
         paypalClientSecret,
-        paypalSandboxMode
+        paypalSandboxMode,
       );
       console.log("PayPal payment processing initialized successfully");
     } else {
       if (!paypalClientId) {
-        console.warn('Warning: PayPal Client ID not found. PayPal checkout will be disabled.');
+        console.warn(
+          "Warning: PayPal Client ID not found. PayPal checkout will be disabled.",
+        );
       }
-      
+
       if (!paypalClientSecret) {
-        console.warn('Warning: PayPal Client Secret not found. PayPal checkout will be disabled.');
+        console.warn(
+          "Warning: PayPal Client Secret not found. PayPal checkout will be disabled.",
+        );
       }
     }
-    
   } catch (error) {
     console.error("Error initializing payment gateways:", error);
-    
+
     // Fallback to environment variables if database fails
     if (process.env.STRIPE_SECRET_KEY) {
       try {
-        stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { 
+        stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
           apiVersion: "2023-10-16",
           telemetry: false,
         });
-        console.log("Stripe payment processing initialized from environment variables");
+        console.log(
+          "Stripe payment processing initialized from environment variables",
+        );
       } catch (stripeError) {
         console.error("Failed to initialize Stripe:", stripeError);
       }
     } else {
-      console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe payment functionality will be disabled.');
+      console.warn(
+        "Warning: STRIPE_SECRET_KEY is not set. Stripe payment functionality will be disabled.",
+      );
     }
-    
+
     if (!process.env.PAYPAL_CLIENT_ID) {
-      console.warn('Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.');
+      console.warn(
+        "Warning: PAYPAL_CLIENT_ID is not set. Using test mode for PayPal.",
+      );
     }
-    
+
     if (!process.env.PAYPAL_CLIENT_SECRET) {
-      console.warn('Warning: PAYPAL_CLIENT_SECRET is not set. Using simulation for PayPal checkout.');
+      console.warn(
+        "Warning: PAYPAL_CLIENT_SECRET is not set. Using simulation for PayPal checkout.",
+      );
     }
   }
 }
@@ -117,12 +145,12 @@ async function initializePaymentGateways() {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize payment gateways
   await initializePaymentGateways();
-  
+
   // Create upload directories if they don't exist
-  const uploadDir = path.join(process.cwd(), 'uploads');
-  const productImagesDir = path.join(uploadDir, 'products');
-  const downloadFilesDir = path.join(uploadDir, 'downloads');
-  
+  const uploadDir = path.join(process.cwd(), "uploads");
+  const productImagesDir = path.join(uploadDir, "products");
+  const downloadFilesDir = path.join(uploadDir, "downloads");
+
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
   }
@@ -132,89 +160,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (!fs.existsSync(downloadFilesDir)) {
     fs.mkdirSync(downloadFilesDir);
   }
-  
+
   // Setup file upload middleware
-  app.use(fileUpload({
-    createParentPath: true,
-    limits: { 
-      fileSize: 50 * 1024 * 1024 // 50MB max file size
-    },
-    abortOnLimit: true,
-    useTempFiles: true,
-    tempFileDir: path.join(process.cwd(), 'tmp'),
-  }));
-  
+  app.use(
+    fileUpload({
+      createParentPath: true,
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB max file size
+      },
+      abortOnLimit: true,
+      useTempFiles: true,
+      tempFileDir: path.join(process.cwd(), "tmp"),
+    }),
+  );
+
   // Serve static files from the uploads directory
-  app.use('/uploads', (req, res, next) => {
-    // Basic security check to prevent directory traversal
-    if (req.url.includes('..')) {
-      return res.status(403).send('Forbidden');
-    }
-    next();
-  }, (req, res, next) => {
-    // Only allow specific file types
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.zip', '.pdf'];
-    const ext = path.extname(req.url).toLowerCase();
-    if (!allowedExtensions.includes(ext)) {
-      return res.status(403).send('Forbidden file type');
-    }
-    next();
-  }, async (req: Request, res: Response, next: NextFunction) => {
-    // Special security for downloadable files
-    // If the request is for a file in the downloads directory, check if the user has paid for it
-    if (req.url.startsWith('/downloads/') && req.isAuthenticated()) {
-      const fileName = path.basename(req.url);
-      
-      try {
-        // Get all paid orders for this user
-        const orders = await storage.getOrdersByUser(req.user!.id);
-        const paidOrders = orders.filter(order => order.paymentStatus === 'paid');
-        
-        // Fetch order items with product info for all paid orders
-        let hasAccess = false;
-        
-        for (const order of paidOrders) {
-          const orderItems = await storage.getOrderItemsByOrder(order.id);
-          
-          // Check if any of the ordered products has this file as download URL
-          for (const item of orderItems) {
-            if (item.product && item.product.downloadUrl) {
-              const downloadFileName = path.basename(item.product.downloadUrl);
-              if (downloadFileName === fileName) {
-                hasAccess = true;
-                break;
+  app.use(
+    "/uploads",
+    (req, res, next) => {
+      // Basic security check to prevent directory traversal
+      if (req.url.includes("..")) {
+        return res.status(403).send("Forbidden");
+      }
+      next();
+    },
+    (req, res, next) => {
+      // Only allow specific file types
+      const allowedExtensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".svg",
+        ".zip",
+        ".pdf",
+      ];
+      const ext = path.extname(req.url).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        return res.status(403).send("Forbidden file type");
+      }
+      next();
+    },
+    async (req: Request, res: Response, next: NextFunction) => {
+      // Special security for downloadable files
+      // If the request is for a file in the downloads directory, check if the user has paid for it
+      if (req.url.startsWith("/downloads/") && req.isAuthenticated()) {
+        const fileName = path.basename(req.url);
+
+        try {
+          // Get all paid orders for this user
+          const orders = await storage.getOrdersByUser(req.user!.id);
+          const paidOrders = orders.filter(
+            (order) => order.paymentStatus === "paid",
+          );
+
+          // Fetch order items with product info for all paid orders
+          let hasAccess = false;
+
+          for (const order of paidOrders) {
+            const orderItems = await storage.getOrderItemsByOrder(order.id);
+
+            // Check if any of the ordered products has this file as download URL
+            for (const item of orderItems) {
+              if (item.product && item.product.downloadUrl) {
+                const downloadFileName = path.basename(
+                  item.product.downloadUrl,
+                );
+                if (downloadFileName === fileName) {
+                  hasAccess = true;
+                  break;
+                }
               }
             }
+
+            if (hasAccess) break;
           }
-          
-          if (hasAccess) break;
+
+          if (!hasAccess) {
+            return res
+              .status(403)
+              .send(
+                "Access denied: You have not purchased this item or payment is pending",
+              );
+          }
+        } catch (error) {
+          console.error("Error checking download access:", error);
+          return res
+            .status(500)
+            .send("Server error checking download permissions");
         }
-        
-        if (!hasAccess) {
-          return res.status(403).send('Access denied: You have not purchased this item or payment is pending');
-        }
-      } catch (error) {
-        console.error('Error checking download access:', error);
-        return res.status(500).send('Server error checking download permissions');
       }
-    }
-    
-    express.static(uploadDir)(req, res, next);
-  });
-  
+
+      express.static(uploadDir)(req, res, next);
+    },
+  );
+
   // Setup authentication routes
   setupAuth(app);
-  
+
   // Setup CSRF protection middleware with proper configuration
-  const csrfProtection = csrf({ 
-    cookie: { 
-      key: 'XSRF-TOKEN',
-      path: '/',
+  const csrfProtection = csrf({
+    cookie: {
+      key: "XSRF-TOKEN",
+      path: "/",
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production'
-    } 
+      secure: process.env.NODE_ENV === "production",
+    },
   });
-  
+
   // CSRF token endpoint
   app.get("/api/csrf-token", csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
@@ -224,171 +277,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create special routes to delete resources without CSRF (temporary workaround)
   // This will allow us to handle deletion without CSRF token verification
-  
+
   // Force-delete user
   app.delete("/api/admin/users/:id/force-delete", isAdmin, async (req, res) => {
     try {
-      console.log(`DELETE user endpoint (force) called with ID: ${req.params.id}`);
-      
+      console.log(
+        `DELETE user endpoint (force) called with ID: ${req.params.id}`,
+      );
+
       const userId = parseInt(req.params.id);
       if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
       }
-      
+
       // Don't allow deleting the admin user
       if (userId === 1) {
         return res.status(403).json({ message: "Cannot delete admin user" });
       }
-      
+
       // Get the current user to check if exists
       const currentUser = await storage.getUser(userId);
       if (!currentUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       console.log(`Calling storage.deleteUser for user ID: ${userId}`);
       // Delete the user with all related records
       const deleted = await storage.deleteUser(userId);
-      
+
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete user" });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting user:", error);
       res.status(500).json({ message: "Failed to delete user" });
     }
   });
-  
+
   // Force-delete product
-  app.delete("/api/admin/products/:id/force-delete", isAdminOrDesigner, async (req, res) => {
-    try {
-      console.log(`DELETE product endpoint (force) called with ID: ${req.params.id}`);
-      
-      const productId = parseInt(req.params.id);
-      if (isNaN(productId)) {
-        return res.status(400).json({ message: "Invalid product ID" });
+  app.delete(
+    "/api/admin/products/:id/force-delete",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        console.log(
+          `DELETE product endpoint (force) called with ID: ${req.params.id}`,
+        );
+
+        const productId = parseInt(req.params.id);
+        if (isNaN(productId)) {
+          return res.status(400).json({ message: "Invalid product ID" });
+        }
+
+        // Get the current product to check if exists
+        const currentProduct = await storage.getProductById(productId);
+        if (!currentProduct) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+
+        console.log(
+          `Calling storage.deleteProduct for product ID: ${productId}`,
+        );
+        // Delete the product with all related records
+        const deleted = await storage.deleteProduct(productId);
+
+        if (!deleted) {
+          return res.status(500).json({ message: "Failed to delete product" });
+        }
+
+        res.json({ success: true });
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        res.status(500).json({ message: "Failed to delete product" });
       }
-      
-      // Get the current product to check if exists
-      const currentProduct = await storage.getProductById(productId);
-      if (!currentProduct) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      
-      console.log(`Calling storage.deleteProduct for product ID: ${productId}`);
-      // Delete the product with all related records
-      const deleted = await storage.deleteProduct(productId);
-      
-      if (!deleted) {
-        return res.status(500).json({ message: "Failed to delete product" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      res.status(500).json({ message: "Failed to delete product" });
-    }
-  });
-  
+    },
+  );
+
   // Force-delete category
-  app.delete("/api/admin/categories/:id/force-delete", isAdminOrDesigner, async (req, res) => {
-    try {
-      console.log(`DELETE category endpoint (force) called with ID: ${req.params.id}`);
-      
-      const categoryId = parseInt(req.params.id);
-      if (isNaN(categoryId)) {
-        return res.status(400).json({ message: "Invalid category ID" });
+  app.delete(
+    "/api/admin/categories/:id/force-delete",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        console.log(
+          `DELETE category endpoint (force) called with ID: ${req.params.id}`,
+        );
+
+        const categoryId = parseInt(req.params.id);
+        if (isNaN(categoryId)) {
+          return res.status(400).json({ message: "Invalid category ID" });
+        }
+
+        // Get the current category to check if exists
+        const currentCategory = await storage.getCategoryById(categoryId);
+        if (!currentCategory) {
+          return res.status(404).json({ message: "Category not found" });
+        }
+
+        // Check if category has products
+        const products = await storage.getProductsByCategory(categoryId);
+        if (products.length > 0) {
+          return res.status(400).json({
+            message:
+              "Cannot delete category with associated products. Please move or delete products first.",
+          });
+        }
+
+        console.log(
+          `Calling storage.deleteCategory for category ID: ${categoryId}`,
+        );
+        // Delete the category
+        const deleted = await storage.deleteCategory(categoryId);
+
+        if (!deleted) {
+          return res.status(500).json({ message: "Failed to delete category" });
+        }
+
+        res.json({ success: true });
+      } catch (error) {
+        console.error("Error deleting category:", error);
+        res.status(500).json({ message: "Failed to delete category" });
       }
-      
-      // Get the current category to check if exists
-      const currentCategory = await storage.getCategoryById(categoryId);
-      if (!currentCategory) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-      
-      // Check if category has products
-      const products = await storage.getProductsByCategory(categoryId);
-      if (products.length > 0) {
-        return res.status(400).json({ 
-          message: "Cannot delete category with associated products. Please move or delete products first."
-        });
-      }
-      
-      console.log(`Calling storage.deleteCategory for category ID: ${categoryId}`);
-      // Delete the category
-      const deleted = await storage.deleteCategory(categoryId);
-      
-      if (!deleted) {
-        return res.status(500).json({ message: "Failed to delete category" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
-  
+    },
+  );
+
   // Force-delete order
-  app.delete("/api/admin/orders/:id/force-delete", isAdminOrDesigner, async (req, res) => {
-    try {
-      console.log(`DELETE order endpoint (force) called with ID: ${req.params.id}`);
-      
-      const orderId = parseInt(req.params.id);
-      if (isNaN(orderId)) {
-        return res.status(400).json({ message: "Invalid order ID" });
+  app.delete(
+    "/api/admin/orders/:id/force-delete",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        console.log(
+          `DELETE order endpoint (force) called with ID: ${req.params.id}`,
+        );
+
+        const orderId = parseInt(req.params.id);
+        if (isNaN(orderId)) {
+          return res.status(400).json({ message: "Invalid order ID" });
+        }
+
+        // Get the current order to check if exists
+        const currentOrder = await storage.getOrderById(orderId);
+        if (!currentOrder) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+
+        console.log(`Calling storage.deleteOrder for order ID: ${orderId}`);
+        // Delete the order with all related records
+        const deleted = await storage.deleteOrder(orderId);
+
+        if (!deleted) {
+          return res.status(500).json({ message: "Failed to delete order" });
+        }
+
+        res.json({ success: true });
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        res.status(500).json({ message: "Failed to delete order" });
       }
-      
-      // Get the current order to check if exists
-      const currentOrder = await storage.getOrderById(orderId);
-      if (!currentOrder) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      
-      console.log(`Calling storage.deleteOrder for order ID: ${orderId}`);
-      // Delete the order with all related records
-      const deleted = await storage.deleteOrder(orderId);
-      
-      if (!deleted) {
-        return res.status(500).json({ message: "Failed to delete order" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      res.status(500).json({ message: "Failed to delete order" });
-    }
-  });
+    },
+  );
 
   // API routes
-  
+
   // Public endpoint for site settings
   app.get("/api/settings/public", async (req, res) => {
     try {
       // Only expose select settings categories that are safe for public consumption
-      const siteSettings = await storage.getSettingsByCategory('site');
-      
+      const siteSettings = await storage.getSettingsByCategory("site");
+
       // Exclude any sensitive settings (just in case)
-      const sensitiveKeys = ['site_smtpPassword', 'site_apiKeys'];
-      Object.keys(siteSettings).forEach(key => {
-        if (sensitiveKeys.some(sk => key.includes(sk))) {
+      const sensitiveKeys = ["site_smtpPassword", "site_apiKeys"];
+      Object.keys(siteSettings).forEach((key) => {
+        if (sensitiveKeys.some((sk) => key.includes(sk))) {
           delete siteSettings[key];
         }
       });
-      
+
       res.json({
         success: true,
         data: {
-          site: siteSettings
-        }
+          site: siteSettings,
+        },
       });
     } catch (error) {
       console.error("Error fetching public settings:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: "Error fetching public settings" 
+        message: "Error fetching public settings",
       });
     }
   });
@@ -420,27 +498,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get search query from request if it exists
       const searchQuery = req.query.search as string;
-      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
-      
+      const categoryId = req.query.categoryId
+        ? parseInt(req.query.categoryId as string)
+        : undefined;
+
       if (searchQuery || categoryId) {
         // If we have a search query or category filter, use a filtered approach
         let products = await storage.getAllProducts();
-        
+
         // Filter by search query if provided
         if (searchQuery) {
           const query = searchQuery.toLowerCase().trim();
-          products = products.filter(product => {
+          products = products.filter((product) => {
             const nameMatch = product.name.toLowerCase().includes(query);
-            const descMatch = product.description ? product.description.toLowerCase().includes(query) : false;
+            const descMatch = product.description
+              ? product.description.toLowerCase().includes(query)
+              : false;
             return nameMatch || descMatch;
           });
         }
-        
+
         // Filter by category if provided
         if (categoryId && !isNaN(categoryId)) {
-          products = products.filter(product => product.categoryId === categoryId);
+          products = products.filter(
+            (product) => product.categoryId === categoryId,
+          );
         }
-        
+
         res.json(products);
       } else {
         // If no filters, get all products
@@ -480,21 +564,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
-      
+
       const products = await storage.getProductsByCategory(categoryId);
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch category products" });
     }
   });
-  
+
   app.get("/api/products/category/:id", async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
-      
+
       const products = await storage.getProductsByCategory(categoryId);
       res.json(products);
     } catch (error) {
@@ -518,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!Array.isArray(items)) {
         return res.status(400).json({ message: "Invalid cart items" });
       }
-      
+
       const cart = await storage.createOrUpdateCart(req.user.id, items);
       res.json(cart);
     } catch (error) {
@@ -530,26 +614,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders", isAuthenticated, async (req, res) => {
     try {
       const orders = await storage.getOrdersByUser(req.user.id);
-      
+
       // Fetch order items for each order and add them to the response
-      const ordersWithItems = await Promise.all(orders.map(async (order) => {
-        const items = await storage.getOrderItemsByOrder(order.id);
-        
-        // Fetch product details for each item
-        const itemsWithProducts = await Promise.all(items.map(async (item) => {
-          const product = await storage.getProductById(item.productId);
+      const ordersWithItems = await Promise.all(
+        orders.map(async (order) => {
+          const items = await storage.getOrderItemsByOrder(order.id);
+
+          // Fetch product details for each item
+          const itemsWithProducts = await Promise.all(
+            items.map(async (item) => {
+              const product = await storage.getProductById(item.productId);
+              return {
+                ...item,
+                product,
+              };
+            }),
+          );
+
           return {
-            ...item,
-            product
+            ...order,
+            items: itemsWithProducts,
           };
-        }));
-        
-        return {
-          ...order,
-          items: itemsWithProducts
-        };
-      }));
-      
+        }),
+      );
+
       res.json(ordersWithItems);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -572,7 +660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalAmount,
         status: "processing", // Since this is a simulated direct payment
         paymentStatus,
-        paymentIntentId: `sim_${Date.now()}` // Simulated payment intent ID
+        paymentIntentId: `sim_${Date.now()}`, // Simulated payment intent ID
       });
 
       // Add order items
@@ -588,7 +676,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(order);
     } catch (error: any) {
       console.error("Order creation error:", error);
-      res.status(500).json({ message: `Failed to create order: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Failed to create order: ${error.message}` });
     }
   });
 
@@ -598,17 +688,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(orderId)) {
         return res.status(400).json({ message: "Invalid order ID" });
       }
-      
+
       const order = await storage.getOrderById(orderId);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
+
       // Only allow users to see their own orders or admins to see any order
       if (order.userId !== req.user.id && req.user.role !== "admin") {
         return res.status(403).json({ message: "Forbidden" });
       }
-      
+
       const items = await storage.getOrderItemsByOrder(orderId);
       res.json({ ...order, items });
     } catch (error) {
@@ -623,7 +713,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await seed();
       res.status(200).json({ message: "Database seeded successfully" });
     } catch (error: any) {
-      res.status(500).json({ message: `Error seeding database: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Error seeding database: ${error.message}` });
     }
   });
 
@@ -633,23 +725,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Fetch all users from the database
       const allUsers = await db.select().from(users);
-      
+
       // Map the users to remove sensitive information like passwords
-      const safeUsers = allUsers.map(user => ({
+      const safeUsers = allUsers.map((user) => ({
         id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       }));
-      
+
       res.json(safeUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
-  
+
   // Update user
   app.patch("/api/admin/users/:id", isAdmin, async (req, res) => {
     try {
@@ -657,69 +749,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
       }
-      
+
       // Get the current user to check if exists
       const currentUser = await storage.getUser(userId);
       if (!currentUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       const { username, email, role, password } = req.body;
-      
+
       // Update user in the database
       const updateData: any = {};
-      
+
       if (username) updateData.username = username;
       if (email) updateData.email = email;
       if (role) updateData.role = role;
-      
+
       // Only hash and update password if provided
-      if (password && password.trim() !== '') {
-        const { hashPassword } = await import('./auth');
+      if (password && password.trim() !== "") {
+        const { hashPassword } = await import("./auth");
         updateData.password = await hashPassword(password);
       }
-      
+
       // Perform the update
-      await db.update(users)
-        .set(updateData)
-        .where(eq(users.id, userId));
-      
+      await db.update(users).set(updateData).where(eq(users.id, userId));
+
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating user:", error);
       res.status(500).json({ message: "Failed to update user" });
     }
   });
-  
+
   // Delete user
   app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
     try {
       console.log(`DELETE user endpoint called with ID: ${req.params.id}`);
-      
+
       const userId = parseInt(req.params.id);
       if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
       }
-      
+
       // Don't allow deleting the admin user
       if (userId === 1) {
         return res.status(403).json({ message: "Cannot delete admin user" });
       }
-      
+
       // Get the current user to check if exists
       const currentUser = await storage.getUser(userId);
       if (!currentUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       console.log(`Calling storage.deleteUser for user ID: ${userId}`);
       // Delete the user with all related records
       const deleted = await storage.deleteUser(userId);
-      
+
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete user" });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -734,13 +824,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allOrders = await storage.getAllOrders();
       const allUsers = await db.select().from(users);
       const allProducts = await storage.getAllProducts();
-      
+
       // Calculate total revenue (only from paid orders)
       const totalRevenue = allOrders.reduce((sum, order) => {
         // Only include revenue from orders with paymentStatus === 'paid'
-        return order.paymentStatus === 'paid' ? sum + (order.totalAmount || 0) : sum;
+        return order.paymentStatus === "paid"
+          ? sum + (order.totalAmount || 0)
+          : sum;
       }, 0);
-      
+
       // Get recent orders with additional info
       const recentOrders = await Promise.all(
         allOrders.slice(0, 5).map(async (order) => {
@@ -750,53 +842,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ...order,
             user: {
               id: user?.id || 0,
-              username: user?.username || 'Unknown',
-              email: user?.email || 'unknown@example.com'
+              username: user?.username || "Unknown",
+              email: user?.email || "unknown@example.com",
             },
-            itemCount: items.length
+            itemCount: items.length,
           };
-        })
+        }),
       );
-      
+
       // Generate monthly sales data for the chart
       const currentDate = new Date();
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       const salesData = Array.from({ length: 6 }, (_, i) => {
         const month = new Date(currentDate);
         month.setMonth(currentDate.getMonth() - (5 - i));
-        
+
         // Filter orders for this month
-        const monthOrders = allOrders.filter(order => {
-          const orderDate = new Date(order.createdAt || '');
-          return orderDate.getMonth() === month.getMonth() && 
-                orderDate.getFullYear() === month.getFullYear();
+        const monthOrders = allOrders.filter((order) => {
+          const orderDate = new Date(order.createdAt || "");
+          return (
+            orderDate.getMonth() === month.getMonth() &&
+            orderDate.getFullYear() === month.getFullYear()
+          );
         });
-        
+
         // Calculate total for this month
-        const total = monthOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
-        
+        const total = monthOrders.reduce(
+          (sum, order) =>
+            order.paymentStatus === "paid"
+              ? sum + (order.totalAmount || 0)
+              : sum,
+          0,
+        );
+
         return {
           name: monthNames[month.getMonth()],
-          total
+          total,
         };
       });
-      
+
       // Order status data for chart
-      const orderStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-      const orderStatusData = orderStatuses.map(status => {
-        const count = allOrders.filter(order => order.status === status).length;
+      const orderStatuses = [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ];
+      const orderStatusData = orderStatuses.map((status) => {
+        const count = allOrders.filter(
+          (order) => order.status === status,
+        ).length;
         return { name: status, value: count };
       });
-      
+
       // Category data for chart
-      const categoryData = await Promise.all((await storage.getAllCategories()).map(async (category) => {
-        const productCount = (await storage.getProductsByCategory(category.id)).length;
-        return {
-          name: category.name,
-          value: productCount
-        };
-      }));
-      
+      const categoryData = await Promise.all(
+        (await storage.getAllCategories()).map(async (category) => {
+          const productCount = (
+            await storage.getProductsByCategory(category.id)
+          ).length;
+          return {
+            name: category.name,
+            value: productCount,
+          };
+        }),
+      );
+
       const stats = {
         totalRevenue,
         totalOrders: allOrders.length,
@@ -805,9 +930,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recentOrders,
         salesData,
         categoryData,
-        orderStatusData
+        orderStatusData,
       };
-      
+
       res.json(stats);
     } catch (error) {
       console.error("Error fetching admin stats:", error);
@@ -820,44 +945,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get all orders
       const orders = await storage.getAllOrders();
-      
+
       // Fetch more details for each order
-      const ordersWithDetails = await Promise.all(orders.map(async (order) => {
-        // Get user info
-        const user = await storage.getUser(order.userId);
-        
-        // Get order items
-        const items = await storage.getOrderItemsByOrder(order.id);
-        
-        // Get product details for each item
-        const itemsWithProducts = await Promise.all(items.map(async (item) => {
-          const product = await storage.getProductById(item.productId);
+      const ordersWithDetails = await Promise.all(
+        orders.map(async (order) => {
+          // Get user info
+          const user = await storage.getUser(order.userId);
+
+          // Get order items
+          const items = await storage.getOrderItemsByOrder(order.id);
+
+          // Get product details for each item
+          const itemsWithProducts = await Promise.all(
+            items.map(async (item) => {
+              const product = await storage.getProductById(item.productId);
+              return {
+                ...item,
+                product: product || { name: "Unknown Product" },
+              };
+            }),
+          );
+
+          // Return enhanced order object
           return {
-            ...item,
-            product: product || { name: 'Unknown Product' }
+            ...order,
+            user: {
+              id: user?.id,
+              username: user?.username || "Unknown",
+              email: user?.email || "unknown@example.com",
+            },
+            items: itemsWithProducts,
+            itemCount: items.length,
           };
-        }));
-        
-        // Return enhanced order object
-        return {
-          ...order,
-          user: {
-            id: user?.id,
-            username: user?.username || 'Unknown',
-            email: user?.email || 'unknown@example.com'
-          },
-          items: itemsWithProducts,
-          itemCount: items.length
-        };
-      }));
-      
+        }),
+      );
+
       // Sort orders by creation date (newest first)
       ordersWithDetails.sort((a, b) => {
         const dateA = new Date(a.createdAt || 0);
         const dateB = new Date(b.createdAt || 0);
         return dateB.getTime() - dateA.getTime();
       });
-      
+
       res.json(ordersWithDetails);
     } catch (error) {
       console.error("Error fetching admin orders:", error);
@@ -871,83 +1000,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(orderId)) {
         return res.status(400).json({ message: "Invalid order ID" });
       }
-      
+
       const order = await storage.getOrderById(orderId);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
+
       const items = await storage.getOrderItemsByOrder(orderId);
       const user = await storage.getUser(order.userId);
-      
+
       res.json({ ...order, items, user });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch order details" });
     }
   });
 
-  app.patch("/api/admin/orders/:id/status", isAdminOrDesigner, async (req, res) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      if (isNaN(orderId)) {
-        return res.status(400).json({ message: "Invalid order ID" });
-      }
-      
-      const { status } = req.body;
-      if (!status) {
-        return res.status(400).json({ message: "Status is required" });
-      }
-      
-      const order = await storage.updateOrderStatus(orderId, status);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      
-      res.json(order);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to update order status" });
-    }
-  });
+  app.patch(
+    "/api/admin/orders/:id/status",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        const orderId = parseInt(req.params.id);
+        if (isNaN(orderId)) {
+          return res.status(400).json({ message: "Invalid order ID" });
+        }
 
-  app.patch("/api/admin/orders/:id/payment", isAdminOrDesigner, async (req, res) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      if (isNaN(orderId)) {
-        return res.status(400).json({ message: "Invalid order ID" });
+        const { status } = req.body;
+        if (!status) {
+          return res.status(400).json({ message: "Status is required" });
+        }
+
+        const order = await storage.updateOrderStatus(orderId, status);
+        if (!order) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json(order);
+      } catch (error) {
+        res.status(500).json({ message: "Failed to update order status" });
       }
-      
-      const { paymentStatus } = req.body;
-      if (!paymentStatus) {
-        return res.status(400).json({ message: "Payment status is required" });
+    },
+  );
+
+  app.patch(
+    "/api/admin/orders/:id/payment",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        const orderId = parseInt(req.params.id);
+        if (isNaN(orderId)) {
+          return res.status(400).json({ message: "Invalid order ID" });
+        }
+
+        const { paymentStatus } = req.body;
+        if (!paymentStatus) {
+          return res
+            .status(400)
+            .json({ message: "Payment status is required" });
+        }
+
+        const order = await storage.updatePaymentStatus(orderId, paymentStatus);
+        if (!order) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json(order);
+      } catch (error) {
+        res.status(500).json({ message: "Failed to update payment status" });
       }
-      
-      const order = await storage.updatePaymentStatus(orderId, paymentStatus);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      
-      res.json(order);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to update payment status" });
-    }
-  });
-  
+    },
+  );
+
   app.delete("/api/admin/orders/:id", isAdminOrDesigner, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
       if (isNaN(orderId)) {
         return res.status(400).json({ message: "Invalid order ID" });
       }
-      
+
       // Check if order exists
       const order = await storage.getOrderById(orderId);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
+
       // Delete the order
       await storage.deleteOrder(orderId);
-      
+
       res.status(200).json({ message: "Order deleted successfully" });
     } catch (error) {
       console.error("Error deleting order:", error);
@@ -972,93 +1111,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(productId)) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
-      
+
       const product = req.body;
       const updatedProduct = await storage.updateProduct(productId, product);
       if (!updatedProduct) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
+
       res.json(updatedProduct);
     } catch (error) {
       res.status(500).json({ message: "Failed to update product" });
     }
   });
-  
+
   // File upload endpoints
-  app.post('/api/admin/upload/product-image', isAdminOrDesigner, async (req: any, res) => {
-    try {
-      if (!req.files || !req.files.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
-      
-      const file = req.files.file;
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(process.cwd(), 'uploads/products', fileName);
-      
-      // Validate file type
-      const fileExt = path.extname(file.name).toLowerCase();
-      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg'];
-      if (!allowedExtensions.includes(fileExt)) {
-        return res.status(400).json({ message: 'Invalid file type. Only images are allowed.' });
-      }
-      
-      // Move the file to upload directory
-      file.mv(uploadPath, (err: any) => {
-        if (err) {
-          console.error('File upload error:', err);
-          return res.status(500).json({ message: 'Error uploading file' });
+  app.post(
+    "/api/admin/upload/product-image",
+    isAdminOrDesigner,
+    async (req: any, res) => {
+      try {
+        if (!req.files || !req.files.file) {
+          return res.status(400).json({ message: "No file uploaded" });
         }
-        
-        // Return the file path relative to the uploads directory
-        res.json({ 
-          url: `/uploads/products/${fileName}`,
-          message: 'File uploaded successfully' 
-        });
-      });
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      res.status(500).json({ message: `Failed to upload image: ${error.message}` });
-    }
-  });
-  
-  app.post('/api/admin/upload/product-file', isAdminOrDesigner, async (req: any, res) => {
-    try {
-      if (!req.files || !req.files.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
-      
-      const file = req.files.file;
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(process.cwd(), 'uploads/downloads', fileName);
-      
-      // Validate file type
-      const fileExt = path.extname(file.name).toLowerCase();
-      const allowedExtensions = ['.zip', '.pdf', '.ai', '.psd', '.eps', '.svg'];
-      if (!allowedExtensions.includes(fileExt)) {
-        return res.status(400).json({ 
-          message: 'Invalid file type. Only zip, pdf, ai, psd, eps, and svg files are allowed.' 
-        });
-      }
-      
-      // Move the file to upload directory
-      file.mv(uploadPath, (err: any) => {
-        if (err) {
-          console.error('File upload error:', err);
-          return res.status(500).json({ message: 'Error uploading file' });
+
+        const file = req.files.file;
+        const fileName = `${Date.now()}-${file.name}`;
+        const uploadPath = path.join(
+          process.cwd(),
+          "uploads/products",
+          fileName,
+        );
+
+        // Validate file type
+        const fileExt = path.extname(file.name).toLowerCase();
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".svg"];
+        if (!allowedExtensions.includes(fileExt)) {
+          return res
+            .status(400)
+            .json({ message: "Invalid file type. Only images are allowed." });
         }
-        
-        // Return the file path relative to the uploads directory
-        res.json({ 
-          url: `/uploads/downloads/${fileName}`,
-          message: 'File uploaded successfully' 
+
+        // Move the file to upload directory
+        file.mv(uploadPath, (err: any) => {
+          if (err) {
+            console.error("File upload error:", err);
+            return res.status(500).json({ message: "Error uploading file" });
+          }
+
+          // Return the file path relative to the uploads directory
+          res.json({
+            url: `/uploads/products/${fileName}`,
+            message: "File uploaded successfully",
+          });
         });
-      });
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      res.status(500).json({ message: `Failed to upload file: ${error.message}` });
-    }
-  });
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        res
+          .status(500)
+          .json({ message: `Failed to upload image: ${error.message}` });
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/upload/product-file",
+    isAdminOrDesigner,
+    async (req: any, res) => {
+      try {
+        if (!req.files || !req.files.file) {
+          return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const file = req.files.file;
+        const fileName = `${Date.now()}-${file.name}`;
+        const uploadPath = path.join(
+          process.cwd(),
+          "uploads/downloads",
+          fileName,
+        );
+
+        // Validate file type
+        const fileExt = path.extname(file.name).toLowerCase();
+        const allowedExtensions = [
+          ".zip",
+          ".pdf",
+          ".ai",
+          ".psd",
+          ".eps",
+          ".svg",
+        ];
+        if (!allowedExtensions.includes(fileExt)) {
+          return res.status(400).json({
+            message:
+              "Invalid file type. Only zip, pdf, ai, psd, eps, and svg files are allowed.",
+          });
+        }
+
+        // Move the file to upload directory
+        file.mv(uploadPath, (err: any) => {
+          if (err) {
+            console.error("File upload error:", err);
+            return res.status(500).json({ message: "Error uploading file" });
+          }
+
+          // Return the file path relative to the uploads directory
+          res.json({
+            url: `/uploads/downloads/${fileName}`,
+            message: "File uploaded successfully",
+          });
+        });
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        res
+          .status(500)
+          .json({ message: `Failed to upload file: ${error.message}` });
+      }
+    },
+  );
 
   app.delete("/api/admin/products/:id", isAdminOrDesigner, async (req, res) => {
     try {
@@ -1066,7 +1235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(productId)) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
-      
+
       await storage.deleteProduct(productId);
       res.status(204).send();
     } catch (error) {
@@ -1090,38 +1259,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
-      
+
       const category = req.body;
-      const updatedCategory = await storage.updateCategory(categoryId, category);
-      
+      const updatedCategory = await storage.updateCategory(
+        categoryId,
+        category,
+      );
+
       if (!updatedCategory) {
         return res.status(404).json({ message: "Category not found" });
       }
-      
+
       res.status(200).json(updatedCategory);
     } catch (error) {
       res.status(500).json({ message: "Failed to update category" });
     }
   });
 
-  app.delete("/api/admin/categories/:id", isAdminOrDesigner, async (req, res) => {
-    try {
-      const categoryId = parseInt(req.params.id);
-      if (isNaN(categoryId)) {
-        return res.status(400).json({ message: "Invalid category ID" });
+  app.delete(
+    "/api/admin/categories/:id",
+    isAdminOrDesigner,
+    async (req, res) => {
+      try {
+        const categoryId = parseInt(req.params.id);
+        if (isNaN(categoryId)) {
+          return res.status(400).json({ message: "Invalid category ID" });
+        }
+
+        const success = await storage.deleteCategory(categoryId);
+
+        if (!success) {
+          return res.status(404).json({ message: "Category not found" });
+        }
+
+        res.status(204).send();
+      } catch (error) {
+        res.status(500).json({ message: "Failed to delete category" });
       }
-      
-      const success = await storage.deleteCategory(categoryId);
-      
-      if (!success) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-      
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
+    },
+  );
 
   // Stripe integration
   app.post("/api/create-payment-intent", isAuthenticated, async (req, res) => {
@@ -1176,22 +1352,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // PayPal endpoints
   app.post("/api/create-paypal-order", isAuthenticated, async (req, res) => {
     try {
       const { amount, items, email } = req.body;
-      
+
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: "Invalid amount" });
       }
-      
+
       if (!paypalClient) {
-        return res.status(500).json({ 
-          message: "PayPal is not configured. Please check your PayPal API credentials." 
+        return res.status(500).json({
+          message:
+            "PayPal is not configured. Please check your PayPal API credentials.",
         });
       }
-      
+
       // Create a PayPal order using the PayPal SDK
       const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
       request.prefer("return=representation");
@@ -1203,37 +1380,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency_code: "USD",
               value: amount.toString(),
             },
-            description: "DesignKorv order"
+            description: "DesignKorv order",
           },
         ],
         application_context: {
           brand_name: "DesignKorv",
           landing_page: "NO_PREFERENCE",
           user_action: "PAY_NOW",
-          return_url: `${req.protocol}://${req.get('host')}/checkout-success`,
-          cancel_url: `${req.protocol}://${req.get('host')}/checkout-cancel`
-        }
+          return_url: `${req.protocol}://${req.get("host")}/checkout-success`,
+          cancel_url: `${req.protocol}://${req.get("host")}/checkout-cancel`,
+        },
       });
-      
+
       // Execute the PayPal order creation request
       const paypalOrder = await paypalClient.execute(request);
-      
+
       if (!paypalOrder || !paypalOrder.result || !paypalOrder.result.id) {
         throw new Error("Failed to create PayPal order");
       }
-      
+
       // Get the PayPal order ID
       const paypalOrderId = paypalOrder.result.id;
-      
+
       // Create order in our database with pending status
       const order = await storage.createOrder({
         userId: req.user.id,
         totalAmount: amount,
         status: "pending",
         paymentIntentId: paypalOrderId,
-        paymentStatus: "pending"
+        paymentStatus: "pending",
       });
-      
+
       // Add order items
       if (Array.isArray(items) && items.length > 0) {
         for (const item of items) {
@@ -1245,49 +1422,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       // Return the PayPal order ID
       res.json({
         id: paypalOrderId,
-        orderId: order.id
+        orderId: order.id,
       });
     } catch (error: any) {
       console.error("PayPal order creation error:", error);
       res.status(500).json({
-        message: `Error creating PayPal order: ${error.message}`
+        message: `Error creating PayPal order: ${error.message}`,
       });
     }
   });
-  
+
   app.post("/api/capture-paypal-order", isAuthenticated, async (req, res) => {
     try {
       const { orderId } = req.body;
-      
+
       if (!orderId) {
         return res.status(400).json({ message: "Missing PayPal order ID" });
       }
-      
+
       if (!paypalClient) {
-        return res.status(500).json({ 
-          message: "PayPal is not configured. Please check your PayPal API credentials."
+        return res.status(500).json({
+          message:
+            "PayPal is not configured. Please check your PayPal API credentials.",
         });
       }
-      
+
       // Find the order in our database by the PayPal order ID
       const orders = await storage.getAllOrders();
-      const order = orders.find(o => o.paymentIntentId === orderId);
-      
+      const order = orders.find((o) => o.paymentIntentId === orderId);
+
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
+
       // Create a request to capture the approved PayPal order
-      const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderId);
+      const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(
+        orderId,
+      );
       request.prefer("return=representation");
-      
+
       // Execute the PayPal capture request
       const capture = await paypalClient.execute(request);
-      
+
       if (
         !capture ||
         !capture.result ||
@@ -1295,22 +1475,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ) {
         throw new Error("Failed to capture PayPal payment");
       }
-      
+
       // Update the order status to completed
-      const updatedOrder = await storage.updateOrderStatus(order.id, "completed");
+      const updatedOrder = await storage.updateOrderStatus(
+        order.id,
+        "completed",
+      );
       if (updatedOrder) {
         await storage.updatePaymentStatus(order.id, "paid", orderId);
       }
-      
+
       res.json({
         success: true,
-        orderId: order.id
+        orderId: order.id,
       });
-      
     } catch (error: any) {
       console.error("PayPal capture error:", error);
       res.status(500).json({
-        message: `Error capturing PayPal payment: ${error.message}`
+        message: `Error capturing PayPal payment: ${error.message}`,
       });
     }
   });
@@ -1327,13 +1509,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify webhook signature using the signing secret
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
       if (!webhookSecret) {
-        return res.status(500).json({ message: "Webhook secret not configured" });
+        return res
+          .status(500)
+          .json({ message: "Webhook secret not configured" });
       }
 
       event = stripe.webhooks.constructEvent(
         req.body,
         sig as string,
-        webhookSecret
+        webhookSecret,
       );
     } catch (err: any) {
       return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -1348,7 +1532,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.updatePaymentStatus(
         parseInt(metadata.orderId),
         "paid",
-        id
+        id,
       );
 
       if (order) {
@@ -1366,61 +1550,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allOrders = await storage.getAllOrders();
       const allUsers = await db.select().from(users);
       const allProducts = await storage.getAllProducts();
-      
+
       // Calculate sales summary
-      const totalRevenue = allOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
-      const totalOrders = allOrders.filter(order => order.paymentStatus === "paid").length;
-      
+      const totalRevenue = allOrders.reduce(
+        (sum, order) =>
+          order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum,
+        0,
+      );
+      const totalOrders = allOrders.filter(
+        (order) => order.paymentStatus === "paid",
+      ).length;
+
       // Calculate average order value
-      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-      
+      const averageOrderValue =
+        totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
       // For conversion rate we'll use a proxy calculation based on orders vs users
       // In a real app this would use actual visitor data
-      const conversionRate = allUsers.length > 0 ? (totalOrders / allUsers.length) * 100 : 0;
-      
+      const conversionRate =
+        allUsers.length > 0 ? (totalOrders / allUsers.length) * 100 : 0;
+
       // For the time series data, we'll prepare monthly revenue data
       const currentDate = new Date();
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+
       const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
         const month = new Date(currentDate);
         month.setMonth(currentDate.getMonth() - (5 - i));
-        
+
         // Filter orders for this month
-        const monthOrders = allOrders.filter(order => {
-          const orderDate = new Date(order.createdAt || '');
-          return orderDate.getMonth() === month.getMonth() && 
-                orderDate.getFullYear() === month.getFullYear();
+        const monthOrders = allOrders.filter((order) => {
+          const orderDate = new Date(order.createdAt || "");
+          return (
+            orderDate.getMonth() === month.getMonth() &&
+            orderDate.getFullYear() === month.getFullYear()
+          );
         });
-        
+
         // Calculate total for this month
-        const total = monthOrders.reduce((sum, order) => order.paymentStatus === "paid" ? sum + (order.totalAmount || 0) : sum, 0);
-        
+        const total = monthOrders.reduce(
+          (sum, order) =>
+            order.paymentStatus === "paid"
+              ? sum + (order.totalAmount || 0)
+              : sum,
+          0,
+        );
+
         return {
           name: monthNames[month.getMonth()],
           revenue: total,
-          orders: monthOrders.length
+          orders: monthOrders.length,
         };
       });
-      
+
       // Group orders by status
       const ordersByStatus = {};
       for (const order of allOrders) {
-        const status = order.status || 'unknown';
+        const status = order.status || "unknown";
         ordersByStatus[status] = (ordersByStatus[status] || 0) + 1;
       }
-      
+
       // Get traffic data (using user data as a proxy since we don't have real visitor tracking)
       // In a real app, this would come from analytics tracking
-      const newUsersCount = allUsers.filter(user => {
-        const createdAt = new Date(user.createdAt || '');
+      const newUsersCount = allUsers.filter((user) => {
+        const createdAt = new Date(user.createdAt || "");
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
         return createdAt > oneMonthAgo;
       }).length;
-      
+
       const returningUsersCount = allUsers.length - newUsersCount;
-      
+
       // Return complete analytics data
       res.json({
         salesSummary: {
@@ -1453,12 +1666,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const settings = await storage.getAllSettings();
       res.json({
         success: true,
-        data: settings
+        data: settings,
       });
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: error.message || "Failed to fetch settings"
+        message: error.message || "Failed to fetch settings",
       });
     }
   });
@@ -1470,12 +1683,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const settings = await storage.getSettingsByCategory(category);
       res.json({
         success: true,
-        data: settings
+        data: settings,
       });
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: error.message || "Failed to fetch settings"
+        message: error.message || "Failed to fetch settings",
       });
     }
   });
@@ -1486,21 +1699,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save each site setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         // The keys might already have the prefix if sent from the client
-        const settingKey = key.startsWith('site_') ? key : `site_${key}`;
-        await storage.updateSetting(settingKey, value, 'site');
+        const settingKey = key.startsWith("site_") ? key : `site_${key}`;
+        await storage.updateSetting(settingKey, value, "site");
       }
-      
+
       // Return the updated settings
-      const siteSettings = await storage.getSettingsByCategory('site');
+      const siteSettings = await storage.getSettingsByCategory("site");
       res.json({
         success: true,
         message: "Site settings updated successfully",
-        data: siteSettings
+        data: siteSettings,
       });
     } catch (error: any) {
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || "Failed to update site settings" 
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update site settings",
       });
     }
   });
@@ -1511,21 +1724,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save each analytics setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         // The keys might already have the prefix if sent from the client
-        const settingKey = key.startsWith('analytics_') ? key : `analytics_${key}`;
-        await storage.updateSetting(settingKey, value, 'analytics');
+        const settingKey = key.startsWith("analytics_")
+          ? key
+          : `analytics_${key}`;
+        await storage.updateSetting(settingKey, value, "analytics");
       }
-      
+
       // Return the updated settings
-      const analyticsSettings = await storage.getSettingsByCategory('analytics');
+      const analyticsSettings =
+        await storage.getSettingsByCategory("analytics");
       res.json({
         success: true,
         message: "Analytics settings updated successfully",
-        data: analyticsSettings
+        data: analyticsSettings,
       });
     } catch (error: any) {
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || "Failed to update analytics settings" 
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update analytics settings",
       });
     }
   });
@@ -1536,21 +1752,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save each email setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         // The keys might already have the prefix if sent from the client
-        const settingKey = key.startsWith('email_') ? key : `email_${key}`;
-        await storage.updateSetting(settingKey, value, 'email');
+        const settingKey = key.startsWith("email_") ? key : `email_${key}`;
+        await storage.updateSetting(settingKey, value, "email");
       }
-      
+
       // Return the updated settings
-      const emailSettings = await storage.getSettingsByCategory('email');
+      const emailSettings = await storage.getSettingsByCategory("email");
       res.json({
         success: true,
         message: "Email settings updated successfully",
-        data: emailSettings
+        data: emailSettings,
       });
     } catch (error: any) {
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || "Failed to update email settings" 
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update email settings",
       });
     }
   });
@@ -1561,21 +1777,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save each social media setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         // The keys might already have the prefix if sent from the client
-        const settingKey = key.startsWith('social_') ? key : `social_${key}`;
-        await storage.updateSetting(settingKey, value, 'social');
+        const settingKey = key.startsWith("social_") ? key : `social_${key}`;
+        await storage.updateSetting(settingKey, value, "social");
       }
-      
+
       // Return the updated settings
-      const socialSettings = await storage.getSettingsByCategory('social');
+      const socialSettings = await storage.getSettingsByCategory("social");
       res.json({
         success: true,
         message: "Social media settings updated successfully",
-        data: socialSettings
+        data: socialSettings,
       });
     } catch (error: any) {
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || "Failed to update social media settings" 
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update social media settings",
       });
     }
   });
@@ -1585,20 +1801,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Process each payment setting
       const sensitiveFields = [
-        'stripeSecretKey', 
-        'stripeWebhookSecret', 
-        'paypalClientSecret', 
-        'payoneerApiKey', 
-        'payoneerPassword'
+        "stripeSecretKey",
+        "stripeWebhookSecret",
+        "paypalClientSecret",
+        "payoneerApiKey",
+        "payoneerPassword",
       ];
-      
+
       // Save each payment setting to the database
       for (const [key, value] of Object.entries(req.body)) {
         // The keys might already have the prefix if sent from the client
-        const settingKey = key.startsWith('payment_') ? key : `payment_${key}`;
-        await storage.updateSetting(settingKey, value, 'payment');
+        const settingKey = key.startsWith("payment_") ? key : `payment_${key}`;
+        await storage.updateSetting(settingKey, value, "payment");
       }
-      
+
       // Re-initialize payment gateways with the new settings
       try {
         await initializePaymentGateways();
@@ -1607,53 +1823,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Failed to reinitialize payment gateways:", initError);
         // Continue - we don't want to fail the settings update if reinitialization fails
       }
-      
+
       // Return the updated settings with sensitive info masked
-      const paymentSettings = await storage.getSettingsByCategory('payment');
-      
+      const paymentSettings = await storage.getSettingsByCategory("payment");
+
       const safeResponse: Record<string, any> = {};
       for (const [key, value] of Object.entries(paymentSettings)) {
-        const cleanKey = key.replace('payment_', '');
-        
+        const cleanKey = key.replace("payment_", "");
+
         // Mask sensitive information in the response
         if (sensitiveFields.includes(cleanKey) && value) {
-          safeResponse[cleanKey] = '********';
+          safeResponse[cleanKey] = "********";
         } else {
           safeResponse[cleanKey] = value;
         }
       }
-      
+
       res.json({
         success: true,
         message: "Payment settings updated successfully",
-        data: safeResponse
+        data: safeResponse,
       });
     } catch (error: any) {
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || "Failed to update payment settings" 
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update payment settings",
       });
     }
   });
 
   // Newsletter subscription endpoint
-  app.post('/api/newsletter/subscribe', async (req, res) => {
+  app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
       const { email } = req.body;
-      
-      if (!email || typeof email !== 'string' || !email.includes('@')) {
-        return res.status(400).json({ error: 'Invalid email address' });
+
+      if (!email || typeof email !== "string" || !email.includes("@")) {
+        return res.status(400).json({ error: "Invalid email address" });
       }
-      
+
       // TODO: Implement newsletter subscription logic here
       // This could involve saving to a database or integrating with a marketing service
-      
+
       // For now, just return success
       console.log(`Newsletter subscription request for: ${email}`);
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
-      res.status(500).json({ error: 'Failed to subscribe to newsletter' });
+      console.error("Newsletter subscription error:", error);
+      res.status(500).json({ error: "Failed to subscribe to newsletter" });
     }
   });
 
@@ -1664,14 +1880,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(productId)) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
-      
+
       const reviews = await storage.getReviewsByProduct(productId);
       res.json(reviews);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
-  
+
   app.get("/api/reviews/user", isAuthenticated, async (req, res) => {
     try {
       const reviews = await storage.getReviewsByUser(req.user.id);
@@ -1680,54 +1896,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
-  
+
   // Public payment settings for client - only shares necessary settings, not secrets
   app.get("/api/payment-settings", async (req, res) => {
     try {
-      const paymentSettings = await storage.getSettingsByCategory('payment');
-      
+      const paymentSettings = await storage.getSettingsByCategory("payment");
+
       // Only send non-sensitive information to the client
       const clientSettings = {
-        stripeEnabled: paymentSettings['payment_stripeEnabled'] === 'true',
-        paypalEnabled: paymentSettings['payment_paypalEnabled'] === 'true',
-        payoneerEnabled: paymentSettings['payment_payoneerEnabled'] === 'true',
-        stripePublicKey: paymentSettings['payment_stripePublicKey'] || process.env.VITE_STRIPE_PUBLIC_KEY || '',
-        paypalClientId: paymentSettings['payment_paypalClientId'] || process.env.PAYPAL_CLIENT_ID || '',
+        stripeEnabled: paymentSettings["payment_stripeEnabled"] === "true",
+        paypalEnabled: paymentSettings["payment_paypalEnabled"] === "true",
+        payoneerEnabled: paymentSettings["payment_payoneerEnabled"] === "true",
+        stripePublicKey:
+          paymentSettings["payment_stripePublicKey"] ||
+          process.env.VITE_STRIPE_PUBLIC_KEY ||
+          "",
+        paypalClientId:
+          paymentSettings["payment_paypalClientId"] ||
+          process.env.PAYPAL_CLIENT_ID ||
+          "",
       };
-      
+
       res.json(clientSettings);
     } catch (error) {
       console.error("Error fetching payment settings:", error);
       res.status(500).json({ message: "Failed to fetch payment settings" });
     }
   });
-  
+
   app.post("/api/reviews", isAuthenticated, async (req, res) => {
     try {
       const { productId, rating, title, comment } = req.body;
-      
+
       // Validate required fields
       if (!productId || !rating) {
-        return res.status(400).json({ message: "Product ID and rating are required" });
+        return res
+          .status(400)
+          .json({ message: "Product ID and rating are required" });
       }
-      
+
       // Check if product exists
       const product = await storage.getProductById(productId);
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
+
       // Check if user already reviewed this product
       const existingReviews = await storage.getReviewsByProduct(productId);
-      const userReview = existingReviews.find(review => review.userId === req.user.id);
-      
+      const userReview = existingReviews.find(
+        (review) => review.userId === req.user.id,
+      );
+
       if (userReview) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "You have already reviewed this product",
-          reviewId: userReview.id
+          reviewId: userReview.id,
         });
       }
-      
+
       // Create review
       const review = await storage.createReview({
         userId: req.user.id,
@@ -1736,31 +1962,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: title || "",
         comment: comment || "",
       });
-      
+
       res.status(201).json(review);
     } catch (error: any) {
-      res.status(500).json({ message: `Failed to create review: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Failed to create review: ${error.message}` });
     }
   });
-  
+
   app.put("/api/reviews/:id", isAuthenticated, async (req, res) => {
     try {
       const reviewId = parseInt(req.params.id);
       if (isNaN(reviewId)) {
         return res.status(400).json({ message: "Invalid review ID" });
       }
-      
+
       // Check if review exists
       const review = await storage.getReviewById(reviewId);
       if (!review) {
         return res.status(404).json({ message: "Review not found" });
       }
-      
+
       // Check if user owns this review
       if (review.userId !== req.user.id && req.user.role !== "admin") {
-        return res.status(403).json({ message: "You can only edit your own reviews" });
+        return res
+          .status(403)
+          .json({ message: "You can only edit your own reviews" });
       }
-      
+
       // Update review
       const { rating, title, comment } = req.body;
       const updatedReview = await storage.updateReview(reviewId, {
@@ -1768,13 +1998,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title,
         comment,
       });
-      
+
       res.json(updatedReview);
     } catch (error: any) {
-      res.status(500).json({ message: `Failed to update review: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Failed to update review: ${error.message}` });
     }
   });
-  
+
   // Add PATCH endpoint (same as PUT but for partial updates)
   app.patch("/api/reviews/:id", isAuthenticated, async (req, res) => {
     try {
@@ -1782,18 +2014,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(reviewId)) {
         return res.status(400).json({ message: "Invalid review ID" });
       }
-      
+
       // Check if review exists
       const review = await storage.getReviewById(reviewId);
       if (!review) {
         return res.status(404).json({ message: "Review not found" });
       }
-      
+
       // Check if user owns this review
       if (review.userId !== req.user.id && req.user.role !== "admin") {
-        return res.status(403).json({ message: "You can only edit your own reviews" });
+        return res
+          .status(403)
+          .json({ message: "You can only edit your own reviews" });
       }
-      
+
       // Update review
       const { rating, title, comment } = req.body;
       const updatedReview = await storage.updateReview(reviewId, {
@@ -1801,44 +2035,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title,
         comment,
       });
-      
+
       res.json(updatedReview);
     } catch (error: any) {
-      res.status(500).json({ message: `Failed to update review: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Failed to update review: ${error.message}` });
     }
   });
-  
+
   app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
     try {
       const reviewId = parseInt(req.params.id);
       if (isNaN(reviewId)) {
         return res.status(400).json({ message: "Invalid review ID" });
       }
-      
+
       // Check if review exists
       const review = await storage.getReviewById(reviewId);
       if (!review) {
         return res.status(404).json({ message: "Review not found" });
       }
-      
+
       // Check if user owns this review or is admin
       if (review.userId !== req.user.id && req.user.role !== "admin") {
-        return res.status(403).json({ message: "You can only delete your own reviews" });
+        return res
+          .status(403)
+          .json({ message: "You can only delete your own reviews" });
       }
-      
+
       // Delete review
       await storage.deleteReview(reviewId);
-      
+
       res.status(204).end();
     } catch (error: any) {
-      res.status(500).json({ message: `Failed to delete review: ${error.message}` });
+      res
+        .status(500)
+        .json({ message: `Failed to delete review: ${error.message}` });
     }
   });
-  
+
   // SEO Related Routes
   // Generate dynamic sitemap.xml
   app.get("/sitemap.xml", generateSitemap);
-  
+
   // Robots.txt - Static file is served by Vite in production
 
   const httpServer = createServer(app);
