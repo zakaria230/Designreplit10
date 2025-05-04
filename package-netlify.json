@@ -1,0 +1,16 @@
+{
+  "name": "designkorv-netlify-deploy",
+  "version": "1.0.0",
+  "description": "Deployment package for DesignKorv on Netlify",
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0",
+    "esbuild": "^0.19.0",
+    "serverless-http": "^3.2.0",
+    "netlify-lambda": "^2.0.16",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
+    "@neondatabase/serverless": "^0.6.0"
+  }
+}

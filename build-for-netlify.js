@@ -10,6 +10,14 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const os = require('os');
+
+// Print environment information for debugging
+console.log('Node version:', process.version);
+console.log('OS Platform:', os.platform());
+console.log('OS Release:', os.release());
+console.log('Current directory:', process.cwd());
+console.log('Files in current directory:', fs.readdirSync('.').join(', '));
 
 // Color for console logs
 function logColored(message, color) {

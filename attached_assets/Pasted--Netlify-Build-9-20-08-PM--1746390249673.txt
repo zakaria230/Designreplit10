@@ -1,0 +1,82 @@
+ Netlify Build                                                 
+9:20:08 PM: ────────────────────────────────────────────────────────────────
+9:20:08 PM: ​
+9:20:08 PM: ❯ Version
+9:20:08 PM:   @netlify/build 32.1.0
+9:20:08 PM: ​
+9:20:08 PM: ❯ Flags
+9:20:08 PM:   accountId: 681157321fe7bf5865c65236
+9:20:08 PM:   baseRelDir: true
+9:20:08 PM:   buildId: 6817cbc73e44f35e36b11dc2
+9:20:08 PM:   deployId: 6817cbc73e44f35e36b11dc4
+9:20:08 PM: ​
+9:20:08 PM: ❯ Current directory
+9:20:08 PM:   /opt/build/repo
+9:20:08 PM: ​
+9:20:08 PM: ❯ Config file
+9:20:08 PM:   /opt/build/repo/netlify.toml
+9:20:08 PM: ​
+9:20:08 PM: ❯ Context
+9:20:08 PM:   production
+9:20:08 PM: ​
+9:20:08 PM: build.command from netlify.toml                               
+9:20:08 PM: ────────────────────────────────────────────────────────────────
+9:20:08 PM: ​
+9:20:08 PM: $ npm run build && node build-for-netlify.js
+9:20:08 PM: > rest-express@1.0.0 build
+9:20:08 PM: > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+9:20:08 PM: failed to load config from /opt/build/repo/vite.config.ts
+9:20:08 PM: error during build:
+9:20:08 PM: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@vitejs/plugin-react' imported from /opt/build/repo/vite.config.ts.timestamp-1746390008723-109a254c593b3.mjs
+9:20:08 PM:     at packageResolve (node:internal/modules/esm/resolve:873:9)
+9:20:08 PM:     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+9:20:08 PM:     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+9:20:08 PM:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+9:20:08 PM:     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+9:20:08 PM:     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+9:20:08 PM:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+9:20:08 PM:     at ModuleJob._link (node:internal/modules/esm/module_job:130:49)
+9:20:08 PM: ​
+9:20:08 PM: "build.command" failed                                        
+9:20:08 PM: ────────────────────────────────────────────────────────────────
+9:20:08 PM: ​
+9:20:08 PM:   Error message
+9:20:08 PM:   Command failed with exit code 1: npm run build && node build-for-netlify.js (https://ntl.fyi/exit-code-1)
+9:20:08 PM: ​
+9:20:08 PM:   Error location
+9:20:08 PM:   In build.command from netlify.toml:
+9:20:08 PM:   npm run build && node build-for-netlify.js
+9:20:08 PM: ​
+9:20:08 PM:   Resolved config
+9:20:08 PM:   build:
+9:20:08 PM:     command: npm run build && node build-for-netlify.js
+9:20:08 PM:     commandOrigin: config
+9:20:08 PM:     environment:
+9:20:08 PM:       - DATABASE_URL
+9:20:08 PM:       - PAYPAL_CLIENT_ID
+9:20:08 PM:       - PAYPAL_CLIENT_SECRET
+9:20:08 PM:       - PGDATABASE
+9:20:08 PM:       - PGHOST
+9:20:08 PM:       - PGPASSWORD
+9:20:08 PM:       - PGPORT
+9:20:08 PM:       - PGUSER
+9:20:08 PM:       - SESSION_SECRET
+9:20:08 PM:       - STRIPE_SECRET_KEY
+9:20:08 PM:       - VITE_STRIPE_PUBLIC_KEY
+9:20:08 PM:       - NODE_VERSION
+9:20:08 PM:       - NPM_FLAGS
+9:20:08 PM:     publish: /opt/build/repo/dist/client
+9:20:08 PM:     publishOrigin: config
+9:20:08 PM:   functionsDirectory: /opt/build/repo/netlify/functions
+9:20:08 PM:   redirects:
+9:20:09 PM: Failed during stage 'building site': Build script returned non-zero exit code: 2 (https://ntl.fyi/exit-code-2)
+9:20:09 PM:     - from: /api/*
+      status: 200
+      to: /.netlify/functions/api/:splat
+    - from: /*
+      status: 200
+      to: /index.html
+  redirectsOrigin: config
+9:20:09 PM: Build failed due to a user error: Build script returned non-zero exit code: 2
+9:20:09 PM: Failing build: Failed to build site
+9:20:09 PM: Finished processing build request in 30.287s

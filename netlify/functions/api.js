@@ -3,9 +3,12 @@ const express = require('express');
 const serverless = require('serverless-http');
 const session = require('express-session');
 const passport = require('passport');
-const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
+
+// Log environment for debugging
+console.log('Function environment:', process.env.NODE_ENV);
+console.log('Database URL configured:', !!process.env.DATABASE_URL);
 
 // Import required modules from your existing backend
 const { setupAuth } = require('../../server/auth');

@@ -1,13 +1,14 @@
 [build]
   publish = "dist/client"
-  command = "npm run build && node build-for-netlify.js"
+  command = "npm install && npm install @vitejs/plugin-react vite esbuild && npm run build && node build-for-netlify.js"
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--no-audit --production"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 [[redirects]]
   from = "/api/*"
