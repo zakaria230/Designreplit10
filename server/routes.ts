@@ -266,10 +266,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
     },
+    ignoreMethods: ['GET', 'HEAD', 'OPTIONS'], // Don't require CSRF for these methods
   });
 
   // CSRF token endpoint
-  app.get("/api/csrf-token", csrfProtection, (req, res) => {
+  app.get("/api/csrf-token", csrfProtection, (req: any, res) => {
     res.json({ csrfToken: req.csrfToken() });
   });
 

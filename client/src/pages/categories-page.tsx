@@ -41,11 +41,6 @@ export default function CategoriesPage() {
     isLoading: productsLoading 
   } = useQuery<Product[]>({
     queryKey: ["/api/products/category", selectedCategory?.id],
-    queryFn: async () => {
-      const res = await fetch(`/api/products/category/${selectedCategory?.id}`);
-      if (!res.ok) throw new Error('Failed to fetch category products');
-      return res.json();
-    },
     enabled: !!selectedCategory?.id,
     retry: false,
   });
