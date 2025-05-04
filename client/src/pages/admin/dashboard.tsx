@@ -187,7 +187,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {stats?.salesData && stats.salesData.length > 0 ? (
+                  {isLoadingStats ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  ) : stats?.salesData && Array.isArray(stats.salesData) && stats.salesData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={stats.salesData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -225,7 +229,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {stats?.categoryData && stats.categoryData.length > 0 ? (
+                  {isLoadingStats ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  ) : stats?.categoryData && Array.isArray(stats.categoryData) && stats.categoryData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={stats.categoryData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -258,7 +266,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] flex items-center justify-center">
-                  {stats?.orderStatusData && stats.orderStatusData.length > 0 ? (
+                  {isLoadingStats ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  ) : stats?.orderStatusData && Array.isArray(stats.orderStatusData) && stats.orderStatusData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -318,7 +330,7 @@ export default function AdminDashboard() {
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </td>
                       </tr>
-                    ) : stats?.recentOrders && stats.recentOrders.length > 0 ? (
+                    ) : stats?.recentOrders && Array.isArray(stats.recentOrders) && stats.recentOrders.length > 0 ? (
                       stats.recentOrders
                         .filter((order: any) => order.status === "completed" && order.paymentStatus === "paid")
                         .map((order: any) => (

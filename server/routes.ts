@@ -921,6 +921,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         }),
       );
+      
+      // Generate monthly sales data for the current year
+      const months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      
+      const currentYear = new Date().getFullYear();
+      const monthlySalesData = months.map((month, index) => {
+        // Filter orders for this month in the current year and sum up the paid orders
+        const monthlyOrders = allOrders.filter(order => {
+          if (!order.createdAt) return false;
+          const orderDate = new Date(order.createdAt);
+          return orderDate.getMonth() === index && 
+                 orderDate.getFullYear() === currentYear &&
+                 order.paymentStatus === 'paid';
+        });
+        
+        const monthlyTotal = monthlyOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        
+        return {
+          name: month,
+          total: monthlyTotal
+        };
+      });
 
       const stats = {
         totalRevenue,
