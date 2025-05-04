@@ -1571,10 +1571,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Analytics Endpoint
   app.get("/api/admin/analytics", isAdminOrDesigner, async (req, res) => {
     try {
+      // Get query parameters for time range filtering
+      const timeRange = req.query.timeRange as string || 'today';
+      const dateFrom = req.query.dateFrom as string || '';
+      const dateTo = req.query.dateTo as string || '';
+      
       // Get real orders data
-      const allOrders = await storage.getAllOrders();
+      let allOrders = await storage.getAllOrders();
       const allUsers = await db.select().from(users);
       const allProducts = await storage.getAllProducts();
+      
+      // Apply time range filter to orders
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let startDate = new Date(today);
+      let endDate = new Date(today);
+      endDate.setHours(23, 59, 59, 999);
+      
+      // Set date range based on timeRange parameter
+      switch (timeRange) {
+        case 'today':
+          // Already set properly
+          break;
+        case 'yesterday':
+          startDate.setDate(startDate.getDate() - 1);
+          endDate.setDate(endDate.getDate() - 1);
+          break;
+        case 'last7days':
+          startDate.setDate(startDate.getDate() - 6);
+          break;
+        case 'last30days':
+          startDate.setDate(startDate.getDate() - 29);
+          break;
+        case 'thisMonth':
+          startDate.setDate(1);
+          endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+          break;
+        case 'lastMonth':
+          startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          endDate = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
+          break;
+        case 'thisYear':
+          startDate = new Date(today.getFullYear(), 0, 1);
+          endDate = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999);
+          break;
+        case 'custom':
+          if (dateFrom) {
+            startDate = new Date(dateFrom);
+            startDate.setHours(0, 0, 0, 0);
+          }
+          if (dateTo) {
+            endDate = new Date(dateTo);
+            endDate.setHours(23, 59, 59, 999);
+          }
+          break;
+      }
+      
+      // Filter orders by date range
+      allOrders = allOrders.filter(order => {
+        if (!order.createdAt) return false;
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= startDate && orderDate <= endDate;
+      });
 
       // Calculate sales summary
       const totalRevenue = allOrders.reduce(
@@ -1618,7 +1677,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Filter orders for this month
         const monthOrders = allOrders.filter((order) => {
-          const orderDate = new Date(order.createdAt || "");
+          if (!order.createdAt) return false;
+          const orderDate = new Date(order.createdAt);
           return (
             orderDate.getMonth() === month.getMonth() &&
             orderDate.getFullYear() === month.getFullYear()
@@ -1651,7 +1711,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get traffic data (using user data as a proxy since we don't have real visitor tracking)
       // In a real app, this would come from analytics tracking
       const newUsersCount = allUsers.filter((user) => {
-        const createdAt = new Date(user.createdAt || "");
+        if (!user.createdAt) return false;
+        const createdAt = new Date(user.createdAt);
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
         return createdAt > oneMonthAgo;
