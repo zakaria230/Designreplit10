@@ -29,6 +29,14 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   DollarSign, 
   Users, 
@@ -312,64 +320,66 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="[&_th]:font-medium [&_th]:text-gray-700 dark:[&_th]:text-gray-300 [&_th]:text-left [&_th]:p-2">
-                      <th>Order ID</th>
-                      <th>User</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th className="text-right">Amount</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {isLoadingStats ? (
-                      <tr>
-                        <td colSpan={6} className="p-4 text-center">
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ) : stats?.recentOrders && Array.isArray(stats.recentOrders) && stats.recentOrders.length > 0 ? (
                       stats.recentOrders
                         .filter((order: any) => order.status === "completed" && order.paymentStatus === "paid")
                         .map((order: any) => (
-                        <tr key={order.id} className="[&_td]:p-2">
-                          <td className="font-medium">#{order.id}</td>
-                          <td>{order.user?.username || 'Unknown'}</td>
-                          <td>{new Date(order.createdAt || '').toLocaleDateString()}</td>
-                          <td>
+                        <TableRow key={order.id}>
+                          <TableCell className="font-medium">#{order.id}</TableCell>
+                          <TableCell>{order.user?.username || 'Unknown'}</TableCell>
+                          <TableCell>{new Date(order.createdAt || '').toLocaleDateString()}</TableCell>
+                          <TableCell>
                             <span 
                               className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
                             >
                               completed
                             </span>
-                          </td>
-                          <td className="text-right">
+                          </TableCell>
+                          <TableCell className="text-right">
                             {formatCurrency(order.totalAmount || 0)}
-                          </td>
-                          <td>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              asChild
-                            >
-                              <Link href={`/admin/orders/${order.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                asChild
+                              >
+                                <Link href={`/admin/orders/${order.id}`}>
+                                  <Eye className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))
                     ) : (
-                      <tr>
-                        <td colSpan={6} className="p-4 text-center text-muted-foreground">
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
                           No orders yet. Orders will appear here as they are placed.
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
