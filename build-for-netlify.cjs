@@ -1,9 +1,9 @@
 /**
- * build-for-netlify.js
+ * build-for-netlify.cjs
  * Helper script to prepare the DesignKorv application for Netlify deployment
  * 
  * This script should be run before or after the build process:
- * - For manual testing: node build-for-netlify.js
+ * - For manual testing: node build-for-netlify.cjs
  * - For Netlify CI: Netlify will use this via the build command in netlify.toml
  */
 
@@ -276,13 +276,37 @@ exports.handler = async function(event, context) {
       // Add Netlify scripts if they don't exist
       if (!packageJson.scripts.netlify) {
         packageJson.scripts.netlify = 'netlify dev';
-        packageJson.scripts['netlify:build'] = 'npm run build && node build-for-netlify.js';
+        packageJson.scripts['netlify:build'] = 'npm run build && node build-for-netlify.cjs';
         
         fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
         logColored('✓ Added Netlify scripts to package.json', 'green');
       }
     } catch (error) {
       logColored(`Warning: Could not update package.json: ${error.message}`, 'yellow');
+    }
+
+    // 9. Create a special package.json for Netlify if needed
+    const packageNetlifyPath = './package-netlify.json';
+    if (!fs.existsSync(packageNetlifyPath)) {
+      const packageNetlifyContent = {
+        "name": "designkorv-netlify-deploy",
+        "version": "1.0.0",
+        "description": "Deployment package for DesignKorv on Netlify",
+        "type": "commonjs",
+        "dependencies": {
+          "@vitejs/plugin-react": "^4.2.0",
+          "vite": "^5.0.0",
+          "esbuild": "^0.19.0",
+          "serverless-http": "^3.2.0",
+          "express": "^4.18.2",
+          "express-session": "^1.17.3",
+          "passport": "^0.6.0",
+          "@neondatabase/serverless": "^0.6.0"
+        }
+      };
+      
+      fs.writeFileSync(packageNetlifyPath, JSON.stringify(packageNetlifyContent, null, 2));
+      logColored('✓ Created package-netlify.json for Netlify deployment', 'green');
     }
 
     logColored('\n✅ Netlify deployment preparation completed successfully!', 'green');
