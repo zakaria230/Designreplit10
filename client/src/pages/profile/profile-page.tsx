@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { ProfileLayout } from "@/components/profile/profile-layout";
 import { 
@@ -10,11 +10,14 @@ import {
   ArrowRight,
   ShoppingBag,
   Eye,
-  Package
+  Package,
+  Mail,
+  Loader2
 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { getQueryFn } from "@/lib/queryClient";
+import { getQueryFn, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +30,58 @@ import { Order, OrderItem, Product } from "@shared/schema";
 interface OrderWithItems extends Order {
   items?: (OrderItem & { product?: Product })[];
   notes?: string | null;
+}
+
+// Email Verification Button Component
+function EmailVerificationButton() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isVerifying, setIsVerifying] = useState(false);
+  
+  const sendVerificationEmailMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/send-verification-email", {});
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Verification Email Sent",
+        description: "Please check your email for the verification link.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send verification email.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleSendVerificationEmail = () => {
+    sendVerificationEmailMutation.mutate();
+  };
+  
+  return (
+    <Button 
+      variant="outline"
+      className="flex items-center gap-2"
+      onClick={handleSendVerificationEmail}
+      disabled={sendVerificationEmailMutation.isPending}
+    >
+      {sendVerificationEmailMutation.isPending ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Sending...
+        </>
+      ) : (
+        <>
+          <Mail className="h-4 w-4" />
+          Send Verification Email
+        </>
+      )}
+    </Button>
+  );
 }
 
 export default function ProfilePage() {
@@ -76,11 +131,16 @@ export default function ProfilePage() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="bg-primary/10 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-2">Welcome, {user?.username}!</h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            From here you can view your recent orders, download your purchased assets,
-            and manage your account settings.
-          </p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Welcome, {user?.username}!</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                From here you can view your recent orders, download your purchased assets,
+                and manage your account settings.
+              </p>
+            </div>
+            <EmailVerificationButton />
+          </div>
         </div>
         
         {/* Quick Stats */}

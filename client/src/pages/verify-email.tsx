@@ -1,92 +1,131 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useRoute } from "wouter";
+import { Layout } from "@/components/layout/layout";
+import { Link, useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, AlertTriangle, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { 
+  CheckCircle, 
+  XCircle, 
+  Home, 
+  Loader2, 
+  Mail,
+  ArrowRight
+} from "lucide-react";
 
 export default function VerifyEmailPage() {
-  const [match, params] = useRoute("/verify-email");
-  const [location, setLocation] = useLocation();
-  const [verificationState, setVerificationState] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState<string>("جاري التحقق من بريدك الإلكتروني...");
-
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [message, setMessage] = useState<string>("");
+  
+  // Extract token from URL
+  const queryParams = new URLSearchParams(window.location.search);
+  const token = queryParams.get("token");
+  
   useEffect(() => {
-    // Get the token from URL query parameters
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = searchParams.get("token");
-
-    if (!token) {
-      setVerificationState("error");
-      setMessage("رابط غير صالح: لم يتم العثور على رمز التحقق");
-      return;
-    }
-
-    // Verify the email using the token
     const verifyEmail = async () => {
+      if (!token) {
+        setStatus("error");
+        setMessage("No verification token found in the URL. The link may be invalid or expired.");
+        return;
+      }
+      
       try {
-        const response = await apiRequest("POST", "/api/verify-email", { token });
+        const response = await apiRequest("POST", `/api/verify-email?token=${token}`, {});
         const data = await response.json();
-
-        if (response.ok && data.success) {
-          setVerificationState("success");
-          setMessage(data.message || "تم التحقق من بريدك الإلكتروني بنجاح!");
+        
+        if (data.success) {
+          setStatus("success");
+          setMessage(data.message || "Your email has been successfully verified!");
+          toast({
+            title: "Email Verified",
+            description: "Your email has been successfully verified.",
+          });
         } else {
-          setVerificationState("error");
-          setMessage(data.message || "فشل التحقق من البريد الإلكتروني");
+          setStatus("error");
+          setMessage(data.message || "Failed to verify your email. The token may be invalid or expired.");
+          toast({
+            title: "Verification Failed",
+            description: data.message || "Failed to verify your email.",
+            variant: "destructive",
+          });
         }
       } catch (error) {
-        setVerificationState("error");
-        setMessage("حدث خطأ أثناء التحقق من بريدك الإلكتروني");
+        setStatus("error");
+        setMessage("An error occurred during verification. Please try again later.");
+        toast({
+          title: "Verification Error",
+          description: "An error occurred during verification. Please try again later.",
+          variant: "destructive",
+        });
       }
     };
-
+    
     verifyEmail();
-  }, []);
-
+  }, [token, toast]);
+  
   return (
-    <div className="container max-w-md py-16">
-      <Card className="border-2">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">تأكيد البريد الإلكتروني</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center">
-          {verificationState === "loading" && (
-            <div className="my-8 flex flex-col items-center">
-              <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-              <p>{message}</p>
-            </div>
-          )}
-
-          {verificationState === "success" && (
-            <div className="my-8 flex flex-col items-center">
-              <div className="bg-green-100 p-3 rounded-full mb-4">
-                <Check className="h-12 w-12 text-green-600" />
+    <Layout title="Email Verification" description="Verify your email address">
+      <div className="container max-w-md mx-auto py-12 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          {status === "loading" && (
+            <>
+              <div className="flex justify-center mb-4">
+                <Loader2 className="h-16 w-16 text-primary animate-spin" />
               </div>
-              <p className="font-medium text-lg mb-2">تم التحقق بنجاح!</p>
-              <p className="text-gray-500">{message}</p>
-            </div>
+              <h1 className="text-2xl font-bold mb-2">Verifying Your Email</h1>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Please wait while we verify your email address...
+              </p>
+            </>
           )}
-
-          {verificationState === "error" && (
-            <div className="my-8 flex flex-col items-center">
-              <div className="bg-red-100 p-3 rounded-full mb-4">
-                <AlertTriangle className="h-12 w-12 text-red-600" />
+          
+          {status === "success" && (
+            <>
+              <div className="flex justify-center mb-4">
+                <CheckCircle className="h-16 w-16 text-green-500" />
               </div>
-              <p className="font-medium text-lg mb-2">فشل التحقق</p>
-              <p className="text-gray-500">{message}</p>
-            </div>
+              <h1 className="text-2xl font-bold mb-2">Email Verified!</h1>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                {message}
+              </p>
+              <div className="flex flex-col space-y-3">
+                <Button onClick={() => setLocation("/profile")}>
+                  Go to Your Profile
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button variant="outline" onClick={() => setLocation("/")}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Return to Homepage
+                </Button>
+              </div>
+            </>
           )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button 
-            onClick={() => setLocation("/")} 
-            className="w-full"
-          >
-            العودة إلى الصفحة الرئيسية
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+          
+          {status === "error" && (
+            <>
+              <div className="flex justify-center mb-4">
+                <XCircle className="h-16 w-16 text-red-500" />
+              </div>
+              <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                {message}
+              </p>
+              <div className="flex flex-col space-y-3">
+                <Button onClick={() => setLocation("/profile")} variant="outline">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Try Again
+                </Button>
+                <Button variant="outline" onClick={() => setLocation("/")}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Return to Homepage
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </Layout>
   );
 }

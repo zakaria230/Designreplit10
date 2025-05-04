@@ -259,41 +259,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
   
-  // Setup email verification route
-  app.post("/api/verify-email", async (req, res) => {
-    const { token } = req.body;
-    
-    if (!token) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "رمز التحقق مفقود" 
-      });
-    }
-    
-    // For now, since we don't have the actual database field, we'll simulate success
-    // In a real implementation, this would call EmailService.verifyEmail(token)
-    return res.status(200).json({
-      success: true,
-      message: "تم التحقق من البريد الإلكتروني بنجاح"
-    });
-  });
-  
-  // Generate verification link (for testing) - this would be called on registration
-  app.post("/api/generate-verification", isAuthenticated, async (req, res) => {
+  // Email verification routes
+  app.post("/api/send-verification-email", isAuthenticated, async (req, res) => {
     try {
-      // In real implementation, this would use user ID from req.user
-      const token = crypto.randomBytes(32).toString('hex');
-      const verificationUrl = `${req.protocol}://${req.get('host')}/verify-email?token=${token}`;
+      if (!req.user) {
+        return res.status(401).json({ 
+          success: false, 
+          message: "Authentication required" 
+        });
+      }
+      
+      // Generate a new verification token
+      const token = await EmailService.generateVerificationToken(req.user.id);
+      
+      // Send the verification email (simulated in our case)
+      EmailService.simulateSendVerificationEmail(req.user, token);
       
       return res.status(200).json({
-        success: true, 
-        verificationUrl
+        success: true,
+        message: "Verification email sent successfully"
       });
     } catch (error) {
-      console.error("Error generating verification link:", error);
+      console.error("Error sending verification email:", error);
       return res.status(500).json({
         success: false,
-        message: "فشل إنشاء رابط التحقق"
+        message: "Failed to send verification email. Please try again later."
+      });
+    }
+  });
+  
+  // Verify email endpoint
+  app.post("/api/verify-email", async (req, res) => {
+    try {
+      const token = req.query.token as string || req.body.token;
+      
+      if (!token) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Verification token missing" 
+        });
+      }
+      
+      const result = await EmailService.verifyEmail(token);
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error("Error verifying email:", error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred during verification. Please try again later."
       });
     }
   });
