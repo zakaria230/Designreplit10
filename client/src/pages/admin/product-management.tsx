@@ -1366,7 +1366,7 @@ export default function ProductManagement() {
                               <div className="border rounded-lg p-4 flex justify-between items-center">
                                 <div className="flex items-center space-x-3">
                                   <div className="p-2 bg-primary/10 rounded">
-                                    <Image className="h-5 w-5 text-primary" />
+                                    <FileIcon className="h-5 w-5 text-primary" />
                                   </div>
                                   <div>
                                     <p className="text-sm font-medium">
@@ -1396,7 +1396,7 @@ export default function ProductManagement() {
                                   <div key={index} className="border rounded-lg p-3 flex justify-between items-center">
                                     <div className="flex items-center space-x-3">
                                       <div className="p-2 bg-primary/10 rounded">
-                                        <Image className="h-5 w-5 text-primary" />
+                                        <FileIcon className="h-5 w-5 text-primary" />
                                       </div>
                                       <div>
                                         <p className="text-sm font-medium">
