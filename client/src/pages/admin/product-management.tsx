@@ -2101,6 +2101,176 @@ export default function ProductManagement() {
                     )}
                   />
                   
+                  {/* Additional Images Section for Edit Form */}
+                  <FormField
+                    control={editForm.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Additional Images/Videos</FormLabel>
+                        <FormDescription>
+                          Upload additional images or videos for the product.
+                        </FormDescription>
+                        
+                        <div className="space-y-4">
+                          {/* Image gallery grid */}
+                          {field.value && field.value.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                              {field.value.map((image, index) => (
+                                <div key={index} className="relative group rounded-md overflow-hidden border aspect-square">
+                                  {image.type === 'video' ? (
+                                    <video 
+                                      src={image.url} 
+                                      className="w-full h-full object-cover"
+                                      muted 
+                                      loop
+                                      onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                      onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
+                                    />
+                                  ) : (
+                                    <img 
+                                      src={image.url} 
+                                      alt={`Product image ${index + 1}`} 
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                  
+                                  {image.isPrimary && (
+                                    <div className="absolute top-2 right-2 z-10">
+                                      <span className="bg-white text-xs font-medium px-2 py-0.5 rounded shadow-sm">Primary</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white hover:bg-white"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetPrimaryImage(index, 'edit');
+                                      }}
+                                      title="Set as primary"
+                                    >
+                                      <Star className={`h-4 w-4 ${image.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                                    </Button>
+                                    
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveImage(index, 'edit');
+                                      }}
+                                      title="Remove image"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Upload new image button */}
+                          <div
+                            className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => {
+                              const fileInput = document.createElement('input');
+                              fileInput.type = 'file';
+                              fileInput.accept = 'image/*,video/*';
+                              fileInput.onchange = (e) => handleAdditionalImageUpload(e as any, 'edit');
+                              fileInput.click();
+                            }}
+                          >
+                            <div className="p-2 bg-primary/10 rounded-full">
+                              <Plus className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-sm font-medium">Add Image/Video</p>
+                            {uploadingImage && (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Additional Downloadable Files for Edit Form */}
+                  <FormField
+                    control={editForm.control}
+                    name="downloadFiles"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Additional Downloadable Files</FormLabel>
+                        <FormDescription>
+                          Upload additional design files that customers will download after purchase.
+                        </FormDescription>
+                        
+                        <div className="space-y-4">
+                          {/* File list */}
+                          {field.value && field.value.length > 0 && (
+                            <div className="space-y-2">
+                              {field.value.map((file, index) => (
+                                <div key={index} className="border rounded-lg p-3 flex justify-between items-center">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-primary/10 rounded">
+                                      <Image className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium">
+                                        {file.name || file.url.split('/').pop() || `File ${index + 1}`}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {file.type} - {(file.size / 1024 / 1024).toFixed(2)} MB
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    onClick={() => handleRemoveFile(index, 'edit')}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Upload new file button */}
+                          <div
+                            className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => {
+                              const fileInput = document.createElement('input');
+                              fileInput.type = 'file';
+                              fileInput.accept = '.zip,.pdf,.ai,.psd,.eps,.svg';
+                              fileInput.onchange = (e) => handleAdditionalFileUpload(e as any, 'edit');
+                              fileInput.click();
+                            }}
+                          >
+                            <div className="p-2 bg-primary/10 rounded-full">
+                              <Plus className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-sm font-medium">Add File</p>
+                            {uploadingFile && (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
                   <FormField
                     control={editForm.control}
                     name="isFeatured"
