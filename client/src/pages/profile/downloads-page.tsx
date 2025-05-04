@@ -5,15 +5,24 @@ import { ProfileLayout } from "@/components/profile/profile-layout";
 import { getQueryFn } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Download, FileText, Clock, Eye, File } from "lucide-react";
+import { Loader2, Search, Download, FileText, Clock, Eye, File, Package, Receipt } from "lucide-react";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function DownloadsPage() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Fetch orders
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading } = useQuery<any[]>({
     queryKey: ["/api/orders"],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!user,
@@ -29,14 +38,14 @@ export default function DownloadsPage() {
   const getDownloadableItems = () => {
     if (!orders) return [];
     
-    const downloadableItems = [];
-    orders.forEach(order => {
+    const downloadableItems: any[] = [];
+    orders.forEach((order: any) => {
       // Only show downloads for completed orders that have been paid
       if (order.items && 
           order.items.length > 0 && 
           order.status === 'completed' && 
           order.paymentStatus === 'paid') {
-        order.items.forEach(item => {
+        order.items.forEach((item: any) => {
           if (item.product && item.product.downloadUrl) {
             downloadableItems.push({
               id: `${order.id}-${item.id}`,
@@ -69,6 +78,21 @@ export default function DownloadsPage() {
     
     // Default to generic file type
     return "Digital Asset";
+  };
+
+  // Get full order details by orderId
+  const getOrderDetails = (orderId: number) => {
+    if (!orders) return null;
+    return orders.find((order: any) => order.id === orderId);
+  };
+
+  // Handle view order click
+  const handleViewOrder = (orderId: number) => {
+    const order = getOrderDetails(orderId);
+    if (order) {
+      setSelectedOrder(order);
+      setIsDialogOpen(true);
+    }
   };
 
   // Filter items based on search term
@@ -141,7 +165,7 @@ export default function DownloadsPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => window.location.href = '/profile'}
+                        onClick={() => handleViewOrder(item.orderId)}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View Order</span>
@@ -171,6 +195,86 @@ export default function DownloadsPage() {
           </div>
         )}
       </div>
+
+      {/* Order Details Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Complete information about your order
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Receipt className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium">Order #{selectedOrder.id}</h3>
+                </div>
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  {selectedOrder.status}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400">Ordered Date</p>
+                  <p className="font-medium">{formatDate(selectedOrder.createdAt)}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400">Payment Status</p>
+                  <p className="font-medium capitalize">{selectedOrder.paymentStatus}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400">Payment Method</p>
+                  <p className="font-medium capitalize">{selectedOrder.paymentMethod || "Unknown"}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400">Total Amount</p>
+                  <p className="font-medium">${selectedOrder.totalAmount.toFixed(2)}</p>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="text-sm font-medium mb-3">Order Items</h4>
+                <div className="space-y-3">
+                  {selectedOrder.items && selectedOrder.items.map((item: any) => (
+                    <div 
+                      key={item.id}
+                      className="flex items-center justify-between py-2 px-3 border border-gray-100 dark:border-gray-800 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                          {item.product?.imageUrl ? (
+                            <img 
+                              src={item.product.imageUrl} 
+                              alt={item.product.name} 
+                              className="h-10 w-10 object-cover rounded"
+                            />
+                          ) : (
+                            <Package className="h-5 w-5 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{item.product?.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Quantity: {item.quantity} × ${item.price.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="font-medium">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </ProfileLayout>
   );
 }
