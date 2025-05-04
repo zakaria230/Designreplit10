@@ -77,12 +77,37 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 
+// Types for product images and files
+type ProductImage = {
+  url: string;
+  isPrimary?: boolean;
+  type?: 'image' | 'video';
+};
+
+type ProductFile = {
+  url: string;
+  name: string;
+  size: number; 
+  type: string;
+};
+
 // Form schema for product
 const productFormSchema = insertProductSchema.extend({
   price: z.coerce.number().positive("Price must be a positive number"),
   categoryId: z.coerce.number().nullable(),
   tags: z.array(z.string()).optional().default([]),
   isFeatured: z.boolean().default(false),
+  images: z.array(z.object({
+    url: z.string(),
+    isPrimary: z.boolean().optional(),
+    type: z.enum(['image', 'video']).optional()
+  })).optional().default([]),
+  downloadFiles: z.array(z.object({
+    url: z.string(),
+    name: z.string(),
+    size: z.number(),
+    type: z.string()
+  })).optional().default([])
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
