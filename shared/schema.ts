@@ -10,16 +10,6 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"),
-  isEmailVerified: boolean("is_email_verified").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Email verification tokens
-export const emailVerificationTokens = pgTable("email_verification_tokens", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

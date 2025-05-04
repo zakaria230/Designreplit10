@@ -29,24 +29,14 @@ export default function DownloadsPage() {
   const getDownloadableItems = () => {
     if (!orders) return [];
     
-    const downloadableItems: Array<{
-      id: string;
-      orderId: number;
-      orderDate: string;
-      productId: number;
-      productName: string;
-      downloadUrl: string;
-      fileType: string;
-      imageUrl?: string;
-    }> = [];
-    
-    orders.forEach((order: any) => {
+    const downloadableItems = [];
+    orders.forEach(order => {
       // Only show downloads for completed orders that have been paid
       if (order.items && 
           order.items.length > 0 && 
           order.status === 'completed' && 
           order.paymentStatus === 'paid') {
-        order.items.forEach((item: any) => {
+        order.items.forEach(item => {
           if (item.product && item.product.downloadUrl) {
             downloadableItems.push({
               id: `${order.id}-${item.id}`,
@@ -158,7 +148,7 @@ export default function DownloadsPage() {
                       </Button>
                       <Button 
                         size="sm"
-                        onClick={() => window.location.href = `/uploads/${item.downloadUrl.split('/').pop()}`}
+                        onClick={() => window.open(item.downloadUrl, '_blank')}
                       >
                         <Download className="h-4 w-4 mr-1" />
                         Download

@@ -23,7 +23,6 @@ import {
   isDesignerOrAdmin as isAdminOrDesigner,
 } from "./middleware";
 import { generateSitemap } from "./routes/sitemap";
-import { EmailService } from './email-service';
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
@@ -258,58 +257,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup authentication routes
   setupAuth(app);
-  
-  // Email verification routes
-  app.post("/api/send-verification-email", isAuthenticated, async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ 
-          success: false, 
-          message: "Authentication required" 
-        });
-      }
-      
-      // Generate a new verification token
-      const token = await EmailService.generateVerificationToken(req.user.id);
-      
-      // Send the verification email (simulated in our case)
-      EmailService.simulateSendVerificationEmail(req.user, token);
-      
-      return res.status(200).json({
-        success: true,
-        message: "Verification email sent successfully"
-      });
-    } catch (error) {
-      console.error("Error sending verification email:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send verification email. Please try again later."
-      });
-    }
-  });
-  
-  // Verify email endpoint
-  app.post("/api/verify-email", async (req, res) => {
-    try {
-      const token = req.query.token as string || req.body.token;
-      
-      if (!token) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Verification token missing" 
-        });
-      }
-      
-      const result = await EmailService.verifyEmail(token);
-      return res.status(result.success ? 200 : 400).json(result);
-    } catch (error) {
-      console.error("Error verifying email:", error);
-      return res.status(500).json({
-        success: false,
-        message: "An error occurred during verification. Please try again later."
-      });
-    }
-  });
 
   // Setup CSRF protection middleware with proper configuration
   const csrfProtection = csrf({

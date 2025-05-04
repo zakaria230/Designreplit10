@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { ProfileLayout } from "@/components/profile/profile-layout";
 import { 
@@ -10,14 +10,11 @@ import {
   ArrowRight,
   ShoppingBag,
   Eye,
-  Package,
-  Mail,
-  Loader2
+  Package
 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { getQueryFn, apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { getQueryFn } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -30,92 +27,6 @@ import { Order, OrderItem, Product } from "@shared/schema";
 interface OrderWithItems extends Order {
   items?: (OrderItem & { product?: Product })[];
   notes?: string | null;
-}
-
-// Email Verification Button Component
-function EmailVerificationButton() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
-  
-  const sendVerificationEmailMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/send-verification-email", {});
-      return await res.json();
-    },
-    onSuccess: (data) => {
-      setVerificationSent(true);
-      setShowVerificationMessage(true);
-      toast({
-        title: "Verification Link Generated",
-        description: "Check the server logs (or dialog box) for the verification link.",
-        duration: 10000,
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send verification email.",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  const handleSendVerificationEmail = () => {
-    sendVerificationEmailMutation.mutate();
-  };
-  
-  return (
-    <>
-      <Button 
-        variant="outline"
-        className="flex items-center gap-2"
-        onClick={handleSendVerificationEmail}
-        disabled={sendVerificationEmailMutation.isPending}
-      >
-        {sendVerificationEmailMutation.isPending ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Generating link...
-          </>
-        ) : (
-          <>
-            <Mail className="h-4 w-4" />
-            Generate Verification Link
-          </>
-        )}
-      </Button>
-      
-      {/* Information dialog about email simulation */}
-      <Dialog open={showVerificationMessage} onOpenChange={setShowVerificationMessage}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Email Verification Link Generated</DialogTitle>
-            <DialogDescription>
-              Since we're not using a real email service in this demo, the verification link is displayed in the server logs. 
-              Please check the console logs where the server is running to find your verification link.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md text-sm font-mono overflow-auto max-h-40">
-            <p className="mb-2 text-green-600 dark:text-green-400">Look for this section in the server logs:</p>
-            <p>==================================================</p>
-            <p>VERIFICATION EMAIL (SIMULATION)</p>
-            <p>==================================================</p>
-            <p>...</p>
-            <p>http://localhost:5000/verify-email?token=TOKEN_VALUE</p>
-            <p>...</p>
-          </div>
-          <p className="mt-2 text-sm">
-            Copy the full verification URL from the server logs and paste it in your browser to verify your email.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <Button onClick={() => setShowVerificationMessage(false)}>Close</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
 }
 
 export default function ProfilePage() {
@@ -165,16 +76,11 @@ export default function ProfilePage() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="bg-primary/10 p-4 rounded-lg">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Welcome, {user?.username}!</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                From here you can view your recent orders, download your purchased assets,
-                and manage your account settings.
-              </p>
-            </div>
-            <EmailVerificationButton />
-          </div>
+          <h2 className="text-xl font-semibold mb-2">Welcome, {user?.username}!</h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            From here you can view your recent orders, download your purchased assets,
+            and manage your account settings.
+          </p>
         </div>
         
         {/* Quick Stats */}

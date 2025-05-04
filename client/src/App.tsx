@@ -30,7 +30,6 @@ import OrdersPage from "@/pages/profile/orders-page";
 import PurchasesPage from "@/pages/profile/purchases-page";
 import DownloadsPage from "@/pages/profile/downloads-page";
 import SettingsPage from "@/pages/profile/settings-page";
-import VerifyEmailPage from "@/pages/verify-email";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProductManagement from "@/pages/admin/product-management";
 import AdminOrderManagement from "@/pages/admin/order-management";
@@ -66,7 +65,6 @@ function Router() {
         <Route path="/faq" component={FAQPage} />
         <Route path="/terms" component={TermsPage} />
         <Route path="/privacy" component={PrivacyPage} />
-        <Route path="/verify-email" component={VerifyEmailPage} />
         
         {/* Profile Routes */}
         <ProtectedRoute path="/profile" component={ProfilePage} />
