@@ -132,9 +132,9 @@ export default function ProfilePage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Recent Orders</h3>
-            <Link href="/profile/orders">
+            <Link href="/profile/downloads">
               <Button variant="link" className="p-0 h-auto">
-                View All
+                Go to Downloads
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
