@@ -1,0 +1,131 @@
+10:07:16 PM: Netlify Build                                                 
+10:07:16 PM: ────────────────────────────────────────────────────────────────
+10:07:16 PM: ​
+10:07:16 PM: ❯ Version
+10:07:16 PM:   @netlify/build 32.1.0
+10:07:16 PM: ​
+10:07:16 PM: ❯ Flags
+10:07:16 PM:   accountId: 681157321fe7bf5865c65236
+10:07:16 PM:   baseRelDir: true
+10:07:16 PM:   buildId: 6817d6d85e64682602ad5d3b
+10:07:16 PM:   deployId: 6817d6d85e64682602ad5d3d
+10:07:16 PM: ​
+10:07:16 PM: ❯ Current directory
+10:07:16 PM:   /opt/build/repo
+10:07:16 PM: ​
+10:07:16 PM: ❯ Config file
+10:07:16 PM:   /opt/build/repo/netlify.toml
+10:07:16 PM: ​
+10:07:16 PM: ❯ Context
+10:07:16 PM:   production
+10:07:16 PM: ​
+10:07:16 PM: build.command from netlify.toml                               
+10:07:16 PM: ────────────────────────────────────────────────────────────────
+10:07:16 PM: ​
+10:07:16 PM: $ npm ci && CI=false node build-for-production.cjs
+10:07:20 PM: npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+10:07:20 PM: npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+10:07:21 PM: npm warn deprecated @paypal/checkout-server-sdk@1.0.3: Package no longer supported. The author suggests using the @paypal/paypal-server-sdk package instead: https://www.npmjs.com/package/@paypal/paypal-server-sdk. Contact Support at https://www.npmjs.com/support for more info.
+10:07:23 PM: added 537 packages, and audited 538 packages in 7s
+10:07:23 PM: 68 packages are looking for funding
+10:07:23 PM:   run `npm fund` for details
+10:07:23 PM: 6 vulnerabilities (2 low, 4 moderate)
+10:07:23 PM: To address issues that do not require attention, run:
+10:07:23 PM:   npm audit fix
+10:07:23 PM: To address all issues (including breaking changes), run:
+10:07:23 PM:   npm audit fix --force
+10:07:23 PM: Run `npm audit` for details.
+10:07:23 PM: === DesignKorv Production Build Process ===
+10:07:23 PM: Starting build at: 2025-05-04T21:07:23.588Z
+10:07:23 PM: [1] Cleaning previous build artifacts
+10:07:23 PM: ✓ Previous build artifacts cleaned
+10:07:23 PM: [2] Building the project
+10:07:23 PM: > rest-express@1.0.0 build
+10:07:23 PM: > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+10:07:23 PM: vite v6.3.4 building for production...
+10:07:24 PM: transforming...
+10:07:31 PM: /fashion-rack.jpg referenced in /fashion-rack.jpg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 2835 modules transformed.
+10:07:32 PM: rendering chunks...
+10:07:32 PM: computing gzip size...
+10:07:32 PM: ../dist/public/index.html                     0.63 kB │ gzip:   0.38 kB
+10:07:32 PM: ../dist/public/assets/index-C9YPIPrR.css    105.95 kB │ gzip:  16.76 kB
+10:07:32 PM: ../dist/public/assets/index-BHoYwGkH.js   1,365.75 kB │ gzip: 367.80 kB
+10:07:32 PM: 
+10:07:32 PM: (!) Some chunks are larger than 500 kB after minification. Consider:
+10:07:32 PM: - Using dynamic import() to code-split the application
+10:07:32 PM: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+10:07:32 PM: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+10:07:32 PM: ✓ built in 8.36s
+10:07:32 PM:   dist/index.js  91.7kb
+10:07:32 PM: ⚡ Done in 10ms
+10:07:32 PM: ✓ Project build completed
+10:07:32 PM: [3] Preparing frontend for Netlify
+10:07:32 PM: ✓ Created _redirects file for client-side routing
+10:07:32 PM: ✓ Diagnostic tools prepared
+10:07:32 PM: [4] Preparing backend for Netlify
+10:07:32 PM: ✓ Backend preparation for Netlify completed
+10:07:32 PM: [5] Verifying build artifacts
+10:07:32 PM: ✗ Missing index.html - the build is incomplete
+10:07:32 PM: ​
+10:07:32 PM: "build.command" failed                                        
+10:07:32 PM: ────────────────────────────────────────────────────────────────
+10:07:32 PM: ​
+10:07:32 PM:   Error message
+10:07:32 PM:   Command failed with exit code 1: npm ci && CI=false node build-for-production.cjs (https://ntl.fyi/exit-code-1)
+10:07:32 PM: ​
+10:07:32 PM:   Error location
+10:07:32 PM:   In build.command from netlify.toml:
+10:07:32 PM:   npm ci && CI=false node build-for-production.cjs
+10:07:32 PM: ​
+10:07:32 PM:   Resolved config
+10:07:32 PM:   build:
+10:07:32 PM:     command: npm ci && CI=false node build-for-production.cjs
+10:07:32 PM:     commandOrigin: config
+10:07:32 PM:     environment:
+10:07:32 PM:       - DATABASE_URL
+10:07:32 PM:       - PAYPAL_CLIENT_ID
+10:07:32 PM:       - PAYPAL_CLIENT_SECRET
+10:07:32 PM:       - PGDATABASE
+10:07:32 PM:       - PGHOST
+10:07:32 PM:       - PGPASSWORD
+10:07:32 PM:       - PGPORT
+10:07:32 PM:       - PGUSER
+10:07:32 PM:       - SESSION_SECRET
+10:07:32 PM:       - STRIPE_SECRET_KEY
+10:07:32 PM:       - VITE_STRIPE_PUBLIC_KEY
+10:07:32 PM:       - NODE_VERSION
+10:07:32 PM:       - NPM_CONFIG_LEGACY_PEER_DEPS
+10:07:32 PM:     publish: /opt/build/repo/dist/client
+10:07:32 PM:     publishOrigin: config
+10:07:32 PM:   functions:
+10:07:32 PM:     '*':
+10:07:32 PM:       node_bundler: esbuild
+10:07:32 PM:   functionsDirectory: /opt/build/repo/netlify/functions
+10:07:32 PM:   redirects:
+10:07:33 PM: Failed during stage 'building site': Build script returned non-zero exit code: 2 (https://ntl.fyi/exit-code-2)
+10:07:33 PM:     - from: /api/*
+      status: 200
+      to: /.netlify/functions/api/:splat
+    - from: /diagnose
+      status: 200
+      to: /.netlify/functions/diagnose
+    - from: /_debug
+      status: 200
+      to: /.netlify/functions/debug
+    - from: /db-check
+      status: 200
+      to: /.netlify/functions/setup-db
+    - from: /server/*
+      status: 200
+      to: /.netlify/functions/server/:splat
+    - from: /fallback
+      status: 200
+      to: /fallback.html
+    - from: /*
+      status: 200
+      to: /index.html
+  redirectsOrigin: config
+10:07:33 PM: Build failed due to a user error: Build script returned non-zero exit code: 2
+10:07:33 PM: Failing build: Failed to build site
+10:07:33 PM: Finished processing build request in 44.16s

@@ -51,25 +51,39 @@ function ensureDirectoryExists(dir) {
 }
 
 function copyFile(source, destination) {
-  fs.copyFileSync(source, destination);
+  try {
+    fs.copyFileSync(source, destination);
+    logSuccess(`Copied ${source} to ${destination}`);
+  } catch (error) {
+    logError(`Failed to copy ${source} to ${destination}: ${error.message}`);
+  }
 }
 
 function copyDirectory(source, destination) {
-  ensureDirectoryExists(destination);
-  
-  const files = fs.readdirSync(source);
-  
-  for (const file of files) {
-    const sourcePath = path.join(source, file);
-    const destPath = path.join(destination, file);
+  try {
+    ensureDirectoryExists(destination);
     
-    const stats = fs.statSync(sourcePath);
+    const files = fs.readdirSync(source);
+    logSuccess(`Found ${files.length} files/directories in ${source}`);
     
-    if (stats.isDirectory()) {
-      copyDirectory(sourcePath, destPath);
-    } else {
-      copyFile(sourcePath, destPath);
+    for (const file of files) {
+      const sourcePath = path.join(source, file);
+      const destPath = path.join(destination, file);
+      
+      try {
+        const stats = fs.statSync(sourcePath);
+        
+        if (stats.isDirectory()) {
+          copyDirectory(sourcePath, destPath);
+        } else {
+          copyFile(sourcePath, destPath);
+        }
+      } catch (error) {
+        logWarning(`Error processing file ${sourcePath}: ${error.message}`);
+      }
     }
+  } catch (error) {
+    logError(`Error copying directory ${source} to ${destination}: ${error.message}`);
   }
 }
 
@@ -157,6 +171,19 @@ async function buildForProduction() {
     
     // Step 3: Prepare frontend for Netlify
     logStep(3, 'Preparing frontend for Netlify');
+    
+    // Check if Vite built to dist/public instead of dist/client
+    if (fs.existsSync('dist/public') && fs.existsSync('dist/public/index.html')) {
+      logSuccess('Build output detected in dist/public, copying to dist/client');
+      // Make sure dist/client directory exists
+      ensureDirectoryExists('dist/client');
+      
+      // Copy all contents from dist/public to dist/client
+      copyDirectory('dist/public', 'dist/client');
+    } else {
+      logWarning('Build output not found in dist/public, checking if it exists in dist/client directly');
+    }
+    
     // Make sure dist/client directory exists before creating files
     ensureDirectoryExists('dist/client');
     createRedirectsFile();
