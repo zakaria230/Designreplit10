@@ -1,78 +1,79 @@
-// This file is purely for debugging Netlify deployments
+// Diagnostic script for identifying deployment issues
 (function() {
-  console.log('DesignKorv build-info.js loaded');
+  console.log('DesignKorv Diagnostics Loaded');
   
-  // Show page information
-  const pageInfo = {
-    path: window.location.pathname,
-    search: window.location.search,
-    hash: window.location.hash,
-    href: window.location.href,
-    host: window.location.host,
-    userAgent: navigator.userAgent
-  };
+  // Signal that we've loaded the app
+  window.appLoaded = true;
   
-  console.log('Page information:', pageInfo);
-  
-  // Check if base tag exists and log its value
-  const baseTag = document.querySelector('base');
-  console.log('Base tag:', baseTag ? baseTag.getAttribute('href') : 'Not found');
-  
-  // Create diagnostic element
+  // Create diagnostic overlay
   function createDiagnosticElement() {
-    // Only create the diagnostic element if the page is blank (no child elements in body except scripts)
-    const nonScriptElements = Array.from(document.body.children).filter(el => el.tagName !== 'SCRIPT');
-    
-    if (nonScriptElements.length <= 1) { // Allow for the root div
-      const diagnosticDiv = document.createElement('div');
-      diagnosticDiv.style.margin = '20px';
-      diagnosticDiv.style.padding = '20px';
-      diagnosticDiv.style.border = '1px solid #ccc';
-      diagnosticDiv.style.borderRadius = '5px';
-      diagnosticDiv.style.fontFamily = 'Arial, sans-serif';
-      
-      const h1 = document.createElement('h1');
-      h1.textContent = 'DesignKorv Diagnostic Information';
-      diagnosticDiv.appendChild(h1);
-      
-      const p = document.createElement('p');
-      p.textContent = 'This page appears to be loading incorrectly. Here is some diagnostic information:';
-      diagnosticDiv.appendChild(p);
-      
-      const ul = document.createElement('ul');
-      Object.entries(pageInfo).forEach(([key, value]) => {
-        const li = document.createElement('li');
-        li.textContent = `${key}: ${value}`;
-        ul.appendChild(li);
-      });
-      diagnosticDiv.appendChild(ul);
-      
-      const scriptsPara = document.createElement('p');
-      scriptsPara.textContent = 'Loaded scripts:';
-      diagnosticDiv.appendChild(scriptsPara);
-      
-      const scriptsList = document.createElement('ul');
-      Array.from(document.scripts).forEach(script => {
-        const li = document.createElement('li');
-        li.textContent = script.src || 'Inline script';
-        scriptsList.appendChild(li);
-      });
-      diagnosticDiv.appendChild(scriptsList);
-      
-      document.body.appendChild(diagnosticDiv);
+    // Don't create diagnostic element if we're not having issues
+    if (document.querySelector('#root') && document.querySelector('#root').children.length > 0) {
+      return;
     }
+    
+    // Create diagnostic overlay
+    const diagElement = document.createElement('div');
+    diagElement.className = 'diagnostic-overlay';
+    diagElement.innerHTML = `
+      <h3>DesignKorv Diagnostics</h3>
+      <p>Page URL: ${window.location.href}</p>
+      <p>Build Time: ${new Date().toISOString()}</p>
+      <p>Running diagnostics...</p>
+    `;
+    document.body.appendChild(diagElement);
+    
+    // Check main bundle loading
+    const scripts = document.querySelectorAll('script');
+    const scriptPaths = Array.from(scripts).map(s => s.src).join(', ');
+    
+    // Update diagnostic info
+    setTimeout(function() {
+      const rootElement = document.querySelector('#root');
+      diagElement.innerHTML += `
+        <p>Root element children: ${rootElement ? rootElement.children.length : 'Not found'}</p>
+        <p>Scripts loaded: ${scripts.length}</p>
+        <p>Main bundle loaded: ${scriptPaths.includes('index') ? 'Yes' : 'No'}</p>
+        <button onclick="window.location.href='/diagnose'">Run Server Diagnostics</button>
+        <button onclick="window.location.href='/fallback'">View Fallback Page</button>
+      `;
+    }, 1000);
   }
   
-  // Add listener for DOMContentLoaded to check if page is blank after everything loads
-  window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded event fired');
-    // Wait a bit to allow React to render
+  // Wait for DOMContentLoaded to check for issues
+  document.addEventListener('DOMContentLoaded', function() {
     setTimeout(createDiagnosticElement, 2000);
-  });
-  
-  // Also check after window load as a last resort
-  window.addEventListener('load', () => {
-    console.log('Window load event fired');
-    setTimeout(createDiagnosticElement, 3000);
+    
+    // Log basic environment info
+    console.log('Browser: ' + navigator.userAgent);
+    console.log('URL: ' + window.location.href);
+    console.log('Protocol: ' + window.location.protocol);
+    
+    // Try to detect common module loading issues
+    const hasImportMap = !!document.querySelector('script[type="importmap"]');
+    const hasModuleScripts = !!document.querySelector('script[type="module"]');
+    
+    console.log('Import maps supported: ' + (hasImportMap || 'Not used'));
+    console.log('ES modules used: ' + (hasModuleScripts ? 'Yes' : 'No'));
+    
+    // Check root element
+    const rootEl = document.getElementById('root');
+    if (rootEl) {
+      console.log('Root element found');
+      
+      // Monitor for changes to the root element
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            console.log('App content loaded into root element');
+            observer.disconnect();
+          }
+        });
+      });
+      
+      observer.observe(rootEl, { childList: true });
+    } else {
+      console.error('Root element not found - critical error!');
+    }
   });
 })();

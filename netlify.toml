@@ -21,6 +21,16 @@
   status = 200
 
 [[redirects]]
+  from = "/_debug"
+  to = "/.netlify/functions/debug"
+  status = 200
+
+[[redirects]]
+  from = "/db-check"
+  to = "/.netlify/functions/setup-db"
+  status = 200
+
+[[redirects]]
   from = "/server/*"
   to = "/.netlify/functions/server/:splat"
   status = 200
