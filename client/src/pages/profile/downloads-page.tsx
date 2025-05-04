@@ -148,7 +148,7 @@ export default function DownloadsPage() {
                       </Button>
                       <Button 
                         size="sm"
-                        onClick={() => window.open(item.downloadUrl, '_blank')}
+                        onClick={() => window.location.href = `/uploads/${item.downloadUrl.split('/').pop()}`}
                       >
                         <Download className="h-4 w-4 mr-1" />
                         Download

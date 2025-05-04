@@ -23,6 +23,7 @@ import {
   isDesignerOrAdmin as isAdminOrDesigner,
 } from "./middleware";
 import { generateSitemap } from "./routes/sitemap";
+import { EmailService } from './email-service';
 
 // Define global variables for payment gateways
 let stripe: Stripe | null = null;
