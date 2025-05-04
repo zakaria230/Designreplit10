@@ -67,7 +67,7 @@ export default function PurchasesPage() {
     
     const purchasedItems = [];
     const completedOrders = orders.filter(order => 
-      order.status === "completed" && filterByTime(order)
+      order.status === "completed" && order.paymentStatus === "paid" && filterByTime(order)
     );
     
     completedOrders.forEach(order => {
@@ -110,8 +110,10 @@ export default function PurchasesPage() {
 
   const purchasedItems = getPurchasedProducts();
   
-  // Calculate total spent
-  const totalSpent = purchasedItems.reduce((total, item) => total + item.totalPrice, 0);
+  // Calculate total spent (only from paid orders)
+  const totalSpent = purchasedItems
+    .filter(item => item.paymentStatus === "paid")
+    .reduce((total, item) => total + item.totalPrice, 0);
 
   return (
     <ProfileLayout 
@@ -124,7 +126,7 @@ export default function PurchasesPage() {
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Purchases</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Paid Purchases</p>
                 <p className="text-2xl font-bold">{purchasedItems.length}</p>
               </div>
               <Box className="h-10 w-10 text-primary/70" />

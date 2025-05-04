@@ -120,7 +120,11 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Spent</p>
                 <p className="text-2xl font-bold">
-                  {formatPrice(orders?.reduce((total, order) => total + order.totalAmount, 0) || 0)}
+                  {formatPrice(
+                    orders
+                      ?.filter(order => order.status === "completed" && order.paymentStatus === "paid")
+                      .reduce((total, order) => total + order.totalAmount, 0) || 0
+                  )}
                 </p>
               </div>
               <CreditCard className="h-8 w-8 text-primary opacity-80" />
