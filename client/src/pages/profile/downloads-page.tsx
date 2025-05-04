@@ -229,7 +229,7 @@ export default function DownloadsPage() {
                 </div>
                 <div>
                   <p className="text-gray-500 dark:text-gray-400">Payment Method</p>
-                  <p className="font-medium capitalize">{selectedOrder.paymentMethod || "Unknown"}</p>
+                  <p className="font-medium capitalize">{selectedOrder.paymentMethod === "paypal" ? "PayPal" : selectedOrder.paymentMethod || "PayPal"}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 dark:text-gray-400">Total Amount</p>
