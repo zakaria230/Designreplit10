@@ -75,15 +75,30 @@ function copyDirectory(source, destination) {
 
 // Create a redirects file to ensure client-side routing works
 function createRedirectsFile() {
-  const redirectsContent = [
-    // API requests
-    '/api/*  /.netlify/functions/api/:splat  200',
-    // Handle SPA routes
-    '/*  /index.html  200',
-  ].join('\n');
-  
-  fs.writeFileSync('dist/client/_redirects', redirectsContent);
-  logSuccess('Created _redirects file for client-side routing');
+  try {
+    const redirectsContent = [
+      // API requests
+      '/api/*  /.netlify/functions/api/:splat  200',
+      // Diagnostic endpoints
+      '/diagnose  /.netlify/functions/diagnose  200',
+      '/_debug  /.netlify/functions/debug  200',
+      '/db-check  /.netlify/functions/setup-db  200',
+      // Fallback page
+      '/fallback  /fallback.html  200',
+      // Handle SPA routes
+      '/*  /index.html  200',
+    ].join('\n');
+    
+    // Make sure the directory exists
+    ensureDirectoryExists('dist/client');
+    
+    // Write the file
+    fs.writeFileSync('dist/client/_redirects', redirectsContent);
+    logSuccess('Created _redirects file for client-side routing');
+  } catch (error) {
+    logError(`Failed to create _redirects file: ${error.message}`);
+    // Continue execution, don't exit
+  }
 }
 
 // Ensure diagnostic tools are copied to the right locations
@@ -128,6 +143,10 @@ async function buildForProduction() {
     // Step 2: Build the project
     logStep(2, 'Building the project');
     try {
+      // Create output directories first
+      ensureDirectoryExists('dist');
+      ensureDirectoryExists('dist/client');
+      
       // Build for production (use CI=false to ignore warnings)
       execSync('CI=false npm run build', { stdio: 'inherit' });
       logSuccess('Project build completed');
@@ -138,6 +157,8 @@ async function buildForProduction() {
     
     // Step 3: Prepare frontend for Netlify
     logStep(3, 'Preparing frontend for Netlify');
+    // Make sure dist/client directory exists before creating files
+    ensureDirectoryExists('dist/client');
     createRedirectsFile();
     prepareDiagnosticTools();
     
