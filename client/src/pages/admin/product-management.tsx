@@ -1082,7 +1082,7 @@ export default function ProductManagement() {
                             />
                           </FormControl>
                           <FormDescription>
-                            Technical specifications that appear in the Specifications tab. Include file formats, dimensions, etc.
+                            Technical specifications that appear in the Specifications tab.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -1814,7 +1814,7 @@ export default function ProductManagement() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Technical specifications that appear in the Specifications tab. Include file formats, dimensions, etc.
+                          Technical specifications that appear in the Specifications tab.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
