@@ -215,11 +215,11 @@ Sitemap: https://your-netlify-app.netlify.app/sitemap.xml
     // 7. Install necessary packages for Netlify Functions
     logColored('Installing necessary packages for Netlify Functions...', 'blue');
     try {
-      execSync('npm install serverless-http --save-dev', { stdio: 'inherit' });
-      logColored('✓ Installed serverless-http dependency', 'green');
+      execSync('npm install serverless-http mime-types --save-dev', { stdio: 'inherit' });
+      logColored('✓ Installed serverless-http and mime-types dependencies', 'green');
     } catch (error) {
-      logColored(`Warning: Could not install serverless-http dependency: ${error.message}`, 'yellow');
-      logColored('Please manually install: npm install serverless-http --save-dev', 'yellow');
+      logColored(`Warning: Could not install dependencies: ${error.message}`, 'yellow');
+      logColored('Please manually install: npm install serverless-http mime-types --save-dev', 'yellow');
     }
     
     // 7.1 Create a setup-db.js function for database migrations
