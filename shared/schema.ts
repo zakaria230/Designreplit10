@@ -10,13 +10,19 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"),
+  name: text("name"),
+  bio: text("bio"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
   password: true,
+  name: true,
+  bio: true,
+  role: true,
 });
 
 export const userRelations = relations(users, ({ many }) => ({

@@ -121,7 +121,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({
         ...userData,
-        updatedAt: new Date()
+        updatedAt: new Date() as any
       })
       .where(eq(users.id, id))
       .returning();
@@ -134,7 +134,7 @@ export class DatabaseStorage implements IStorage {
         .update(users)
         .set({
           password: newPassword,
-          updatedAt: new Date()
+          updatedAt: new Date() as any
         })
         .where(eq(users.id, id));
       return true;
@@ -484,14 +484,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviews.productId, productId));
     
     const avgRating = result[0]?.avgRating || 0;
-    const numReviews = result[0]?.count || 0;
+    const numReviews = Number(result[0]?.count) || 0;
     
     // Update product
     const [updatedProduct] = await db
       .update(products)
       .set({
-        rating: avgRating,
-        numReviews: numReviews
+        rating: avgRating as any,
+        numReviews: numReviews as any
       })
       .where(eq(products.id, productId))
       .returning();
