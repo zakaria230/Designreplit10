@@ -157,11 +157,11 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href="/profile/orders"
+                        href="/profile/purchases"
                         className="flex items-center cursor-pointer"
                       >
                         <ShoppingBag className="mr-2 h-4 w-4" />
-                        <span>Orders</span>
+                        <span>My Purchases</span>
                       </Link>
                     </DropdownMenuItem>
                     {user.role === "admin" && (
@@ -289,11 +289,11 @@ export function Navbar() {
                       Profile
                     </Link>
                     <Link
-                      href="/profile/orders"
+                      href="/profile/purchases"
                       className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Orders
+                      My Purchases
                     </Link>
                     {user.role === "admin" && (
                       <Link
