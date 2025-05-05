@@ -60,7 +60,8 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  Trash2
+  Trash2,
+  Package
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -642,7 +643,7 @@ export default function OrderManagement() {
                                     />
                                   ) : (
                                     <div className="h-full w-full flex items-center justify-center text-gray-400">
-                                      No img
+                                      <Package className="h-5 w-5" />
                                     </div>
                                   )}
                                 </div>
