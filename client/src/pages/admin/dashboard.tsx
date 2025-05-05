@@ -2,33 +2,28 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  BarChart, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
   Bar,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from "recharts";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -46,20 +41,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  DollarSign, 
-  Users, 
-  ShoppingBag, 
-  Package, 
-  TrendingUp, 
-  Layers, 
+import {
+  DollarSign,
+  Users,
+  ShoppingBag,
+  Package,
+  TrendingUp,
+  Layers,
   Loader2,
   ChevronRight,
   BarChart3,
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
   Eye,
-  Receipt
+  Receipt,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 
@@ -69,7 +64,7 @@ const COLORS = ["#14b8a6", "#8b5cf6", "#ef4444", "#f59e0b"];
 export default function AdminDashboard() {
   // Selected order for the dialog
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  
+
   // Fetch overview stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["/api/admin/stats"],
@@ -77,20 +72,20 @@ export default function AdminDashboard() {
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
   };
-  
+
   // Format date
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -98,17 +93,22 @@ export default function AdminDashboard() {
     <AdminLayout>
       <Helmet>
         <title>Admin Dashboard | DesignKorv</title>
-        <meta name="description" content="Admin dashboard for DesignKorv e-commerce platform." />
+        <meta
+          name="description"
+          content="Admin dashboard for DesignKorv e-commerce platform."
+        />
       </Helmet>
 
       <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-2">
-            <Button asChild className="bg-blue-500 text-white hover:bg-blue-600">
-              <Link href="/admin/products">
-                Manage Products
-              </Link>
+            <Button
+              asChild
+              variant="outline"
+              className="flex items-center gap-2 justify-center bg-white dark:bg-gray-800 shadow-sm"
+            >
+              <Link href="/admin/products">Manage Products</Link>
             </Button>
           </div>
         </div>
@@ -117,7 +117,9 @@ export default function AdminDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Revenue
+              </CardTitle>
               <DollarSign className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -153,7 +155,9 @@ export default function AdminDashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Orders
+              </CardTitle>
               <ShoppingBag className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -221,14 +225,16 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
-                  ) : stats?.salesData && Array.isArray(stats.salesData) && stats.salesData.length > 0 ? (
+                  ) : stats?.salesData &&
+                    Array.isArray(stats.salesData) &&
+                    stats.salesData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={stats.salesData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip 
-                          formatter={(value: any) => [`$${value}`, 'Sales']}
+                        <Tooltip
+                          formatter={(value: any) => [`$${value}`, "Sales"]}
                           labelFormatter={(label: any) => `Month: ${label}`}
                         />
                         <Line
@@ -242,7 +248,9 @@ export default function AdminDashboard() {
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-muted-foreground">No sales data available yet</p>
+                      <p className="text-muted-foreground">
+                        No sales data available yet
+                      </p>
                     </div>
                   )}
                 </div>
@@ -263,7 +271,9 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
-                  ) : stats?.categoryData && Array.isArray(stats.categoryData) && stats.categoryData.length > 0 ? (
+                  ) : stats?.categoryData &&
+                    Array.isArray(stats.categoryData) &&
+                    stats.categoryData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={stats.categoryData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -271,15 +281,22 @@ export default function AdminDashboard() {
                         <YAxis />
                         <Tooltip />
                         <Bar dataKey="value" fill="#8b5cf6">
-                          {stats.categoryData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
+                          {stats.categoryData.map(
+                            (entry: any, index: number) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={COLORS[index % COLORS.length]}
+                              />
+                            ),
+                          )}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-muted-foreground">No category sales data available yet</p>
+                      <p className="text-muted-foreground">
+                        No category sales data available yet
+                      </p>
                     </div>
                   )}
                 </div>
@@ -300,7 +317,9 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
-                  ) : stats?.orderStatusData && Array.isArray(stats.orderStatusData) && stats.orderStatusData.length > 0 ? (
+                  ) : stats?.orderStatusData &&
+                    Array.isArray(stats.orderStatusData) &&
+                    stats.orderStatusData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -312,18 +331,32 @@ export default function AdminDashboard() {
                           fill="#8884d8"
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: any) =>
+                            `${name} ${(percent * 100).toFixed(0)}%`
+                          }
                         >
-                          {stats.orderStatusData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
+                          {stats.orderStatusData.map(
+                            (entry: any, index: number) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={COLORS[index % COLORS.length]}
+                              />
+                            ),
+                          )}
                         </Pie>
-                        <Tooltip formatter={(value: any, name: any) => [`${value} orders`, name]} />
+                        <Tooltip
+                          formatter={(value: any, name: any) => [
+                            `${value} orders`,
+                            name,
+                          ]}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-muted-foreground">No order status data available yet</p>
+                      <p className="text-muted-foreground">
+                        No order status data available yet
+                      </p>
                     </div>
                   )}
                 </div>
@@ -360,41 +393,57 @@ export default function AdminDashboard() {
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </TableCell>
                       </TableRow>
-                    ) : stats?.recentOrders && Array.isArray(stats.recentOrders) && stats.recentOrders.length > 0 ? (
+                    ) : stats?.recentOrders &&
+                      Array.isArray(stats.recentOrders) &&
+                      stats.recentOrders.length > 0 ? (
                       stats.recentOrders
-                        .filter((order: any) => order.status === "completed" && order.paymentStatus === "paid")
+                        .filter(
+                          (order: any) =>
+                            order.status === "completed" &&
+                            order.paymentStatus === "paid",
+                        )
                         .map((order: any) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">#{order.id}</TableCell>
-                          <TableCell>{order.user?.username || 'Unknown'}</TableCell>
-                          <TableCell>{new Date(order.createdAt || '').toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <span 
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                            >
-                              completed
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(order.totalAmount || 0)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => setSelectedOrder(order)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">
+                              #{order.id}
+                            </TableCell>
+                            <TableCell>
+                              {order.user?.username || "Unknown"}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(
+                                order.createdAt || "",
+                              ).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                completed
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {formatCurrency(order.totalAmount || 0)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setSelectedOrder(order)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground">
-                          No orders yet. Orders will appear here as they are placed.
+                        <TableCell
+                          colSpan={6}
+                          className="text-center text-muted-foreground"
+                        >
+                          No orders yet. Orders will appear here as they are
+                          placed.
                         </TableCell>
                       </TableRow>
                     )}
@@ -405,14 +454,18 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-      
+
       {/* Order Details Dialog */}
-      <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+      <Dialog
+        open={!!selectedOrder}
+        onOpenChange={(open) => !open && setSelectedOrder(null)}
+      >
         <DialogContent className="sm:max-w-[650px]">
           <DialogHeader>
             <DialogTitle>Order #{selectedOrder?.id}</DialogTitle>
             <DialogDescription>
-              Placed on {selectedOrder?.createdAt && formatDate(selectedOrder.createdAt)}
+              Placed on{" "}
+              {selectedOrder?.createdAt && formatDate(selectedOrder.createdAt)}
             </DialogDescription>
           </DialogHeader>
 
@@ -421,18 +474,22 @@ export default function AdminDashboard() {
               {/* Customer Information */}
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Customer Information</CardTitle>
+                  <CardTitle className="text-lg">
+                    Customer Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-1">
-                    <p className="font-medium">{selectedOrder.user?.username || "Unknown User"}</p>
+                    <p className="font-medium">
+                      {selectedOrder.user?.username || "Unknown User"}
+                    </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {selectedOrder.user?.email || "Email not available"}
                     </p>
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Order Details */}
               <Card>
                 <CardHeader className="pb-2">
@@ -441,64 +498,88 @@ export default function AdminDashboard() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
-                      <p className="font-medium capitalize">{selectedOrder.status}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Status
+                      </p>
+                      <p className="font-medium capitalize">
+                        {selectedOrder.status}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Payment Status</p>
-                      <p className="font-medium capitalize">{selectedOrder.paymentStatus}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Payment Status
+                      </p>
+                      <p className="font-medium capitalize">
+                        {selectedOrder.paymentStatus}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Payment Method</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Payment Method
+                      </p>
                       <p className="font-medium">PayPal</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
-                      <p className="font-medium">{formatCurrency(selectedOrder.totalAmount || 0)}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Total Amount
+                      </p>
+                      <p className="font-medium">
+                        {formatCurrency(selectedOrder.totalAmount || 0)}
+                      </p>
                     </div>
                   </div>
-                  
+
                   {/* Order Items */}
                   <div>
                     <p className="font-medium mb-2">Order Items</p>
-                    {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                    {selectedOrder.items &&
+                    Array.isArray(selectedOrder.items) &&
+                    selectedOrder.items.length > 0 ? (
                       <div className="space-y-2">
                         {selectedOrder.items.map((item: any) => (
-                          <div 
-                            key={item.id} 
+                          <div
+                            key={item.id}
                             className="border rounded p-3 flex justify-between items-center"
                           >
                             <div className="flex items-center gap-3">
                               <div>
-                                <p className="font-medium">{item.product?.name || `Product #${item.productId}`}</p>
+                                <p className="font-medium">
+                                  {item.product?.name ||
+                                    `Product #${item.productId}`}
+                                </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Quantity: {item.quantity} × {formatCurrency(item.price || 0)}
+                                  Quantity: {item.quantity} ×{" "}
+                                  {formatCurrency(item.price || 0)}
                                 </p>
                               </div>
                             </div>
                             <div className="font-medium">
-                              {formatCurrency((item.price * item.quantity) || 0)}
+                              {formatCurrency(item.price * item.quantity || 0)}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">No items found</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        No items found
+                      </p>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Notes */}
               {selectedOrder.notes && selectedOrder.notes.trim() !== "" && (
                 <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium mb-1">Notes</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.notes}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedOrder.notes}
+                  </p>
                 </div>
               )}
             </div>
           )}
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedOrder(null)}>
               Close

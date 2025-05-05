@@ -15,17 +15,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CartDrawer } from "@/components/cart/cart-drawer";
-import { 
-  Sun, 
-  Moon, 
-  Search, 
-  ShoppingCart, 
-  Menu, 
-  X, 
+import {
+  Sun,
+  Moon,
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
   User,
   LogOut,
   Settings,
-  ShoppingBag
+  ShoppingBag,
 } from "lucide-react";
 
 export function Navbar() {
@@ -48,7 +48,7 @@ export function Navbar() {
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const toggleCart = () => setCartOpen(!cartOpen);
-  
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
@@ -64,8 +64,11 @@ export function Navbar() {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-primary-700 dark:text-primary-500 font-bold text-xl">
-                  {settings?.siteName || 'DesignKorv'}
+                <Link
+                  href="/"
+                  className="text-primary-700 dark:text-primary-500 font-bold text-xl"
+                >
+                  {settings?.siteName || "DesignKorv"}
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -92,7 +95,11 @@ export function Navbar() {
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 aria-label="Toggle theme"
               >
-                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
                 <span className="sr-only">Toggle theme</span>
               </Button>
               <Link href="/shop">
@@ -110,22 +117,25 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleCart}
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 red:hover:bg-gray-800 relative"
                 aria-label="Open cart"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 dark:bg-primary-500 ring-2 ring-white dark:ring-gray-900 rounded-full">
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-red transform translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-primary-500 ring-2 rounded-full">
                     {totalItems}
                   </span>
                 )}
                 <span className="sr-only">Open cart</span>
               </Button>
-              
+
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="rounded-full p-0 h-8 w-8 overflow-hidden">
+                    <Button
+                      variant="ghost"
+                      className="rounded-full p-0 h-8 w-8 overflow-hidden"
+                    >
                       <Avatar>
                         <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
                           {getInitials(user.username)}
@@ -134,32 +144,39 @@ export function Navbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      {user.username}
-                    </DropdownMenuLabel>
+                    <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="flex items-center cursor-pointer">
+                      <Link
+                        href="/profile"
+                        className="flex items-center cursor-pointer"
+                      >
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile/orders" className="flex items-center cursor-pointer">
+                      <Link
+                        href="/profile/orders"
+                        className="flex items-center cursor-pointer"
+                      >
                         <ShoppingBag className="mr-2 h-4 w-4" />
                         <span>Orders</span>
                       </Link>
                     </DropdownMenuItem>
                     {user.role === "admin" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex items-center cursor-pointer">
+                        <Link
+                          href="/admin"
+                          className="flex items-center cursor-pointer"
+                        >
                           <Settings className="mr-2 h-4 w-4" />
                           <span>Admin Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="flex items-center cursor-pointer"
                       onClick={handleLogout}
                     >
@@ -174,9 +191,9 @@ export function Navbar() {
                 </Button>
               )}
             </div>
-            
+
             <div className="-mr-2 flex items-center sm:hidden">
-              <button 
+              <button
                 onClick={toggleMobileMenu}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
                 aria-label="Toggle mobile menu"
@@ -211,7 +228,7 @@ export function Navbar() {
                 </Link>
               ))}
             </div>
-            
+
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
               {user ? (
                 <>
@@ -224,18 +241,28 @@ export function Navbar() {
                       </Avatar>
                     </div>
                     <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800 dark:text-gray-200">{user.username}</div>
-                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{user.email}</div>
+                      <div className="text-base font-medium text-gray-800 dark:text-gray-200">
+                        {user.username}
+                      </div>
+                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {user.email}
+                      </div>
                     </div>
                     <div className="ml-auto flex space-x-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        onClick={() =>
+                          setTheme(theme === "dark" ? "light" : "dark")
+                        }
                         className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                         aria-label="Toggle theme"
                       >
-                        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                        {theme === "dark" ? (
+                          <Sun className="h-5 w-5" />
+                        ) : (
+                          <Moon className="h-5 w-5" />
+                        )}
                       </Button>
                       <Button
                         variant="ghost"
@@ -291,10 +318,7 @@ export function Navbar() {
               ) : (
                 <div className="mt-3 px-4">
                   <Button asChild className="w-full">
-                    <Link 
-                      href="/auth"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
+                    <Link href="/auth" onClick={() => setMobileMenuOpen(false)}>
                       Log In / Sign Up
                     </Link>
                   </Button>
@@ -302,11 +326,17 @@ export function Navbar() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      onClick={() =>
+                        setTheme(theme === "dark" ? "light" : "dark")
+                      }
                       className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                       aria-label="Toggle theme"
                     >
-                      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                      {theme === "dark" ? (
+                        <Sun className="h-5 w-5" />
+                      ) : (
+                        <Moon className="h-5 w-5" />
+                      )}
                       <span className="sr-only">Toggle theme</span>
                     </Button>
                     <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>
@@ -342,7 +372,7 @@ export function Navbar() {
           </div>
         )}
       </nav>
-      
+
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );

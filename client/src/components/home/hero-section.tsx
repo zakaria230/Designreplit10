@@ -19,7 +19,7 @@ export function HeroSection() {
             Premium digital fashion assets for designers who demand excellence. From patterns to complete designs, find everything you need to create stunning collections.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" asChild className="bg-white text-primary-700 hover:bg-gray-50">
+            <Button size="lg" asChild className="bg-white text-primary-700 hover:bg-gray-50" variant="secondary">
               <Link href="/shop">
                 Browse Collection
               </Link>
