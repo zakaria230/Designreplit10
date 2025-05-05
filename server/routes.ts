@@ -599,6 +599,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download endpoint
+  app.get("/api/downloads/:filename", isAuthenticated, async (req, res) => {
+    try {
+      const fileName = req.params.filename;
+      console.log(`Download request for file: ${fileName} by user: ${req.user.id}`);
+      
+      // Get all paid orders for this user
+      const orders = await storage.getOrdersByUser(req.user.id);
+      const paidOrders = orders.filter(
+        (order) => order.paymentStatus === "paid",
+      );
+      
+      console.log(`User has ${paidOrders.length} paid orders to check`);
+      
+      // Check if user has purchased any product with this download URL
+      let hasAccess = false;
+      let productName = "";
+      
+      for (const order of paidOrders) {
+        // Get items for this order
+        const items = await storage.getOrderItemsByOrder(order.id);
+        
+        // Check each item
+        for (const item of items) {
+          const product = await storage.getProductById(item.productId);
+          
+          if (product && product.downloadUrl) {
+            const downloadFileName = path.basename(product.downloadUrl);
+            console.log(`Checking file: ${downloadFileName} against requested: ${fileName}`);
+            
+            if (downloadFileName === fileName) {
+              hasAccess = true;
+              productName = product.name;
+              console.log(`Access granted for file: ${fileName} from product: ${productName}`);
+              break;
+            }
+          }
+        }
+        
+        if (hasAccess) break;
+      }
+      
+      if (!hasAccess) {
+        console.log(`Access denied for file: ${fileName}`);
+        return res.status(403).send("Access denied: You have not purchased this item or payment is pending");
+      }
+      
+      // User has access, serve the file
+      const filePath = path.join(process.cwd(), "uploads", "downloads", fileName);
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        console.error(`File not found: ${filePath}`);
+        return res.status(404).send("File not found");
+      }
+      
+      // Set the download headers
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.setHeader("Content-Type", "application/octet-stream");
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+      
+    } catch (error) {
+      console.error("Error serving download:", error);
+      res.status(500).send("Server error processing download");
+    }
+  });
+  
   // Cart
   app.get("/api/cart", isAuthenticated, async (req, res) => {
     try {

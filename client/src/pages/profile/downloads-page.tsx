@@ -174,7 +174,11 @@ export default function DownloadsPage() {
                         size="sm"
                         onClick={() => {
                           const fileName = item.downloadUrl.split('/').pop();
-                          const downloadUrl = `/downloads/${fileName}`;
+                          if (!fileName) {
+                            console.error("Invalid download URL:", item.downloadUrl);
+                            return;
+                          }
+                          const downloadUrl = `/api/downloads/${fileName}`;
                           window.open(downloadUrl, '_blank');
                         }}
                       >
