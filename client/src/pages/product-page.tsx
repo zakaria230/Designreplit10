@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { ReviewList } from "@/components/product/review-list";
-import { Loader2, ChevronRight, ShoppingCart, Download, Check } from "lucide-react";
+import { Loader2, ChevronRight, ShoppingCart, Download, Check, Heart, ChevronLeft } from "lucide-react";
 import SEO from "@/components/seo";
 import { getProductSchema, getBreadcrumbSchema } from "@/components/seo/structured-data";
 
@@ -168,56 +168,145 @@ export default function ProductPage() {
           </nav>
 
           {/* Product details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-            {/* Product image */}
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 mb-16">
+            {/* Thumbnails column */}
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="flex flex-row lg:flex-col gap-2">
+                {/* We'll show the main image as a thumbnail as well */}
+                {product.imageUrl && (
+                  <div className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                {/* Add additional thumbnails if this product has multiple images */}
+                {product.additionalImages && Array.isArray(product.additionalImages) && 
+                  product.additionalImages.map((imgUrl, index) => (
+                    <div key={index} className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
+                      <img 
+                        src={imgUrl} 
+                        alt={`${product.name} view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))
+                }
+                
+                {/* Add placeholder thumbnails if we need to fill the space */}
+                {(!product.additionalImages || !Array.isArray(product.additionalImages) || product.additionalImages.length < 3) && (
+                  <>
+                    <div className="w-[60px] h-[60px] bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md flex items-center justify-center">
+                      <span className="text-xs text-gray-400">Front</span>
+                    </div>
+                    <div className="w-[60px] h-[60px] bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md flex items-center justify-center">
+                      <span className="text-xs text-gray-400">Back</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Main product image */}
+            <div className="lg:col-span-5 order-1 lg:order-2 bg-gray-50 dark:bg-gray-800 rounded-md overflow-hidden relative">
               {product.imageUrl ? (
-                <img 
-                  src={product.imageUrl} 
-                  alt={product.name}
-                  className="w-full h-full object-contain"
-                />
+                <>
+                  <img 
+                    src={product.imageUrl} 
+                    alt={product.name}
+                    className="w-full h-full object-contain min-h-[450px]"
+                  />
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                </>
               ) : (
-                <div className="h-full min-h-[400px] flex items-center justify-center">
+                <div className="h-full min-h-[450px] flex items-center justify-center">
                   <span className="text-gray-400 dark:text-gray-500">No image available</span>
                 </div>
               )}
             </div>
 
             {/* Product info */}
-            <div>
+            <div className="lg:col-span-4 order-3">
               <div className="flex flex-col h-full">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                {/* Price in green */}
+                <div className="mb-2">
+                  <h2 className="text-xl font-bold text-green-600 dark:text-green-500">
+                    {formatPrice(product.price)}
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <span className="ml-2 text-base font-normal line-through text-gray-500">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    )}
+                  </h2>
+                </div>
+                
+                {/* Title */}
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   {product.name}
                 </h1>
                 
-                {/* Rating */}
-                {(product.rating && product.rating > 0) && (
-                  <div className="flex items-center mb-4">
-                    <StarRating rating={product.rating || 0} />
-                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      ({product.numReviews || 0} {(product.numReviews || 0) === 1 ? 'review' : 'reviews'})
-                    </span>
-                  </div>
-                )}
-                
-                {/* Price */}
-                <div className="mb-6">
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {formatPrice(product.price)}
-                  </p>
-                  {product.downloadUrl && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Digital download, available immediately after purchase
-                    </p>
+                {/* Seller info with rating */}
+                <div className="flex items-center mb-4">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 mr-1">DesignKorv</span>
+                  {(product.rating && product.rating > 0) && (
+                    <>
+                      <span className="mx-2 text-gray-300">•</span>
+                      <StarRating rating={product.rating || 0} />
+                      <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
+                        ({product.numReviews || 0})
+                      </span>
+                    </>
                   )}
                 </div>
                 
                 {/* Description */}
                 <div className="prose dark:prose-invert mb-8 max-w-none">
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
                     {product.description || "No description available."}
                   </p>
+                </div>
+                
+                {/* Highlights section */}
+                <div className="mb-8">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-3">Highlights</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                        <Check className="h-4 w-4 text-gray-500" />
+                      </div>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                        Designed by <span className="font-medium">DesignKorv</span>
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                        <Download className="h-4 w-4 text-gray-500" />
+                      </div>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                        Digital download
+                      </span>
+                    </li>
+                    {product.fileType && (
+                      <li className="flex items-start">
+                        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                          <span className="text-xs font-medium text-gray-500">•</span>
+                        </div>
+                        <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                          Digital file type(s): {product.fileType}
+                        </span>
+                      </li>
+                    )}
+                  </ul>
                 </div>
                 
                 {/* Category */}
@@ -232,34 +321,10 @@ export default function ProductPage() {
                 
                 {/* Add to cart */}
                 <div className="mt-auto">
-                  <div className="flex items-center mb-6">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-4">
-                      Quantity:
-                    </span>
-                    <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md">
-                      <button
-                        onClick={decreaseQuantity}
-                        className="px-3 py-1 border-r border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        disabled={quantity <= 1}
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-1 text-gray-900 dark:text-white">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={increaseQuantity}
-                        className="px-3 py-1 border-l border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="mb-6">
                     <Button 
                       size="lg" 
-                      className="flex-1"
+                      className="w-full"
                       onClick={handleAddToCart}
                       disabled={isAddingToCart}
                     >
@@ -271,23 +336,29 @@ export default function ProductPage() {
                       ) : (
                         <>
                           <ShoppingCart className="mr-2 h-5 w-5" />
-                          Add to Cart
+                          Add to cart
                         </>
                       )}
                     </Button>
-                    <Button 
-                      size="lg" 
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => {
-                        addItem(product, quantity);
-                        navigate("/checkout");
-                      }}
-                    >
-                      <Download className="mr-2 h-5 w-5" />
-                      Buy Now
-                    </Button>
                   </div>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Heart className="mr-2 h-5 w-5" />
+                    Add to collection
+                  </Button>
+                </div>
+                
+                {/* Item details accordion */}
+                <div className="mt-8">
+                  <button className="w-full flex items-center justify-between border-t border-gray-200 dark:border-gray-700 py-3 text-left">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      Item details
+                    </span>
+                    <ChevronRight className="h-5 w-5 text-gray-500 dark:text-gray-400 transform rotate-90" />
+                  </button>
                 </div>
               </div>
             </div>
