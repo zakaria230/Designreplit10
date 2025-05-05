@@ -206,6 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If the request is for a file in the downloads directory, check if the user has paid for it
       if (req.url.startsWith("/downloads/") && req.isAuthenticated()) {
         const fileName = path.basename(req.url);
+        console.log(`Download request for file: ${fileName} by user: ${req.user!.id}`);
 
         try {
           // Get all paid orders for this user
@@ -213,21 +214,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const paidOrders = orders.filter(
             (order) => order.paymentStatus === "paid",
           );
+          
+          console.log(`User has ${paidOrders.length} paid orders to check`);
 
           // Fetch order items with product info for all paid orders
           let hasAccess = false;
 
           for (const order of paidOrders) {
-            const orderItems = await storage.getOrderItemsByOrder(order.id);
-
-            // Check if any of the ordered products has this file as download URL
-            for (const item of orderItems) {
+            // Get items for this order
+            const items = await storage.getOrderItemsByOrder(order.id);
+            
+            // We need to get product details for each item since they're not included by default
+            const itemsWithProducts = await Promise.all(
+              items.map(async (item) => {
+                const product = await storage.getProductById(item.productId);
+                return {
+                  ...item,
+                  product,
+                };
+              })
+            );
+            
+            // Now check each item with its product info
+            for (const item of itemsWithProducts) {
               if (item.product && item.product.downloadUrl) {
-                const downloadFileName = path.basename(
-                  item.product.downloadUrl,
-                );
+                const downloadFileName = path.basename(item.product.downloadUrl);
+                console.log(`Checking file: ${downloadFileName} against requested: ${fileName}`);
+                
                 if (downloadFileName === fileName) {
                   hasAccess = true;
+                  console.log(`Access granted for file: ${fileName}`);
                   break;
                 }
               }
@@ -237,6 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           if (!hasAccess) {
+            console.log(`Access denied for file: ${fileName}`);
             return res
               .status(403)
               .send(
