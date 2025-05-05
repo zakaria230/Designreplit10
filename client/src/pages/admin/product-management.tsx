@@ -460,6 +460,27 @@ export default function ProductManagement() {
       editForm.setValue('images', updatedImages);
     }
   };
+  
+  // Handle drag and drop reordering of images
+  const handleDragEnd = (result: DropResult, formType: 'add' | 'edit') => {
+    if (!result.destination) return; // Dropped outside the list
+    
+    const form = formType === 'add' ? addForm : editForm;
+    const currentImages = form.getValues('images') || [];
+    
+    // Reorder the images array
+    const reorderedImages = Array.from(currentImages);
+    const [removed] = reorderedImages.splice(result.source.index, 1);
+    reorderedImages.splice(result.destination.index, 0, removed);
+    
+    // Update the form value
+    form.setValue('images', reorderedImages);
+    
+    toast({
+      title: "Images Reordered",
+      description: "The order of images has been updated."
+    });
+  };
 
   // Add product form
   const addForm = useForm<ProductFormValues>({
@@ -1203,107 +1224,134 @@ export default function ProductManagement() {
                           </FormDescription>
                           
                           <div className="space-y-4">
-                            {/* Image gallery grid */}
+                            {/* Image gallery grid with drag and drop */}
                             {(addForm.getValues('imageUrl') || (field.value && field.value.length > 0)) && (
-                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                {/* Main image if exists */}
-                                {addForm.getValues('imageUrl') && (
-                                  <div className="relative group rounded-md overflow-hidden border aspect-square">
-                                    <img 
-                                      src={addForm.getValues('imageUrl')} 
-                                      alt="Product preview" 
-                                      className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute top-2 right-2 z-10">
-                                      <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
-                                    </div>
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8 bg-white hover:bg-white"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          startImageCrop(addForm.getValues('imageUrl'), 'add');
-                                        }}
-                                      >
-                                        <Scissors className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          addForm.setValue('imageUrl', '');
-                                        }}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* Additional images if exist */}
-                                {field.value && field.value.map((image, index) => (
-                                  <div key={index} className="relative group rounded-md overflow-hidden border aspect-square">
-                                    {image.type === 'video' ? (
-                                      <video 
-                                        src={image.url} 
-                                        className="w-full h-full object-cover"
-                                        muted 
-                                        loop
-                                        onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
-                                        onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
-                                      />
-                                    ) : (
-                                      <img 
-                                        src={image.url} 
-                                        alt={`Product image ${index + 1}`} 
-                                        className="w-full h-full object-cover"
-                                      />
-                                    )}
-                                    
-                                    {image.isPrimary && (
-                                      <div className="absolute top-2 right-2 z-10">
-                                        <span className="bg-white text-xs font-medium px-2 py-0.5 rounded shadow-sm">Primary</span>
-                                      </div>
-                                    )}
-                                    
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8 bg-white hover:bg-white"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleSetPrimaryImage(index, 'add');
-                                        }}
-                                        title="Set as primary"
-                                      >
-                                        <Star className={`h-4 w-4 ${image.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-                                      </Button>
+                              <DragDropContext onDragEnd={(result) => handleDragEnd(result, 'add')}>
+                                <Droppable droppableId="add-product-images" direction="horizontal">
+                                  {(provided) => (
+                                    <div 
+                                      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+                                      {...provided.droppableProps}
+                                      ref={provided.innerRef}
+                                    >
+                                      {/* Main image if exists */}
+                                      {addForm.getValues('imageUrl') && (
+                                        <div className="relative group rounded-md overflow-hidden border aspect-square">
+                                          <img 
+                                            src={addForm.getValues('imageUrl')} 
+                                            alt="Product preview" 
+                                            className="w-full h-full object-cover"
+                                          />
+                                          <div className="absolute top-2 right-2 z-10">
+                                            <span className="bg-white text-xs font-medium px-2 py-0.5 rounded">Primary</span>
+                                          </div>
+                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="icon"
+                                              className="h-8 w-8 bg-white hover:bg-white"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                startImageCrop(addForm.getValues('imageUrl'), 'add');
+                                              }}
+                                            >
+                                              <Scissors className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="icon"
+                                              className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                addForm.setValue('imageUrl', '');
+                                              }}
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
                                       
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleRemoveImage(index, 'add');
-                                        }}
-                                        title="Remove image"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                                      {/* Additional images if exist */}
+                                      {field.value && field.value.map((image, index) => (
+                                        <Draggable key={index} draggableId={`add-image-${index}`} index={index}>
+                                          {(provided, snapshot) => (
+                                            <div 
+                                              ref={provided.innerRef}
+                                              {...provided.draggableProps}
+                                              className={`relative group rounded-md overflow-hidden border aspect-square ${snapshot.isDragging ? 'ring-2 ring-primary' : ''}`}
+                                            >
+                                              {/* Drag handle */}
+                                              <div 
+                                                {...provided.dragHandleProps} 
+                                                className="absolute top-2 left-2 z-20 bg-white/80 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
+                                              >
+                                                <Pencil className="h-4 w-4 text-gray-700" />
+                                              </div>
+                                              
+                                              {image.type === 'video' ? (
+                                                <video 
+                                                  src={image.url} 
+                                                  className="w-full h-full object-cover"
+                                                  muted 
+                                                  loop
+                                                  onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                                  onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
+                                                />
+                                              ) : (
+                                                <img 
+                                                  src={image.url} 
+                                                  alt={`Product image ${index + 1}`} 
+                                                  className="w-full h-full object-cover"
+                                                />
+                                              )}
+                                              
+                                              {image.isPrimary && (
+                                                <div className="absolute top-2 right-2 z-10">
+                                                  <span className="bg-white text-xs font-medium px-2 py-0.5 rounded shadow-sm">Primary</span>
+                                                </div>
+                                              )}
+                                              
+                                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="icon"
+                                                  className="h-8 w-8 bg-white hover:bg-white"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSetPrimaryImage(index, 'add');
+                                                  }}
+                                                  title="Set as primary"
+                                                >
+                                                  <Star className={`h-4 w-4 ${image.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                                                </Button>
+                                                
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="icon"
+                                                  className="h-8 w-8 bg-white hover:bg-white text-red-500 hover:text-red-600"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveImage(index, 'add');
+                                                  }}
+                                                  title="Remove image"
+                                                >
+                                                  <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </Draggable>
+                                      ))}
+                                      {provided.placeholder}
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
+                                  )}
+                                </Droppable>
+                              </DragDropContext>
                             )}
                             
                             {/* Upload image button */}
