@@ -413,9 +413,10 @@ export default function ProductPage() {
                   </div>
                 )}
                 
-                {/* Add to cart */}
+                {/* Add to cart and Buy Now buttons */}
                 <div className="mt-auto">
-                  <div className="mb-6">
+                  <div className="grid grid-cols-1 gap-4 mb-6">
+                    {/* Add to cart button */}
                     <Button 
                       size="lg" 
                       className="w-full"
@@ -433,6 +434,19 @@ export default function ProductPage() {
                           Add to cart
                         </>
                       )}
+                    </Button>
+                    
+                    {/* Buy Now button */}
+                    <Button 
+                      size="lg" 
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-primary/10"
+                      onClick={() => {
+                        addItem(product, quantity);
+                        navigate("/checkout");
+                      }}
+                    >
+                      Buy now
                     </Button>
                   </div>
                 </div>
