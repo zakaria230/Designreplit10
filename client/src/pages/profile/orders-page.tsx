@@ -55,6 +55,7 @@ export default function OrdersPage() {
   const filteredOrders = orders ? (orders as OrderWithItems[]).filter(order => {
     const matchesSearch = searchTerm === "" || 
       String(order.id).includes(searchTerm) || 
+      (order.orderCode && order.orderCode.includes(searchTerm)) ||
       (order.notes && order.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
@@ -117,7 +118,7 @@ export default function OrdersPage() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-4 py-3">#{order.id}</td>
+                    <td className="px-4 py-3">#{order.orderCode || order.id}</td>
                     <td className="px-4 py-3">{formatDate(order.createdAt)}</td>
                     <td className="px-4 py-3">{order.items?.length || 0}</td>
                     <td className="px-4 py-3">
@@ -172,7 +173,7 @@ export default function OrdersPage() {
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
             <DialogHeader>
-              <DialogTitle>Order #{selectedOrder.id}</DialogTitle>
+              <DialogTitle>Order #{selectedOrder.orderCode || selectedOrder.id}</DialogTitle>
               <DialogDescription>
                 Placed on {formatDate(selectedOrder.createdAt)}
               </DialogDescription>

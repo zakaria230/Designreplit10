@@ -529,7 +529,7 @@ export default function OrderManagement() {
         <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
           <DialogContent className="sm:max-w-[650px]">
             <DialogHeader>
-              <DialogTitle>Order #{selectedOrder?.id}</DialogTitle>
+              <DialogTitle>Order #{selectedOrder?.orderCode || selectedOrder?.id}</DialogTitle>
               <DialogDescription>
                 Placed on {selectedOrder?.createdAt && formatDate(selectedOrder.createdAt)} at{" "}
                 {selectedOrder?.createdAt && formatTime(selectedOrder.createdAt)}
@@ -697,7 +697,7 @@ export default function OrderManagement() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete order #{orderToDelete?.id} 
+                This action cannot be undone. This will permanently delete order #{orderToDelete?.orderCode || orderToDelete?.id} 
                 and all associated order items from the database.
               </AlertDialogDescription>
             </AlertDialogHeader>

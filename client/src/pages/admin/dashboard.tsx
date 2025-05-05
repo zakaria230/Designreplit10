@@ -462,7 +462,7 @@ export default function AdminDashboard() {
       >
         <DialogContent className="sm:max-w-[650px]">
           <DialogHeader>
-            <DialogTitle>Order #{selectedOrder?.id}</DialogTitle>
+            <DialogTitle>Order #{selectedOrder?.orderCode || selectedOrder?.id}</DialogTitle>
             <DialogDescription>
               Placed on{" "}
               {selectedOrder?.createdAt && formatDate(selectedOrder.createdAt)}
