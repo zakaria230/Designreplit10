@@ -208,7 +208,7 @@ export default function ProductPage() {
                   }
                   
                   // Remove duplicates and filter out any null or empty strings
-                  imageArray = Array.from(new Set(imageArray)).filter(url => url && url.trim().length > 0);
+                  imageArray = Array.from(new Set(imageArray)).filter(url => url && typeof url === 'string' && url.trim().length > 0);
                   
                   return imageArray.map((imgUrl, index) => (
                     <div key={index} className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
@@ -273,7 +273,7 @@ export default function ProductPage() {
                 }
                 
                 // Remove duplicates and filter out any null or empty strings
-                imageArray = Array.from(new Set(imageArray)).filter(url => url && url.trim().length > 0);
+                imageArray = Array.from(new Set(imageArray)).filter(url => url && typeof url === 'string' && url.trim().length > 0);
                 
                 // Display first image or fallback
                 if (imageArray.length > 0) {
