@@ -45,15 +45,8 @@ export default function CategoriesPage() {
     retry: false,
   });
 
-  // If no category is selected, show all products
-  const { 
-    data: allProducts = [], 
-    isLoading: allProductsLoading 
-  } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
-    enabled: !selectedCategory?.id,
-    retry: false,
-  });
+  // We no longer need to fetch all products on the categories page when no category is selected
+  const allProductsLoading = false;
 
   // Default to first category if none is selected and categories exist
   useEffect(() => {
@@ -70,8 +63,8 @@ export default function CategoriesPage() {
     );
   }
 
-  const displayedProducts = selectedCategory ? products : allProducts;
-  const isLoading = selectedCategory ? productsLoading : allProductsLoading;
+  const displayedProducts = selectedCategory ? products : [];
+  const isLoading = selectedCategory ? productsLoading : false;
 
   // Category icons map
   const getCategoryIcon = (slug: string) => {
@@ -213,8 +206,8 @@ export default function CategoriesPage() {
               </div>
             )}
 
-            {/* Show products grid if category is selected or viewing all products */}
-            {(selectedCategory || (!selectedCategory && allProducts)) && (
+            {/* Show products grid only if category is selected */}
+            {selectedCategory && (
               <ProductGrid products={displayedProducts || []} isLoading={isLoading} />
             )}
           </div>
