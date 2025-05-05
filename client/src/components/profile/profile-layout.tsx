@@ -60,7 +60,7 @@ export function ProfileLayout({ children, title, description }: ProfileLayoutPro
     {
       href: "/profile/purchases",
       icon: <Receipt className="h-5 w-5" />,
-      label: "Purchases",
+      label: "My Purchases",
     },
     {
       href: "/profile/downloads",
