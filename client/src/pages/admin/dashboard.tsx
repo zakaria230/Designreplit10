@@ -539,35 +539,31 @@ export default function AdminDashboard() {
                         {selectedOrder.items.map((item: any) => (
                           <div
                             key={item.id}
-                            className="border rounded p-3 flex justify-between items-center"
+                            className="bg-gray-50 dark:bg-gray-800 rounded p-3 flex items-start gap-3"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                                {item.product && item.product.imageUrl ? (
-                                  <img
-                                    src={item.product.imageUrl}
-                                    alt={item.product.name || 'Product'}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-full w-full flex items-center justify-center text-gray-400">
-                                    <Package className="h-5 w-5" />
-                                  </div>
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-medium">
-                                  {item.product?.name ||
-                                    `Product #${item.productId}`}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Quantity: {item.quantity} ×{" "}
-                                  {formatCurrency(item.price || 0)}
-                                </p>
-                              </div>
+                            <div className="h-10 w-10 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                              {item.product && item.product.imageUrl ? (
+                                <img
+                                  src={item.product.imageUrl}
+                                  alt={item.product.name || 'Product'}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Package className="h-5 w-5 text-gray-400" />
+                              )}
                             </div>
-                            <div className="font-medium">
-                              {formatCurrency(item.price * item.quantity || 0)}
+                            <div className="flex-1">
+                              <div className="flex justify-between">
+                                <p className="font-medium">
+                                  {item.product?.name || `Product #${item.productId}`}
+                                </p>
+                                <p className="font-medium">
+                                  {formatCurrency(item.price * item.quantity || 0)}
+                                </p>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Qty: {item.quantity} × {formatCurrency(item.price || 0)}
+                              </p>
                             </div>
                           </div>
                         ))}
