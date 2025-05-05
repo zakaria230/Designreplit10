@@ -208,4 +208,118 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
+
+  // Update user profile
+  app.patch("/api/user/profile", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.sendStatus(401);
+      
+      const { username, email, name, bio } = req.body;
+      
+      // Validate required fields
+      if (!username || !email) {
+        return res.status(400).json({ message: "Username and email are required" });
+      }
+      
+      // Check if username already exists (if changing username)
+      if (username !== req.user.username) {
+        const existingUser = await storage.getUserByUsername(username);
+        if (existingUser && existingUser.id !== req.user.id) {
+          return res.status(400).json({ message: "Username already exists" });
+        }
+      }
+      
+      // Check if email already exists (if changing email)
+      if (email !== req.user.email) {
+        const existingEmail = await storage.getUserByEmail(email);
+        if (existingEmail && existingEmail.id !== req.user.id) {
+          return res.status(400).json({ message: "Email already in use" });
+        }
+        
+        // Validate email domain using the middleware
+        const domainValidation = validateEmailDomain(email);
+        if (!domainValidation.isValid) {
+          return res.status(400).json({ 
+            message: domainValidation.message
+          });
+        }
+      }
+
+      // Update user profile
+      const updatedUser = await storage.updateUser(req.user.id, {
+        username,
+        email,
+        name,
+        bio
+      });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update profile" });
+      }
+      
+      // Don't send password back to client
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      next(error);
+    }
+  });
+
+  // Change user password
+  app.post("/api/user/change-password", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.sendStatus(401);
+      
+      const { currentPassword, newPassword } = req.body;
+      
+      // Validate required fields
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current and new password are required" });
+      }
+      
+      // Verify current password
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const passwordValid = await comparePasswords(currentPassword, user.password);
+      if (!passwordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Enhanced password check with more stringent requirements
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+      
+      if (!/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ message: "Password must contain at least one uppercase letter" });
+      }
+      
+      if (!/[a-z]/.test(newPassword)) {
+        return res.status(400).json({ message: "Password must contain at least one lowercase letter" });
+      }
+      
+      if (!/[0-9]/.test(newPassword)) {
+        return res.status(400).json({ message: "Password must contain at least one number" });
+      }
+      
+      if (!/[^A-Za-z0-9]/.test(newPassword)) {
+        return res.status(400).json({ message: "Password must contain at least one special character" });
+      }
+      
+      // Hash and update password
+      const hashedPassword = await hashPassword(newPassword);
+      const updated = await storage.updatePassword(req.user.id, hashedPassword);
+      
+      if (!updated) {
+        return res.status(500).json({ message: "Failed to update password" });
+      }
+      
+      res.status(200).json({ message: "Password updated successfully" });
+    } catch (error: any) {
+      next(error);
+    }
+  });
 }
