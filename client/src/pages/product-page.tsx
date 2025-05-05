@@ -272,7 +272,14 @@ export default function ProductPage() {
                     } 
                     // If already an array, use it directly
                     else if (Array.isArray(product.images)) {
-                      imageArray = [...imageArray, ...product.images];
+                      // Handle array of objects with url property (from product management)
+                      const processedImages = product.images.map(img => {
+                        if (typeof img === 'string') return img;
+                        if (img && typeof img === 'object' && 'url' in img) return img.url;
+                        return null;
+                      }).filter(url => url !== null);
+                      
+                      imageArray = [...imageArray, ...processedImages];
                     }
                   } catch (e) {
                     console.error("Error parsing product images", e);
