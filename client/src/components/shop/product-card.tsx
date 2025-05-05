@@ -55,6 +55,8 @@ export function ProductCard({ product }: ProductCardProps) {
                       }
                     } else if (typeof parsedImages === 'string') {
                       imageUrl = parsedImages;
+                    } else if (parsedImages && typeof parsedImages === 'object' && 'url' in parsedImages) {
+                      imageUrl = parsedImages.url;
                     }
                   } catch (e) {
                     // If not valid JSON, treat as a direct URL
@@ -70,16 +72,33 @@ export function ProductCard({ product }: ProductCardProps) {
                     imageUrl = firstImg.url;
                   }
                 }
+                // Handle object format directly
+                else if (typeof product.images === 'object' && product.images !== null) {
+                  if ('url' in product.images) {
+                    imageUrl = product.images.url;
+                  }
+                }
               } catch (e) {
                 console.error("Error parsing product images in card", e);
               }
             }
+            
+            // Log the result for debugging
+            console.log(`ProductCard image for ${product.name}:`, { 
+              imageUrl, 
+              originalImageUrl: product.imageUrl, 
+              images: product.images 
+            });
             
             return imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={product.name} 
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  console.error(`Error loading image: ${imageUrl}`);
+                  e.currentTarget.src = '/placeholder-image.png';
+                }}
               />
             ) : (
               <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
