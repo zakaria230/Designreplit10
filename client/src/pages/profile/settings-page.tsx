@@ -87,8 +87,8 @@ export default function SettingsPage() {
     defaultValues: {
       username: user?.username || "",
       email: user?.email || "",
-      name: "", // User doesn't have name yet
-      bio: "",  // User doesn't have bio yet
+      name: user?.name || "",
+      bio: user?.bio || "",
     },
   });
 
