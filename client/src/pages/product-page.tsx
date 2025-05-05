@@ -282,14 +282,6 @@ export default function ProductPage() {
                   <ul className="space-y-2">
                     <li className="flex items-start">
                       <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                        <Check className="h-4 w-4 text-gray-500" />
-                      </div>
-                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
-                        Designed by <span className="font-medium">DesignKorv</span>
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                         <Download className="h-4 w-4 text-gray-500" />
                       </div>
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
@@ -341,24 +333,6 @@ export default function ProductPage() {
                       )}
                     </Button>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center justify-center"
-                  >
-                    <Heart className="mr-2 h-5 w-5" />
-                    Add to collection
-                  </Button>
-                </div>
-                
-                {/* Item details accordion */}
-                <div className="mt-8">
-                  <button className="w-full flex items-center justify-between border-t border-gray-200 dark:border-gray-700 py-3 text-left">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      Item details
-                    </span>
-                    <ChevronRight className="h-5 w-5 text-gray-500 dark:text-gray-400 transform rotate-90" />
-                  </button>
                 </div>
               </div>
             </div>
