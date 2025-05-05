@@ -473,6 +473,16 @@ export default function ProductManagement() {
     const [removed] = reorderedImages.splice(result.source.index, 1);
     reorderedImages.splice(result.destination.index, 0, removed);
     
+    // Preserve the isPrimary flag - if the moved image was primary, keep it primary
+    if (removed.isPrimary) {
+      // Make sure only the moved image is primary
+      reorderedImages.forEach((img, index) => {
+        if (index !== result.destination.index) {
+          img.isPrimary = false;
+        }
+      });
+    }
+    
     // Update the form value
     form.setValue('images', reorderedImages);
     
