@@ -190,9 +190,18 @@ export default function ProductPage() {
                         try {
                           const parsedImages = JSON.parse(product.images);
                           if (Array.isArray(parsedImages)) {
-                            imageArray = [...imageArray, ...parsedImages];
+                            // Process array of objects or strings
+                            const processedParsedImages = parsedImages.map(img => {
+                              if (typeof img === 'string') return img;
+                              if (img && typeof img === 'object' && 'url' in img) return img.url;
+                              return null;
+                            }).filter(url => url !== null) as string[];
+                            
+                            imageArray = [...imageArray, ...processedParsedImages];
                           } else if (typeof parsedImages === 'string') {
                             imageArray.push(parsedImages);
+                          } else if (parsedImages && typeof parsedImages === 'object' && 'url' in parsedImages) {
+                            imageArray.push(parsedImages.url);
                           }
                         } catch (e) {
                           // If not valid JSON, treat as a single image URL
@@ -206,13 +215,26 @@ export default function ProductPage() {
                           if (typeof img === 'string') return img;
                           if (img && typeof img === 'object' && 'url' in img) return img.url;
                           return null;
-                        }).filter(url => url !== null);
+                        }).filter(url => url !== null) as string[];
                         
                         imageArray = [...imageArray, ...processedImages];
+                      }
+                      // Handle case when images is an object directly
+                      else if (typeof product.images === 'object' && product.images !== null) {
+                        if ('url' in product.images) {
+                          imageArray.push(product.images.url);
+                        }
                       }
                     } catch (e) {
                       console.error("Error parsing product images", e);
                     }
+                    
+                    // Log for debugging
+                    console.log("Product images processing:", {
+                      productName: product.name,
+                      originalImages: product.images,
+                      processedImageArray: imageArray
+                    });
                   }
                   
                   // Remove duplicates and filter out any null or empty strings
@@ -232,6 +254,10 @@ export default function ProductPage() {
                         src={imgUrl} 
                         alt={`${product.name} view ${index + 1}`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error(`Error loading thumbnail image: ${imgUrl}`);
+                          e.currentTarget.src = '/placeholder-image.png';
+                        }}
                       />
                     </div>
                   ));
@@ -270,9 +296,18 @@ export default function ProductPage() {
                       try {
                         const parsedImages = JSON.parse(product.images);
                         if (Array.isArray(parsedImages)) {
-                          imageArray = [...imageArray, ...parsedImages];
+                          // Process array of objects or strings
+                          const processedParsedImages = parsedImages.map(img => {
+                            if (typeof img === 'string') return img;
+                            if (img && typeof img === 'object' && 'url' in img) return img.url;
+                            return null;
+                          }).filter(url => url !== null) as string[];
+                          
+                          imageArray = [...imageArray, ...processedParsedImages];
                         } else if (typeof parsedImages === 'string') {
                           imageArray.push(parsedImages);
+                        } else if (parsedImages && typeof parsedImages === 'object' && 'url' in parsedImages) {
+                          imageArray.push(parsedImages.url);
                         }
                       } catch (e) {
                         // If not valid JSON, treat as a single image URL
@@ -286,9 +321,15 @@ export default function ProductPage() {
                         if (typeof img === 'string') return img;
                         if (img && typeof img === 'object' && 'url' in img) return img.url;
                         return null;
-                      }).filter(url => url !== null);
+                      }).filter(url => url !== null) as string[];
                       
                       imageArray = [...imageArray, ...processedImages];
+                    }
+                    // Handle case when images is an object directly
+                    else if (typeof product.images === 'object' && product.images !== null) {
+                      if ('url' in product.images) {
+                        imageArray.push(product.images.url);
+                      }
                     }
                   } catch (e) {
                     console.error("Error parsing product images", e);
@@ -306,6 +347,10 @@ export default function ProductPage() {
                         src={imageArray[currentImageIndex]} 
                         alt={product.name}
                         className="w-full h-full object-contain min-h-[450px]"
+                        onError={(e) => {
+                          console.error(`Error loading product image: ${imageArray[currentImageIndex]}`);
+                          e.currentTarget.src = '/placeholder-image.png';
+                        }}
                       />
                       {imageArray.length > 1 && (
                         <div className="absolute bottom-4 right-4 flex gap-2">
