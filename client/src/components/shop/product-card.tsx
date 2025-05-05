@@ -29,17 +29,64 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col group">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-          {product.imageUrl ? (
-            <img 
-              src={product.imageUrl} 
-              alt={product.name} 
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-400 dark:text-gray-500">No image</span>
-            </div>
-          )}
+          {(() => {
+            // Try to get an image from any available source
+            let imageUrl = null;
+            
+            // First try the main imageUrl
+            if (product.imageUrl) {
+              imageUrl = product.imageUrl;
+            } 
+            // Then try to extract from images array if available
+            else if (product.images) {
+              try {
+                // Handle string format (might be JSON or direct URL)
+                if (typeof product.images === 'string') {
+                  try {
+                    // Try to parse as JSON
+                    const parsedImages = JSON.parse(product.images);
+                    if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+                      // Get the first item
+                      const firstImg = parsedImages[0];
+                      if (typeof firstImg === 'string') {
+                        imageUrl = firstImg;
+                      } else if (firstImg && typeof firstImg === 'object' && 'url' in firstImg) {
+                        imageUrl = firstImg.url;
+                      }
+                    } else if (typeof parsedImages === 'string') {
+                      imageUrl = parsedImages;
+                    }
+                  } catch (e) {
+                    // If not valid JSON, treat as a direct URL
+                    imageUrl = product.images;
+                  }
+                } 
+                // Handle array format
+                else if (Array.isArray(product.images) && product.images.length > 0) {
+                  const firstImg = product.images[0];
+                  if (typeof firstImg === 'string') {
+                    imageUrl = firstImg;
+                  } else if (firstImg && typeof firstImg === 'object' && 'url' in firstImg) {
+                    imageUrl = firstImg.url;
+                  }
+                }
+              } catch (e) {
+                console.error("Error parsing product images in card", e);
+              }
+            }
+            
+            return imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={product.name} 
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <span className="text-gray-400 dark:text-gray-500">No image</span>
+              </div>
+            );
+          })()}
           
           {/* Label for new or bestseller products */}
           {product.isFeatured && (
