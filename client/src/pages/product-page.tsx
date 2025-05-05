@@ -19,6 +19,7 @@ export default function ProductPage() {
   const [, navigate] = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCart();
 
   // Fetch product details
@@ -218,7 +219,15 @@ export default function ProductPage() {
                   imageArray = Array.from(new Set(imageArray)).filter(url => url && typeof url === 'string' && url.trim().length > 0);
                   
                   return imageArray.map((imgUrl, index) => (
-                    <div key={index} className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
+                    <div 
+                      key={index} 
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-[60px] h-[60px] border ${
+                        currentImageIndex === index 
+                          ? 'border-primary border-2' 
+                          : 'border-gray-200 dark:border-gray-700'
+                      } rounded-md overflow-hidden cursor-pointer hover:border-primary`}
+                    >
                       <img 
                         src={imgUrl} 
                         alt={`${product.name} view ${index + 1}`}
@@ -294,16 +303,24 @@ export default function ProductPage() {
                   return (
                     <>
                       <img 
-                        src={imageArray[0]} 
+                        src={imageArray[currentImageIndex]} 
                         alt={product.name}
                         className="w-full h-full object-contain min-h-[450px]"
                       />
                       {imageArray.length > 1 && (
                         <div className="absolute bottom-4 right-4 flex gap-2">
-                          <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                          <button 
+                            onClick={() => setCurrentImageIndex((prev) => prev === 0 ? imageArray.length - 1 : prev - 1)}
+                            className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors"
+                            aria-label="Previous image"
+                          >
                             <ChevronLeft className="h-5 w-5" />
                           </button>
-                          <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                          <button 
+                            onClick={() => setCurrentImageIndex((prev) => (prev + 1) % imageArray.length)}
+                            className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors"
+                            aria-label="Next image"
+                          >
                             <ChevronRight className="h-5 w-5" />
                           </button>
                         </div>
