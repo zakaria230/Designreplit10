@@ -319,7 +319,42 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(orders.createdAt));
   }
 
+  async generateUniqueOrderCode(): Promise<string> {
+    // Function to generate a random 8-digit number
+    const generateCode = () => {
+      // Generate a random number between 10000000 and 99999999 (8 digits)
+      return Math.floor(10000000 + Math.random() * 90000000).toString();
+    };
+    
+    // Generate an initial code
+    let orderCode = generateCode();
+    
+    // Check if the code already exists
+    let codeExists = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.orderCode, orderCode))
+      .then(results => results.length > 0);
+    
+    // If code exists, keep generating new codes until we find a unique one
+    while (codeExists) {
+      orderCode = generateCode();
+      codeExists = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.orderCode, orderCode))
+        .then(results => results.length > 0);
+    }
+    
+    return orderCode;
+  }
+  
   async createOrder(order: InsertOrder): Promise<Order> {
+    // Generate a unique 8-digit order code if not provided
+    if (!order.orderCode) {
+      order.orderCode = await this.generateUniqueOrderCode();
+    }
+    
     const [newOrder] = await db
       .insert(orders)
       .values(order)
@@ -340,6 +375,18 @@ export class DatabaseStorage implements IStorage {
     const [updatedOrder] = await db
       .update(orders)
       .set({ paymentStatus, ...(paymentIntentId ? { paymentIntentId } : {}) })
+      .where(eq(orders.id, id))
+      .returning();
+    return updatedOrder;
+  }
+  
+  async updateTransactionId(id: number, transactionId: string, notes?: string): Promise<Order | undefined> {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({ 
+        transactionId,
+        ...(notes ? { notes } : {})
+      })
       .where(eq(orders.id, id))
       .returning();
     return updatedOrder;

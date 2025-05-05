@@ -130,20 +130,26 @@ export const reviewRelations = relations(reviews, ({ one }) => ({
 // Order model
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
+  orderCode: text("order_code").notNull().unique(),  // Random 8-digit order code
   userId: integer("user_id").references(() => users.id).notNull(),
   totalAmount: doublePrecision("total_amount").notNull(),
   status: text("status").notNull().default("pending"),
   paymentIntentId: text("payment_intent_id"),
   paymentStatus: text("payment_status").default("unpaid"),
+  transactionId: text("transaction_id"),  // PayPal transaction ID
+  notes: text("notes"),  // Order notes
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertOrderSchema = createInsertSchema(orders).pick({
+  orderCode: true,
   userId: true,
   totalAmount: true,
   status: true,
   paymentIntentId: true,
   paymentStatus: true,
+  transactionId: true,
+  notes: true,
 });
 
 export const orderRelations = relations(orders, ({ one, many }) => ({
