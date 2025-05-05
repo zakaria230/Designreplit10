@@ -542,6 +542,19 @@ export default function AdminDashboard() {
                             className="border rounded p-3 flex justify-between items-center"
                           >
                             <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                {item.product && item.product.imageUrl ? (
+                                  <img
+                                    src={item.product.imageUrl}
+                                    alt={item.product.name || 'Product'}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                    <Package className="h-5 w-5" />
+                                  </div>
+                                )}
+                              </div>
                               <div>
                                 <p className="font-medium">
                                   {item.product?.name ||
