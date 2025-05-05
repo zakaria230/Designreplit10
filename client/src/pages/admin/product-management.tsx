@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cropper from 'react-easy-crop';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { AdminLayout } from "@/components/admin/admin-layout";
 
 // Define Area type since it doesn't get imported correctly
