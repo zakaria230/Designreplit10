@@ -402,12 +402,10 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
                 
-                {/* Seller info with rating */}
+                {/* Rating display */}
                 <div className="flex items-center mb-4">
-                  <span className="text-sm text-gray-700 dark:text-gray-300 mr-1">DesignKorv</span>
                   {(product.rating && product.rating > 0) && (
                     <>
-                      <span className="mx-2 text-gray-300">•</span>
                       <StarRating rating={product.rating || 0} />
                       <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
                         ({product.numReviews || 0})
