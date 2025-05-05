@@ -405,12 +405,7 @@ export default function ProductPage() {
                 {/* Rating display */}
                 <div className="flex items-center mb-4">
                   {(product.rating && product.rating > 0) && (
-                    <>
-                      <StarRating rating={product.rating || 0} />
-                      <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
-                        ({product.numReviews || 0})
-                      </span>
-                    </>
+                    <StarRating rating={product.rating || 0} />
                   )}
                 </div>
                 
