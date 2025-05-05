@@ -630,40 +630,32 @@ export default function OrderManagement() {
                   <CardContent>
                     <div className="space-y-4">
                       {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                        <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                        <div className="space-y-3">
                           {selectedOrder.items.map((item) => (
-                            <div key={item.id} className="py-3 flex justify-between items-center">
-                              <div className="flex items-center">
-                                <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 mr-3">
-                                  {item.product && item.product.imageUrl ? (
-                                    <img
-                                      src={item.product.imageUrl}
-                                      alt={item.product.name || 'Product'}
-                                      className="h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-full w-full flex items-center justify-center text-gray-400">
-                                      <Package className="h-5 w-5" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="font-medium">{item.product ? item.product.name : `Product #${item.productId}`}</p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Qty: {item.quantity} × {formatPrice(item.price)}
+                            <div key={item.id} className="bg-gray-50 dark:bg-gray-800 rounded p-3 flex items-start gap-3">
+                              <div className="h-10 w-10 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                {item.product && item.product.imageUrl ? (
+                                  <img
+                                    src={item.product.imageUrl}
+                                    alt={item.product.name || 'Product'}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <Package className="h-5 w-5 text-gray-400" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between">
+                                  <p className="font-medium">
+                                    {item.product?.name || `Product #${item.productId}`}
+                                  </p>
+                                  <p className="font-medium">
+                                    {formatPrice(item.quantity * item.price)}
                                   </p>
                                 </div>
-                              </div>
-                              <div className="flex items-center">
-                                <p className="font-medium mr-3">
-                                  {formatPrice(item.quantity * item.price)}
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  Qty: {item.quantity} × {formatPrice(item.price)}
                                 </p>
-                                {item.product && item.product.downloadUrl && (
-                                  <Button size="sm" variant="outline">
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Files
-                                  </Button>
-                                )}
                               </div>
                             </div>
                           ))}
@@ -675,7 +667,7 @@ export default function OrderManagement() {
                       )}
                     </div>
                   </CardContent>
-                  <CardFooter className="flex items-center justify-between pt-0">
+                  <CardFooter className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Order Total</p>
                       <p className="text-xl font-bold">{formatPrice(selectedOrder.totalAmount)}</p>
