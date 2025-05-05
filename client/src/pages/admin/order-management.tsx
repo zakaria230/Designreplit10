@@ -244,10 +244,11 @@ export default function OrderManagement() {
   // Filter orders by search query and status
   const filteredOrders = orders
     ? orders.filter((order) => {
-        // Filter by search query (order ID or username)
+        // Filter by search query (order ID, orderCode or username)
         if (
           searchQuery &&
           !order.id.toString().includes(searchQuery) &&
+          !(order.orderCode || "").includes(searchQuery) &&
           !(order.user?.username || "").toLowerCase().includes(searchQuery.toLowerCase())
         ) {
           return false;
@@ -339,7 +340,7 @@ export default function OrderManagement() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search by order ID or customer name..."
+              placeholder="Search by order code, ID, or customer name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -419,7 +420,7 @@ export default function OrderManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order ID</TableHead>
+                      <TableHead>Order Number</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Total</TableHead>
@@ -431,7 +432,7 @@ export default function OrderManagement() {
                   <TableBody>
                     {paginatedOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell className="font-medium">#{order.orderCode || order.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span>{formatDate(order.createdAt)}</span>

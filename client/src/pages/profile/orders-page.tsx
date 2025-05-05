@@ -74,7 +74,7 @@ export default function OrdersPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
             <Input
-              placeholder="Search by order number or details..."
+              placeholder="Search by order code, number, or details..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -107,7 +107,7 @@ export default function OrdersPage() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800 text-xs uppercase">
                 <tr>
-                  <th className="px-4 py-2 text-left">Order ID</th>
+                  <th className="px-4 py-2 text-left">Order Number</th>
                   <th className="px-4 py-2 text-left">Date</th>
                   <th className="px-4 py-2 text-left">Items</th>
                   <th className="px-4 py-2 text-left">Status</th>
