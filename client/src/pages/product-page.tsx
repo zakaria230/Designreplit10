@@ -172,20 +172,45 @@ export default function ProductPage() {
             {/* Thumbnails column */}
             <div className="lg:col-span-1 order-2 lg:order-1">
               <div className="flex flex-row lg:flex-col gap-2">
-                {/* We'll show the main image as a thumbnail as well */}
-                {product.imageUrl && (
-                  <div className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
-                    <img 
-                      src={product.imageUrl} 
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                {/* Add additional thumbnails if this product has multiple images */}
-                {product.additionalImages && Array.isArray(product.additionalImages) && 
-                  product.additionalImages.map((imgUrl, index) => (
+                {/* Convert images field to array and display them */}
+                {(() => {
+                  let imageArray: string[] = [];
+                  
+                  // Add main image if it exists
+                  if (product.imageUrl) {
+                    imageArray.push(product.imageUrl);
+                  }
+                  
+                  // Add images from the images field if it exists
+                  if (product.images) {
+                    try {
+                      // Try to parse if it's a string
+                      if (typeof product.images === 'string') {
+                        try {
+                          const parsedImages = JSON.parse(product.images);
+                          if (Array.isArray(parsedImages)) {
+                            imageArray = [...imageArray, ...parsedImages];
+                          } else if (typeof parsedImages === 'string') {
+                            imageArray.push(parsedImages);
+                          }
+                        } catch (e) {
+                          // If not valid JSON, treat as a single image URL
+                          imageArray.push(product.images);
+                        }
+                      } 
+                      // If already an array, use it directly
+                      else if (Array.isArray(product.images)) {
+                        imageArray = [...imageArray, ...product.images];
+                      }
+                    } catch (e) {
+                      console.error("Error parsing product images", e);
+                    }
+                  }
+                  
+                  // Remove duplicates and filter out any null or empty strings
+                  imageArray = Array.from(new Set(imageArray)).filter(url => url && url.trim().length > 0);
+                  
+                  return imageArray.map((imgUrl, index) => (
                     <div key={index} className="w-[60px] h-[60px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden cursor-pointer hover:border-primary">
                       <img 
                         src={imgUrl} 
@@ -193,11 +218,11 @@ export default function ProductPage() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                  ))
-                }
+                  ));
+                })()}
                 
-                {/* Add placeholder thumbnails if we need to fill the space */}
-                {(!product.additionalImages || !Array.isArray(product.additionalImages) || product.additionalImages.length < 3) && (
+                {/* Add placeholder thumbnails if we have no images */}
+                {!product.imageUrl && (!product.images || (Array.isArray(product.images) && product.images.length === 0)) && (
                   <>
                     <div className="w-[60px] h-[60px] bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md flex items-center justify-center">
                       <span className="text-xs text-gray-400">Front</span>
@@ -212,27 +237,73 @@ export default function ProductPage() {
 
             {/* Main product image */}
             <div className="lg:col-span-5 order-1 lg:order-2 bg-gray-50 dark:bg-gray-800 rounded-md overflow-hidden relative">
-              {product.imageUrl ? (
-                <>
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name}
-                    className="w-full h-full object-contain min-h-[450px]"
-                  />
-                  <div className="absolute bottom-4 right-4 flex gap-2">
-                    <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="h-full min-h-[450px] flex items-center justify-center">
-                  <span className="text-gray-400 dark:text-gray-500">No image available</span>
-                </div>
-              )}
+              {(() => {
+                // Get all available images
+                let imageArray: string[] = [];
+                
+                // Add main image if it exists
+                if (product.imageUrl) {
+                  imageArray.push(product.imageUrl);
+                }
+                
+                // Add images from the images field if it exists
+                if (product.images) {
+                  try {
+                    // Try to parse if it's a string
+                    if (typeof product.images === 'string') {
+                      try {
+                        const parsedImages = JSON.parse(product.images);
+                        if (Array.isArray(parsedImages)) {
+                          imageArray = [...imageArray, ...parsedImages];
+                        } else if (typeof parsedImages === 'string') {
+                          imageArray.push(parsedImages);
+                        }
+                      } catch (e) {
+                        // If not valid JSON, treat as a single image URL
+                        imageArray.push(product.images);
+                      }
+                    } 
+                    // If already an array, use it directly
+                    else if (Array.isArray(product.images)) {
+                      imageArray = [...imageArray, ...product.images];
+                    }
+                  } catch (e) {
+                    console.error("Error parsing product images", e);
+                  }
+                }
+                
+                // Remove duplicates and filter out any null or empty strings
+                imageArray = Array.from(new Set(imageArray)).filter(url => url && url.trim().length > 0);
+                
+                // Display first image or fallback
+                if (imageArray.length > 0) {
+                  return (
+                    <>
+                      <img 
+                        src={imageArray[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-contain min-h-[450px]"
+                      />
+                      {imageArray.length > 1 && (
+                        <div className="absolute bottom-4 right-4 flex gap-2">
+                          <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          <button className="rounded-full p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 transition-colors">
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  );
+                } else {
+                  return (
+                    <div className="h-full min-h-[450px] flex items-center justify-center">
+                      <span className="text-gray-400 dark:text-gray-500">No image available</span>
+                    </div>
+                  );
+                }
+              })()}
             </div>
 
             {/* Product info */}
