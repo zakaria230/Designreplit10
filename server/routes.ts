@@ -1029,9 +1029,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const items = await storage.getOrderItemsByOrder(orderId);
       const user = await storage.getUser(order.userId);
+      
+      // Add product information to each order item
+      const itemsWithProducts = await Promise.all(
+        items.map(async (item) => {
+          const product = await storage.getProductById(item.productId);
+          return {
+            ...item,
+            product: product || { name: "Unknown Product" },
+          };
+        })
+      );
 
-      res.json({ ...order, items, user });
+      res.json({ ...order, items: itemsWithProducts, user });
     } catch (error) {
+      console.error("Error fetching order details:", error);
       res.status(500).json({ message: "Failed to fetch order details" });
     }
   });
