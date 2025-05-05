@@ -174,7 +174,7 @@ export default function DownloadsPage() {
                         size="sm"
                         onClick={() => {
                           const fileName = item.downloadUrl.split('/').pop();
-                          const downloadUrl = `/uploads/downloads/${fileName}`;
+                          const downloadUrl = `/downloads/${fileName}`;
                           window.open(downloadUrl, '_blank');
                         }}
                       >

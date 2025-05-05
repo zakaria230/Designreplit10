@@ -52,8 +52,9 @@ export default function AboutPage() {
                 brands worldwide.
               </p>
               <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
                 asChild
-                className="bg-blue-500 text-white hover:bg-blue-600"
               >
                 <Link href="/shop">Explore Our Collection</Link>
               </Button>
@@ -155,7 +156,7 @@ export default function AboutPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-white dark:text-white dark:hover:bg-white/10"
+                  className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
                   asChild
                 >
                   <Link href="/shop">Browse Collection</Link>
@@ -163,7 +164,7 @@ export default function AboutPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-white dark:text-white dark:hover:bg-white/10"
+                  className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
                   asChild
                 >
                   <Link href="/contact">Contact Us</Link>
