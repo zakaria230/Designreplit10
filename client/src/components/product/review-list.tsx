@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Review } from "@shared/schema";
+import { Review, User, Product } from "@shared/schema";
 import { ReviewCard } from "@/components/product/review-card";
 import { ReviewForm } from "@/components/product/review-form";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,16 @@ export function ReviewList({ productId }: ReviewListProps) {
   const { user } = useAuth();
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
   
+  interface ReviewWithUserAndProduct extends Review {
+    user?: User;
+    product?: Product;
+  }
+  
   const { 
     data: reviews = [], 
     isLoading,
     error
-  } = useQuery<Review[]>({
+  } = useQuery<ReviewWithUserAndProduct[]>({
     queryKey: [`/api/reviews/product/${productId}`],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });

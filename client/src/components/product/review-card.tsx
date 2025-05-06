@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { Review } from "@shared/schema";
+import { Review, User, Product } from "@shared/schema";
 import { Star, StarHalf, ThumbsUp, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ReviewForm } from "@/components/product/review-form";
 
+interface ReviewWithUserAndProduct extends Review {
+  user?: User;
+  product?: Product;
+}
+
 interface ReviewCardProps {
-  review: Review;
+  review: ReviewWithUserAndProduct;
   productId: number;
 }
 
@@ -123,7 +128,7 @@ export function ReviewCard({ review, productId }: ReviewCardProps) {
       <p className="mt-2 text-gray-700 dark:text-gray-300">{review.comment}</p>
       <div className="flex justify-between items-center mt-4">
         <div className="text-sm text-gray-500">
-          By User #{review.userId}
+          By {review.user?.name || review.user?.username || `User #${review.userId}`}
         </div>
         <Button variant="ghost" size="sm">
           <ThumbsUp className="h-4 w-4 mr-1" />
