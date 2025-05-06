@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Store,
-  FolderClosed
+  FolderClosed,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -48,6 +49,12 @@ const navItems = [
     title: "Orders",
     href: "/admin/orders",
     icon: <ShoppingCart className="h-5 w-5" />,
+    roles: ["admin", "designer"],
+  },
+  {
+    title: "Reviews",
+    href: "/admin/reviews",
+    icon: <MessageSquare className="h-5 w-5" />,
     roles: ["admin", "designer"],
   },
   {

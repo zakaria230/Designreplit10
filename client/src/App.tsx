@@ -37,6 +37,7 @@ import AdminUsers from "@/pages/admin/users";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminSettings from "@/pages/admin/settings";
 import CategoryManagement from "@/pages/admin/category-management";
+import ReviewManagement from "@/pages/admin/review-management";
 import { ProtectedRoute } from "./lib/protected-route";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -106,6 +107,11 @@ function Router() {
         <ProtectedRoute 
           path="/admin/categories" 
           component={CategoryManagement} 
+          allowedRoles={["admin", "designer"]} 
+        />
+        <ProtectedRoute 
+          path="/admin/reviews" 
+          component={ReviewManagement} 
           allowedRoles={["admin", "designer"]} 
         />
         
