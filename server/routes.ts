@@ -2159,6 +2159,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Featured reviews for homepage - gets highest rated, most recent reviews with user info
+  app.get("/api/reviews/featured", async (req, res) => {
+    try {
+      // Get all reviews with user and product details
+      const featuredReviews = await db.query.reviews.findMany({
+        with: {
+          user: true,
+          product: true
+        },
+        orderBy: (reviews, { desc }) => [
+          desc(reviews.rating),
+          desc(reviews.createdAt)
+        ],
+        limit: 6 // Limit to top 6 reviews
+      });
+      
+      res.json(featuredReviews);
+    } catch (error) {
+      console.error("Error fetching featured reviews:", error);
+      res.status(500).json({ message: "Failed to fetch featured reviews" });
+    }
+  });
+  
   // Admin route to get all reviews with user and product details
   app.get("/api/admin/reviews", isAdmin, async (req, res) => {
     try {
