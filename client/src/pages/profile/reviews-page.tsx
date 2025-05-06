@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ProfileLayout } from "@/components/profile/profile-layout";
 import { Button } from "@/components/ui/button";
 import { Star, PencilIcon, Trash2Icon } from "lucide-react";
+import { Product } from "@/components/product/review-form";
 import {
   Card,
   CardContent,
@@ -70,17 +71,27 @@ export default function ReviewsPage() {
   // Fetch the user's reviews
   const { data: reviews, isLoading, error } = useQuery<ReviewWithProduct[]>({
     queryKey: ["/api/reviews/user"],
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to load your reviews",
-        variant: "destructive",
-      });
-    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Define interface for order items
+  interface OrderItem {
+    product?: Product;
+    quantity: number;
+    price: number;
+  }
+
+  // Define interface for orders
+  interface Order {
+    id: number;
+    orderCode: string;
+    status: string;
+    paymentStatus: string;
+    items?: OrderItem[];
+  }
+
   // Fetch user's purchases for products they can review
-  const { data: purchases } = useQuery({
+  const { data: purchases } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
     select: (data) => {
       if (!data) return [];

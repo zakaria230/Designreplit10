@@ -32,7 +32,7 @@ interface ReviewData {
 }
 
 // Product data from API
-interface Product {
+export interface Product {
   id: number;
   name: string;
   slug: string;
