@@ -96,8 +96,20 @@ export function ProductReviews({ productId, className }: ProductReviewsProps) {
   };
 
   // Get user initials for avatar
-  const getUserInitials = (username: string) => {
-    return username ? username.slice(0, 2).toUpperCase() : "U";
+  const getUserInitials = (review: ReviewWithUserAndProduct) => {
+    // Prefer real name if available
+    if (review.user?.name) {
+      const nameParts = review.user.name.split(' ');
+      if (nameParts.length > 1) {
+        // If there's a full name (first + last), use first letter of each
+        return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+      } else {
+        // Single name, use first two letters
+        return nameParts[0].slice(0, 2).toUpperCase();
+      }
+    }
+    // Fall back to username
+    return review.user?.username ? review.user.username.slice(0, 2).toUpperCase() : "U";
   };
 
   // Format date
@@ -169,7 +181,7 @@ export function ProductReviews({ productId, className }: ProductReviewsProps) {
               <div className="flex-1 space-y-1">
                 <div className="flex flex-wrap gap-2 items-center">
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.user?.username || "Anonymous"}
+                    {review.user?.name || review.user?.username || "Anonymous"}
                   </h3>
                   <div className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                     Verified Purchase

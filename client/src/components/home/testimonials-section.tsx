@@ -17,6 +17,7 @@ interface ReviewWithUserAndProduct {
     id: number;
     username: string;
     email?: string;
+    name?: string;
   };
   product?: {
     id: number;
@@ -99,8 +100,20 @@ export function TestimonialsSection() {
   };
 
   // Get user initials for avatar
-  const getUserInitials = (username: string) => {
-    return username ? username.slice(0, 2).toUpperCase() : "UK";
+  const getUserInitials = (review: ReviewWithUserAndProduct) => {
+    // Prefer real name if available
+    if (review.user?.name) {
+      const nameParts = review.user.name.split(' ');
+      if (nameParts.length > 1) {
+        // If there's a full name (first + last), use first letter of each
+        return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+      } else {
+        // Single name, use first two letters
+        return nameParts[0].slice(0, 2).toUpperCase();
+      }
+    }
+    // Fall back to username
+    return review.user?.username ? review.user.username.slice(0, 2).toUpperCase() : "UK";
   };
 
   // Display stars for rating
@@ -181,12 +194,12 @@ export function TestimonialsSection() {
                   <div className="flex items-center">
                     <Avatar className="h-10 w-10 border border-gray-200 dark:border-gray-700">
                       <AvatarFallback className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                        {getUserInitials(review.user?.username || "")}
+                        {getUserInitials(review)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        {review.user?.username || "Anonymous"}
+                        {review.user?.name || review.user?.username || "Anonymous"}
                       </h4>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Verified Customer
