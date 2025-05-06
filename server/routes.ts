@@ -2158,6 +2158,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
+  
+  // Admin route to get all reviews with user and product details
+  app.get("/api/admin/reviews", isAdmin, async (req, res) => {
+    try {
+      // Get all reviews
+      const allReviews = await db.query.reviews.findMany({
+        with: {
+          user: true,
+          product: true
+        },
+        orderBy: (reviews, { desc }) => [desc(reviews.createdAt)]
+      });
+      
+      res.json(allReviews);
+    } catch (error) {
+      console.error("Error fetching admin reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
 
   // Public payment settings for client - only shares necessary settings, not secrets
   app.get("/api/payment-settings", async (req, res) => {
