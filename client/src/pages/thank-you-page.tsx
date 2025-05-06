@@ -16,23 +16,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CheckCircle, 
-  ShoppingCart, 
-  User,
-  Loader2
-} from "lucide-react";
+import { CheckCircle, ShoppingCart, User, Loader2 } from "lucide-react";
 
 export default function ThankYouPage() {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
   const { clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Get the orderId from query params
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("orderId");
-  
+
   // Clear cart on component mount
   useEffect(() => {
     clearCart();
@@ -44,15 +39,15 @@ export default function ThankYouPage() {
       navigate("/");
     }
   }, [orderId, user, navigate]);
-  
+
   // Format price to display with 2 decimal places
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(price);
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -60,45 +55,56 @@ export default function ThankYouPage() {
       </div>
     );
   }
-  
+
   return (
     <>
       <Helmet>
         <title>Thank You for Your Order | DesignKorv</title>
       </Helmet>
-      
+
       <div className="container max-w-4xl mx-auto px-4 py-12">
         <Card className="border-primary/20">
           <CardHeader className="text-center pb-0">
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-primary" />
             </div>
-            <CardTitle className="text-3xl font-bold">Thank You for Your Purchase!</CardTitle>
+            <CardTitle className="text-3xl font-bold">
+              Thank You for Your Purchase!
+            </CardTitle>
             <CardDescription>
-              Your order #{orderId} has been successfully placed and is now being processed.
+              Your order #{orderId} has been successfully placed and is now
+              being processed.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="mt-8">
             <div className="bg-secondary/30 rounded-lg p-6 mb-8">
               <p className="text-center text-muted-foreground">
-                We've sent a confirmation email with your order details.
-                You can view your order history in your account dashboard.
+                We've sent a confirmation email with your order details. You can
+                view your order history in your account dashboard.
               </p>
             </div>
           </CardContent>
-          
+
           <Separator className="my-2" />
-          
+
           <CardFooter className="pt-6 flex flex-col sm:flex-row gap-4">
-            <Button asChild className="flex-1" variant="outline">
+            <Button
+              asChild
+              variant="outline"
+              className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+            >
               <Link to="/profile/downloads">
                 View Downloads
                 <User className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            
-            <Button asChild className="flex-1">
+
+            <Button
+              asChild
+              variant="outline"
+              className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+            >
               <Link to="/shop">
                 Continue Shopping
                 <ShoppingCart className="ml-2 h-4 w-4" />

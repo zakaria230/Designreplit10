@@ -20,9 +20,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, totalItems, totalPrice, isLoading, clearCart } = useCart();
 
   // Format total price to display with 2 decimal places
-  const formattedTotal = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedTotal = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(totalPrice);
 
   return (
@@ -34,7 +34,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             Your Cart ({totalItems})
           </SheetTitle>
         </SheetHeader>
-        
+
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -42,14 +42,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         ) : totalItems === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
             <ShoppingCart className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Your cart is empty</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Your cart is empty
+            </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
               Looks like you haven't added any items to your cart yet.
             </p>
-            <Button onClick={onClose} asChild>
-              <Link href="/shop">
-                Start Shopping
-              </Link>
+            <Button
+              onClick={onClose}
+              asChild
+              className="bg-white-500 text-primary-700  hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <Link href="/shop">Start Shopping</Link>
             </Button>
           </div>
         ) : (
@@ -61,7 +65,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 ))}
               </div>
             </div>
-            
+
             <div className="border-t border-gray-200 dark:border-gray-800 pt-4 pb-2">
               <div className="flex justify-between text-base font-medium text-gray-900 dark:text-white mb-1">
                 <span>Subtotal</span>
@@ -71,15 +75,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 Digital downloads only. No shipping fees.
               </p>
               <SheetFooter className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="sm:flex-1 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                   onClick={() => clearCart()}
                 >
                   Clear Cart
                 </Button>
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   className="sm:flex-1 text-white dark:text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
                 >
                   <Link href="/checkout" onClick={onClose}>

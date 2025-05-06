@@ -23,16 +23,18 @@ import { Helmet } from "react-helmet-async";
 import { Loader2, Eye, EyeOff, RefreshCcw } from "lucide-react";
 
 // Extended schema for registration with password confirmation
-const extendedRegisterSchema = registerSchema.extend({
-  confirmPassword: z.string(),
-  agreeToTerms: z.boolean().refine(val => val === true, {
-    message: "You must agree to the terms and conditions"
-  }),
-  captchaCode: z.string().min(1, "Please enter the verification code"),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
-});
+const extendedRegisterSchema = registerSchema
+  .extend({
+    confirmPassword: z.string(),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the terms and conditions",
+    }),
+    captchaCode: z.string().min(1, "Please enter the verification code"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type ExtendedRegisterData = z.infer<typeof extendedRegisterSchema>;
 
@@ -51,18 +53,21 @@ export default function AuthPage() {
     length: false,
   });
   const [captchaText, setCaptchaText] = useState("");
-  
+
   // Generate random captcha
   const generateCaptcha = useCallback(() => {
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let result = '';
+    const characters =
+      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let result = "";
     for (let i = 0; i < 6; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     setCaptchaText(result);
     return result;
   }, []);
-  
+
   // Initialize captcha on component mount
   useEffect(() => {
     generateCaptcha();
@@ -84,12 +89,12 @@ export default function AuthPage() {
       special: /[^A-Za-z0-9]/.test(password),
       length: password.length >= 8,
     };
-    
+
     setPasswordCriteria(criteria);
-    
+
     // Count how many criteria are met
     const criteriaCount = Object.values(criteria).filter(Boolean).length;
-    
+
     // Return percentage (0-100) based on criteria met
     return (criteriaCount / 5) * 100;
   };
@@ -139,10 +144,10 @@ export default function AuthPage() {
       captchaCode: "",
     },
   });
-  
+
   // Watch password field to update strength meter
   const password = registerForm.watch("password");
-  
+
   // Update password strength when password changes
   useEffect(() => {
     if (password) {
@@ -158,11 +163,11 @@ export default function AuthPage() {
     if (values.captchaCode !== captchaText) {
       registerForm.setError("captchaCode", {
         type: "manual",
-        message: "Verification code doesn't match"
+        message: "Verification code doesn't match",
       });
       return;
     }
-    
+
     // Remove extra fields not in the API schema
     const { confirmPassword, agreeToTerms, captchaCode, ...apiData } = values;
     registerMutation.mutate(apiData);
@@ -180,7 +185,10 @@ export default function AuthPage() {
     <>
       <Helmet>
         <title>Sign In or Register | DesignKorv</title>
-        <meta name="description" content="Sign in to your DesignKorv account or create a new one to access premium digital fashion assets." />
+        <meta
+          name="description"
+          content="Sign in to your DesignKorv account or create a new one to access premium digital fashion assets."
+        />
       </Helmet>
 
       <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
@@ -199,7 +207,9 @@ export default function AuthPage() {
             <Tabs
               defaultValue="login"
               value={activeTab}
-              onValueChange={(value) => setActiveTab(value as "login" | "register")}
+              onValueChange={(value) =>
+                setActiveTab(value as "login" | "register")
+              }
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -210,7 +220,10 @@ export default function AuthPage() {
               {/* Login Form */}
               <TabsContent value="login">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={loginForm.control}
                       name="username"
@@ -218,7 +231,10 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Username</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your username" {...field} />
+                            <Input
+                              placeholder="Enter your username"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -232,10 +248,10 @@ export default function AuthPage() {
                           <FormLabel>Password</FormLabel>
                           <div className="relative">
                             <FormControl>
-                              <Input 
-                                type={showPassword ? "text" : "password"} 
-                                placeholder="Enter your password" 
-                                {...field} 
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                {...field}
                               />
                             </FormControl>
                             <button
@@ -243,24 +259,33 @@ export default function AuthPage() {
                               className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
                               onClick={() => setShowPassword(!showPassword)}
                             >
-                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              {showPassword ? (
+                                <EyeOff size={18} />
+                              ) : (
+                                <Eye size={18} />
+                              )}
                             </button>
                           </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="flex items-center justify-between text-sm mt-2">
                       <div className="flex items-center">
                         <Checkbox id="remember" className="mr-2" />
-                        <label htmlFor="remember" className="text-gray-600 dark:text-gray-400">
+                        <label
+                          htmlFor="remember"
+                          className="text-gray-600 dark:text-gray-400"
+                        >
                           Remember me
                         </label>
                       </div>
-                      <a href="#" className="text-primary hover:underline">Forgot password?</a>
+                      <a href="#" className="text-primary hover:underline">
+                        Forgot password?
+                      </a>
                     </div>
-                    
+
                     <Button
                       type="submit"
                       className="w-full mt-6"
@@ -293,7 +318,10 @@ export default function AuthPage() {
               {/* Register Form */}
               <TabsContent value="register">
                 <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={registerForm.control}
                       name="username"
@@ -307,7 +335,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="email"
@@ -315,16 +343,21 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="Enter your email" {...field} />
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              {...field}
+                            />
                           </FormControl>
                           <FormDescription className="text-xs">
-                            We only allow registration from trusted email domains.
+                            We only allow registration from trusted email
+                            domains.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="password"
@@ -333,10 +366,10 @@ export default function AuthPage() {
                           <FormLabel>Password</FormLabel>
                           <div className="relative">
                             <FormControl>
-                              <Input 
-                                type={showPassword ? "text" : "password"} 
-                                placeholder="Create a password" 
-                                {...field} 
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Create a password"
+                                {...field}
                               />
                             </FormControl>
                             <button
@@ -344,54 +377,77 @@ export default function AuthPage() {
                               className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
                               onClick={() => setShowPassword(!showPassword)}
                             >
-                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              {showPassword ? (
+                                <EyeOff size={18} />
+                              ) : (
+                                <Eye size={18} />
+                              )}
                             </button>
                           </div>
-                          
+
                           {/* Password strength meter */}
                           <div className="mt-2">
                             <div className="flex justify-between mb-1">
-                              <span className="text-xs">Password strength:</span>
-                              <span className={`text-xs font-medium ${
-                                passwordStrength <= 40 ? 'text-red-500' : 
-                                passwordStrength <= 60 ? 'text-yellow-500' : 
-                                'text-green-500'
-                              }`}>
+                              <span className="text-xs">
+                                Password strength:
+                              </span>
+                              <span
+                                className={`text-xs font-medium ${
+                                  passwordStrength <= 40
+                                    ? "text-red-500"
+                                    : passwordStrength <= 60
+                                      ? "text-yellow-500"
+                                      : "text-green-500"
+                                }`}
+                              >
                                 {getStrengthLabel(passwordStrength)}
                               </span>
                             </div>
-                            <Progress value={passwordStrength} className={`h-1.5 ${getStrengthColor(passwordStrength)}`} />
+                            <Progress
+                              value={passwordStrength}
+                              className={`h-1.5 ${getStrengthColor(passwordStrength)}`}
+                            />
                           </div>
-                          
+
                           {/* Password criteria */}
                           <div className="mt-2 grid grid-cols-2 gap-1">
-                            <div className={`text-xs ${passwordCriteria.uppercase ? 'text-green-500' : 'text-gray-500'}`}>
+                            <div
+                              className={`text-xs ${passwordCriteria.uppercase ? "text-green-500" : "text-gray-500"}`}
+                            >
                               <span className="inline-block w-3 h-3 mr-1 rounded-full bg-current"></span>
                               Uppercase letter
                             </div>
-                            <div className={`text-xs ${passwordCriteria.lowercase ? 'text-green-500' : 'text-gray-500'}`}>
+                            <div
+                              className={`text-xs ${passwordCriteria.lowercase ? "text-green-500" : "text-gray-500"}`}
+                            >
                               <span className="inline-block w-3 h-3 mr-1 rounded-full bg-current"></span>
                               Lowercase letter
                             </div>
-                            <div className={`text-xs ${passwordCriteria.number ? 'text-green-500' : 'text-gray-500'}`}>
+                            <div
+                              className={`text-xs ${passwordCriteria.number ? "text-green-500" : "text-gray-500"}`}
+                            >
                               <span className="inline-block w-3 h-3 mr-1 rounded-full bg-current"></span>
                               Number
                             </div>
-                            <div className={`text-xs ${passwordCriteria.special ? 'text-green-500' : 'text-gray-500'}`}>
+                            <div
+                              className={`text-xs ${passwordCriteria.special ? "text-green-500" : "text-gray-500"}`}
+                            >
                               <span className="inline-block w-3 h-3 mr-1 rounded-full bg-current"></span>
                               Special character
                             </div>
-                            <div className={`text-xs ${passwordCriteria.length ? 'text-green-500' : 'text-gray-500'}`}>
+                            <div
+                              className={`text-xs ${passwordCriteria.length ? "text-green-500" : "text-gray-500"}`}
+                            >
                               <span className="inline-block w-3 h-3 mr-1 rounded-full bg-current"></span>
                               At least 8 characters
                             </div>
                           </div>
-                          
+
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="confirmPassword"
@@ -400,44 +456,56 @@ export default function AuthPage() {
                           <FormLabel>Confirm Password</FormLabel>
                           <div className="relative">
                             <FormControl>
-                              <Input 
-                                type={showConfirmPassword ? "text" : "password"} 
-                                placeholder="Confirm your password" 
-                                {...field} 
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                {...field}
                               />
                             </FormControl>
                             <button
                               type="button"
                               className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                              }
                             >
-                              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              {showConfirmPassword ? (
+                                <EyeOff size={18} />
+                              ) : (
+                                <Eye size={18} />
+                              )}
                             </button>
                           </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="agreeToTerms"
                       render={({ field }) => (
                         <FormItem className="flex items-start space-x-2 space-y-0">
                           <FormControl>
-                            <Checkbox 
-                              checked={field.value} 
+                            <Checkbox
+                              checked={field.value}
                               onCheckedChange={field.onChange}
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-normal">
                               I agree to the{" "}
-                              <a href="#" className="text-primary underline hover:text-primary/80">
+                              <a
+                                href="#"
+                                className="text-primary underline hover:text-primary/80"
+                              >
                                 Terms & Conditions
                               </a>{" "}
                               and{" "}
-                              <a href="#" className="text-primary underline hover:text-primary/80">
+                              <a
+                                href="#"
+                                className="text-primary underline hover:text-primary/80"
+                              >
                                 Privacy Policy
                               </a>
                             </FormLabel>
@@ -446,7 +514,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     {/* CAPTCHA Security */}
                     <FormField
                       control={registerForm.control}
@@ -475,11 +543,13 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <Button
                       type="submit"
                       className="w-full mt-6"
-                      disabled={registerMutation.isPending || passwordStrength < 60}
+                      disabled={
+                        registerMutation.isPending || passwordStrength < 60
+                      }
                     >
                       {registerMutation.isPending ? (
                         <>
@@ -512,39 +582,87 @@ export default function AuthPage() {
         <div className="hidden md:block relative bg-blue-900">
           <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-700 opacity-90 dark:opacity-80"></div>
           <div
-            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay bg-[url('/fashion-rack.jpg')]"
+            className="absolute inset-0 w-full h-full object-cover  mix-blend-overlay bg-[url('/images/bg-auth.png')]"
             style={{
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           />
+          <div className="absolute inset-0 bg-black bg-opacity-10 dark:bg-opacity-70"></div>
           <div className="relative flex flex-col justify-center h-full p-12 text-white">
-            <h2 className="text-3xl font-bold mb-4">Premium Digital Fashion Assets</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Premium Digital Fashion Assets
+            </h2>
             <p className="text-lg mb-6">
-              Unlock exclusive access to high-quality fashion design files that will elevate your projects.
+              Unlock exclusive access to high-quality fashion design files that
+              will elevate your projects.
             </p>
             <ul className="space-y-3">
               <li className="flex items-center">
-                <svg className="h-5 w-5 mr-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-5 w-5 mr-2 text-green-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Access to premium design patterns
               </li>
               <li className="flex items-center">
-                <svg className="h-5 w-5 mr-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-5 w-5 mr-2 text-green-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Technical drawings for manufacturers
               </li>
               <li className="flex items-center">
-                <svg className="h-5 w-5 mr-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-5 w-5 mr-2 text-green-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 High-quality 3D models
               </li>
               <li className="flex items-center">
-                <svg className="h-5 w-5 mr-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-5 w-5 mr-2 text-green-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Exclusive textures and fabric patterns
               </li>
