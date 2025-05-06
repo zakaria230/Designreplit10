@@ -5,6 +5,12 @@ import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Review, User, Product } from "@shared/schema";
+
+interface ReviewWithUserAndProduct extends Review {
+  user?: User;
+  product?: Product;
+}
+
 import {
   Table,
   TableBody,
@@ -44,7 +50,7 @@ export default function ReviewManagement() {
   const { toast } = useToast();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedReview, setSelectedReview] = useState<any>(null);
+  const [selectedReview, setSelectedReview] = useState<ReviewWithUserAndProduct | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
@@ -53,7 +59,7 @@ export default function ReviewManagement() {
     data: reviews,
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<ReviewWithUserAndProduct[]>({
     queryKey: ["/api/admin/reviews"],
     select: (data) => {
       if (!data) return [];
@@ -61,7 +67,7 @@ export default function ReviewManagement() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return data.filter(
-          (review: any) =>
+          (review: ReviewWithUserAndProduct) =>
             review.product?.name?.toLowerCase().includes(query) ||
             review.user?.username?.toLowerCase().includes(query) ||
             review.title?.toLowerCase().includes(query) ||
@@ -107,8 +113,9 @@ export default function ReviewManagement() {
   };
 
   // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -367,7 +374,7 @@ export default function ReviewManagement() {
             <DialogFooter>
               <Button
                 variant="destructive"
-                onClick={() => handleDeleteReview(selectedReview?.id)}
+                onClick={() => selectedReview?.id && handleDeleteReview(selectedReview.id)}
                 disabled={deleteReviewMutation.isPending}
               >
                 {deleteReviewMutation.isPending && (

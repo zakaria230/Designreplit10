@@ -101,8 +101,9 @@ export function ProductReviews({ productId, className }: ProductReviewsProps) {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "MMM d, yyyy");
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return format(date, "MMM d, yyyy");
   };
 
   return (
