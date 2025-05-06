@@ -50,6 +50,7 @@ export default function DownloadsPage() {
             downloadableItems.push({
               id: `${order.id}-${item.id}`,
               orderId: order.id,
+              orderCode: order.orderCode,
               orderDate: order.createdAt,
               productId: item.productId,
               productName: item.product.name,
@@ -159,7 +160,7 @@ export default function DownloadsPage() {
                   
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Order #{item.orderId}
+                      #{item.orderCode || item.orderId}
                     </span>
                     <div className="flex space-x-2">
                       <Button 
@@ -219,7 +220,7 @@ export default function DownloadsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Receipt className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Order #{selectedOrder.id}</h3>
+                  <h3 className="font-medium">#{selectedOrder.orderCode || selectedOrder.id}</h3>
                 </div>
                 <div className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                   {selectedOrder.status}
