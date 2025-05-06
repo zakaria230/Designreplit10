@@ -159,18 +159,13 @@ export default function DownloadsPage() {
                   </div>
                   
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      #{item.orderCode || item.orderId}
+                    <span 
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary cursor-pointer"
+                      onClick={() => handleViewOrder(item.orderId)}
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1 inline" /> View order details
                     </span>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewOrder(item.orderId)}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View Order</span>
-                      </Button>
+                    <div>
                       <Button 
                         size="sm"
                         onClick={() => {
