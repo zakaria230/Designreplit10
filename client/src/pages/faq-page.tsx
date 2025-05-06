@@ -19,24 +19,28 @@ const faqCategories = [
       {
         id: 101,
         question: "How do I create an account?",
-        answer: "To create an account, click on the 'Sign In' button in the top-right corner of the page, then click 'Register'. Fill in your details and follow the prompts to complete registration."
+        answer:
+          "To create an account, click on the 'Sign In' button in the top-right corner of the page, then click 'Register'. Fill in your details and follow the prompts to complete registration.",
       },
       {
         id: 102,
         question: "Can I use DesignKorv without creating an account?",
-        answer: "You can browse our collection without an account, but you'll need to register to purchase and download digital assets."
+        answer:
+          "You can browse our collection without an account, but you'll need to register to purchase and download digital assets.",
       },
       {
         id: 103,
         question: "I forgot my password. How do I reset it?",
-        answer: "Click on 'Sign In', then 'Forgot Password'. Enter your email address and follow the instructions sent to your inbox to reset your password."
+        answer:
+          "Click on 'Sign In', then 'Forgot Password'. Enter your email address and follow the instructions sent to your inbox to reset your password.",
       },
       {
         id: 104,
         question: "How do I change my account details?",
-        answer: "Once logged in, navigate to your account settings by clicking on your profile icon in the top-right corner. From there, you can update your personal information, email, and password."
-      }
-    ]
+        answer:
+          "Once logged in, navigate to your account settings by clicking on your profile icon in the top-right corner. From there, you can update your personal information, email, and password.",
+      },
+    ],
   },
   {
     id: 2,
@@ -45,24 +49,29 @@ const faqCategories = [
       {
         id: 201,
         question: "What payment methods do you accept?",
-        answer: "We accept all major credit cards (Visa, Mastercard, American Express), PayPal, and bank transfers for larger purchases."
+        answer:
+          "We accept all major credit cards (Visa, Mastercard, American Express), PayPal, and bank transfers for larger purchases.",
       },
       {
         id: 202,
         question: "How do I download my purchased files?",
-        answer: "After purchase, you can download your files from your account dashboard under 'My Purchases'. Each item will have a download button next to it."
+        answer:
+          "After purchase, you can download your files from your account dashboard under 'My Purchases'. Each item will have a download button next to it.",
       },
       {
         id: 203,
-        question: "Is there a limit to how many times I can download my purchases?",
-        answer: "You can download your purchased files up to 5 times. If you need additional downloads, please contact our support team."
+        question:
+          "Is there a limit to how many times I can download my purchases?",
+        answer:
+          "You can download your purchased files up to 5 times. If you need additional downloads, please contact our support team.",
       },
       {
         id: 204,
         question: "Can I get a refund if I'm not satisfied?",
-        answer: "Due to the digital nature of our products, we generally don't offer refunds. However, if there are technical issues with your files, please contact our support team within 14 days of purchase."
-      }
-    ]
+        answer:
+          "Due to the digital nature of our products, we generally don't offer refunds. However, if there are technical issues with your files, please contact our support team within 14 days of purchase.",
+      },
+    ],
   },
   {
     id: 3,
@@ -71,24 +80,28 @@ const faqCategories = [
       {
         id: 301,
         question: "What can I do with the digital assets I purchase?",
-        answer: "Our standard license allows you to use the assets in personal and commercial design projects. However, you cannot redistribute or resell the assets as-is."
+        answer:
+          "Our standard license allows you to use the assets in personal and commercial design projects. However, you cannot redistribute or resell the assets as-is.",
       },
       {
         id: 302,
         question: "Do I need to credit DesignKorv when using the assets?",
-        answer: "Attribution is not required under our standard license, but it's always appreciated."
+        answer:
+          "Attribution is not required under our standard license, but it's always appreciated.",
       },
       {
         id: 303,
         question: "Can I use the assets in multiple projects?",
-        answer: "Yes, once purchased, you can use the assets in multiple projects under the same license terms."
+        answer:
+          "Yes, once purchased, you can use the assets in multiple projects under the same license terms.",
       },
       {
         id: 304,
         question: "Do you offer extended licenses for larger projects?",
-        answer: "Yes, we offer extended licenses for specific use cases like mass production or distribution. Please contact our sales team for more information."
-      }
-    ]
+        answer:
+          "Yes, we offer extended licenses for specific use cases like mass production or distribution. Please contact our sales team for more information.",
+      },
+    ],
   },
   {
     id: 4,
@@ -97,25 +110,29 @@ const faqCategories = [
       {
         id: 401,
         question: "What file formats do you provide?",
-        answer: "Most of our assets are available in multiple formats, including AI, EPS, PDF, and PSD. The specific formats available are listed on each product page."
+        answer:
+          "Most of our assets are available in multiple formats, including AI, EPS, PDF, and PSD. The specific formats available are listed on each product page.",
       },
       {
         id: 402,
         question: "I'm having trouble opening the files. What should I do?",
-        answer: "Make sure you have the appropriate software installed (e.g., Adobe Illustrator for AI files). If you're still having issues, contact our support team with details about the error you're experiencing."
+        answer:
+          "Make sure you have the appropriate software installed (e.g., Adobe Illustrator for AI files). If you're still having issues, contact our support team with details about the error you're experiencing.",
       },
       {
         id: 403,
         question: "Are your files compatible with both Mac and PC?",
-        answer: "Yes, all our digital assets are compatible with both Mac and PC operating systems, provided you have the appropriate software to open them."
+        answer:
+          "Yes, all our digital assets are compatible with both Mac and PC operating systems, provided you have the appropriate software to open them.",
       },
       {
         id: 404,
         question: "How large are the download files?",
-        answer: "File sizes vary depending on the asset. The approximate download size is listed on each product page. Most files range from 5MB to 50MB."
-      }
-    ]
-  }
+        answer:
+          "File sizes vary depending on the asset. The approximate download size is listed on each product page. Most files range from 5MB to 50MB.",
+      },
+    ],
+  },
 ];
 
 export default function FAQPage() {
@@ -123,7 +140,10 @@ export default function FAQPage() {
     <>
       <Helmet>
         <title>Frequently Asked Questions | DesignKorv</title>
-        <meta name="description" content="Find answers to commonly asked questions about DesignKorv's digital fashion assets, purchasing, licensing, and more." />
+        <meta
+          name="description"
+          content="Find answers to commonly asked questions about DesignKorv's digital fashion assets, purchasing, licensing, and more."
+        />
       </Helmet>
 
       {/* Hero Section */}
@@ -136,15 +156,15 @@ export default function FAQPage() {
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
               Find quick answers to common questions about DesignKorv
             </p>
-            
+
             <div className="relative max-w-2xl mx-auto">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
-              <Input 
-                type="text" 
-                placeholder="Search for answers..." 
-                className="pl-10 py-6 text-lg rounded-lg" 
+              <Input
+                type="text"
+                placeholder="Search for answers..."
+                className="pl-10 py-6 text-lg rounded-lg"
               />
             </div>
           </div>
@@ -162,9 +182,9 @@ export default function FAQPage() {
                   Categories
                 </h2>
                 <nav className="space-y-1">
-                  {faqCategories.map(category => (
-                    <a 
-                      key={category.id} 
+                  {faqCategories.map((category) => (
+                    <a
+                      key={category.id}
                       href={`#category-${category.id}`}
                       className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
@@ -174,20 +194,20 @@ export default function FAQPage() {
                 </nav>
               </div>
             </div>
-            
+
             {/* FAQs */}
             <div className="lg:col-span-3">
               <div className="space-y-12">
-                {faqCategories.map(category => (
+                {faqCategories.map((category) => (
                   <div key={category.id} id={`category-${category.id}`}>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
                       {category.title}
                     </h2>
-                    
+
                     <Accordion type="single" collapsible className="space-y-4">
-                      {category.faqs.map(faq => (
-                        <AccordionItem 
-                          key={faq.id} 
+                      {category.faqs.map((faq) => (
+                        <AccordionItem
+                          key={faq.id}
                           value={`faq-${faq.id}`}
                           className="border border-gray-200 dark:border-gray-700 rounded-lg"
                         >
@@ -216,18 +236,23 @@ export default function FAQPage() {
               Still Have Questions?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-              If you couldn't find the answer you were looking for, please contact our support team.
+              If you couldn't find the answer you were looking for, please
+              contact our support team.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild>
-                <Link href="/contact">
-                  Contact Us
-                </Link>
+              <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+                asChild
+              >
+                <Link href="/contact">Contact Us</Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link href="/help">
-                  Help Center
-                </Link>
+              <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+                asChild
+              >
+                <Link href="/help">Help Center</Link>
               </Button>
             </div>
           </div>

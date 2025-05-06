@@ -77,6 +77,7 @@ export default function PurchasesPage() {
             const purchaseRecord = {
               id: `${order.id}-${item.id}`,
               orderId: order.id,
+              orderCode: order.orderCode,
               orderDate: order.createdAt,
               productId: item.productId,
               productName: item.product.name,
@@ -93,7 +94,7 @@ export default function PurchasesPage() {
             if (
               searchTerm === "" || 
               purchaseRecord.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              String(purchaseRecord.orderId).includes(searchTerm)
+              purchaseRecord.orderCode.toLowerCase().includes(searchTerm.toLowerCase())
             ) {
               purchasedItems.push(purchaseRecord);
             }
@@ -163,7 +164,7 @@ export default function PurchasesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
             <Input
-              placeholder="Search purchases by product name or order ID..."
+              placeholder="Search purchases by product name or order code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -227,7 +228,7 @@ export default function PurchasesPage() {
                     </span>
                     <span className="flex items-center">
                       <Receipt className="h-3.5 w-3.5 mr-1" />
-                      Order #{item.orderId}
+                      #{item.orderCode}
                     </span>
                     <span className="flex items-center">
                       <CreditCard className="h-3.5 w-3.5 mr-1" />

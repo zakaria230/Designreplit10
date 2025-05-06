@@ -1,8 +1,14 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
-import { 
-  Briefcase, MapPin, Clock, ChevronRight, 
-  Building, Users, Heart, TrendingUp 
+import {
+  Briefcase,
+  MapPin,
+  Clock,
+  ChevronRight,
+  Building,
+  Users,
+  Heart,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,8 +21,9 @@ const jobListings = [
     department: "Design",
     location: "Stockholm, Sweden",
     type: "Full-time",
-    description: "We're looking for an experienced Fashion Designer to join our team and help create cutting-edge digital fashion assets.",
-    slug: "senior-fashion-designer"
+    description:
+      "We're looking for an experienced Fashion Designer to join our team and help create cutting-edge digital fashion assets.",
+    slug: "senior-fashion-designer",
   },
   {
     id: 2,
@@ -24,8 +31,9 @@ const jobListings = [
     department: "Design",
     location: "Remote",
     type: "Full-time",
-    description: "Create precise digital patterns for our premium collection of fashion design assets.",
-    slug: "digital-pattern-maker"
+    description:
+      "Create precise digital patterns for our premium collection of fashion design assets.",
+    slug: "digital-pattern-maker",
   },
   {
     id: 3,
@@ -33,8 +41,9 @@ const jobListings = [
     department: "Technology",
     location: "Berlin, Germany",
     type: "Full-time",
-    description: "Use your 3D modeling expertise to create realistic digital fashion assets for designers worldwide.",
-    slug: "3d-fashion-specialist"
+    description:
+      "Use your 3D modeling expertise to create realistic digital fashion assets for designers worldwide.",
+    slug: "3d-fashion-specialist",
   },
   {
     id: 4,
@@ -42,8 +51,9 @@ const jobListings = [
     department: "Technology",
     location: "Remote",
     type: "Full-time",
-    description: "Help build and enhance our e-commerce platform with cutting-edge web technologies.",
-    slug: "frontend-developer"
+    description:
+      "Help build and enhance our e-commerce platform with cutting-edge web technologies.",
+    slug: "frontend-developer",
   },
   {
     id: 5,
@@ -51,8 +61,9 @@ const jobListings = [
     department: "Marketing",
     location: "Stockholm, Sweden",
     type: "Full-time",
-    description: "Develop and execute digital marketing strategies to grow our user base and increase sales.",
-    slug: "digital-marketing-specialist"
+    description:
+      "Develop and execute digital marketing strategies to grow our user base and increase sales.",
+    slug: "digital-marketing-specialist",
   },
   {
     id: 6,
@@ -60,20 +71,26 @@ const jobListings = [
     department: "Marketing",
     location: "Remote",
     type: "Part-time",
-    description: "Create engaging content about fashion design, trends, and digital tools for our blog and social media channels.",
-    slug: "fashion-content-writer"
-  }
+    description:
+      "Create engaging content about fashion design, trends, and digital tools for our blog and social media channels.",
+    slug: "fashion-content-writer",
+  },
 ];
 
 // Grouped by department
-const departments = Array.from(new Set(jobListings.map(job => job.department)));
+const departments = Array.from(
+  new Set(jobListings.map((job) => job.department)),
+);
 
 export default function CareersPage() {
   return (
     <>
       <Helmet>
         <title>Careers | DesignKorv</title>
-        <meta name="description" content="Explore career opportunities at DesignKorv and join our team of fashion design innovators." />
+        <meta
+          name="description"
+          content="Explore career opportunities at DesignKorv and join our team of fashion design innovators."
+        />
       </Helmet>
 
       {/* Hero Section */}
@@ -86,10 +103,13 @@ export default function CareersPage() {
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
               Be part of the revolution in digital fashion design at DesignKorv
             </p>
-            <Button size="lg" asChild>
-              <Link href="#open-positions">
-                View Open Positions
-              </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+              asChild
+            >
+              <Link href="#open-positions">View Open Positions</Link>
             </Button>
           </div>
         </div>
@@ -103,48 +123,61 @@ export default function CareersPage() {
               Why Work With Us
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              At DesignKorv, we're building the future of fashion design together
+              At DesignKorv, we're building the future of fashion design
+              together
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mb-4">
                 <TrendingUp className="text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Innovative Environment</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Innovative Environment
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Work at the cutting edge of fashion technology, exploring new possibilities in digital design.
+                Work at the cutting edge of fashion technology, exploring new
+                possibilities in digital design.
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mb-4">
                 <Users className="text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Collaborative Culture</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Collaborative Culture
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Join a diverse team of designers, developers, and industry experts who inspire each other daily.
+                Join a diverse team of designers, developers, and industry
+                experts who inspire each other daily.
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mb-4">
                 <Building className="text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Growth Opportunities</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Growth Opportunities
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Develop your skills and advance your career in a supportive environment that values continuous learning.
+                Develop your skills and advance your career in a supportive
+                environment that values continuous learning.
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mb-4">
                 <Heart className="text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Work-Life Balance</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Work-Life Balance
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Enjoy flexible work arrangements, competitive benefits, and a culture that respects your life outside of work.
+                Enjoy flexible work arrangements, competitive benefits, and a
+                culture that respects your life outside of work.
               </p>
             </div>
           </div>
@@ -152,7 +185,10 @@ export default function CareersPage() {
       </section>
 
       {/* Open Positions */}
-      <section id="open-positions" className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+      <section
+        id="open-positions"
+        className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -162,23 +198,30 @@ export default function CareersPage() {
               Find your perfect role at DesignKorv
             </p>
           </div>
-          
+
           <Tabs defaultValue={departments[0]}>
             <TabsList className="w-full flex justify-start mb-8 overflow-x-auto">
-              {departments.map(department => (
-                <TabsTrigger key={department} value={department} className="px-6">
+              {departments.map((department) => (
+                <TabsTrigger
+                  key={department}
+                  value={department}
+                  className="px-6"
+                >
                   {department}
                 </TabsTrigger>
               ))}
             </TabsList>
-            
-            {departments.map(department => (
+
+            {departments.map((department) => (
               <TabsContent key={department} value={department}>
                 <div className="grid grid-cols-1 gap-4">
                   {jobListings
-                    .filter(job => job.department === department)
-                    .map(job => (
-                      <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow hover:shadow-md transition-shadow">
+                    .filter((job) => job.department === department)
+                    .map((job) => (
+                      <div
+                        key={job.id}
+                        className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow hover:shadow-md transition-shadow"
+                      >
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                           <div>
                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -202,9 +245,14 @@ export default function CareersPage() {
                               {job.description}
                             </p>
                           </div>
-                          <Button className="mt-4 md:mt-0 md:ml-4 whitespace-nowrap" asChild>
+                          <Button
+                            variant="outline"
+                            className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+                            asChild
+                          >
                             <Link href={`/careers/${job.slug}`}>
-                              Apply Now <ChevronRight className="ml-1 h-4 w-4" />
+                              Apply Now{" "}
+                              <ChevronRight className="ml-1 h-4 w-4" />
                             </Link>
                           </Button>
                         </div>
@@ -222,16 +270,21 @@ export default function CareersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-primary-600 dark:bg-primary-700 rounded-2xl overflow-hidden shadow-xl">
             <div className="px-6 py-12 md:p-12 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Don't see the right position?
               </h2>
-              <p className="text-white/90 max-w-3xl mx-auto mb-8">
-                We're always looking for talented individuals to join our team. Send us your resume and let us know how you can contribute to DesignKorv.
+              <p className="max-w-1xl mx-auto text-gray-500 dark:text-gray-400 text-lg">
+                We're always looking for talented individuals to join our team.
+                Send us your resume and let us know how you can contribute to
+                DesignKorv.
               </p>
-              <Button size="lg" variant="secondary" className="bg-white text-primary-600 hover:bg-gray-50" asChild>
-                <Link href="/contact">
-                  Contact Us
-                </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
+                asChild
+              >
+                <Link href="/contact">Contact Us</Link>
               </Button>
             </div>
           </div>

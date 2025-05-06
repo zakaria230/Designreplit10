@@ -1,10 +1,5 @@
 import { Link } from "wouter";
-import { 
-  Instagram, 
-  Twitter, 
-  Facebook, 
-  Linkedin 
-} from "lucide-react";
+import { Instagram, Twitter, Facebook, Linkedin } from "lucide-react";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Footer() {
@@ -15,10 +10,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {settings?.siteName || 'DesignKorv'}
+              {settings?.siteName || "DesignKorv"}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {settings?.siteDescription || 'Premium digital fashion assets for professional designers.'}
+              {settings?.siteDescription ||
+                "Premium digital fashion assets for professional designers."}
             </p>
             <div className="flex space-x-4">
               <a
@@ -51,120 +47,163 @@ export function Footer() {
               </a>
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">
               Shop
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/shop" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/shop"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   All Products
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/categories"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Categories
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/patterns" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-                  Patterns
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/templates" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-                  Templates
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/textures" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-                  Textures
                 </Link>
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">
               Company
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/about"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/blog"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/careers"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/contact"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Contact Us
                 </Link>
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">
               Support
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/help" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/help"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/faq"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   FAQs
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/terms"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                <Link
+                  href="/privacy"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                >
                   Privacy Policy
                 </Link>
               </li>
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p 
+          <p
             className="text-gray-500 dark:text-gray-400 text-sm"
-            dangerouslySetInnerHTML={{ 
-              __html: settings?.footerText || `&copy; ${new Date().getFullYear()} DesignKorv. All rights reserved.` 
+            dangerouslySetInnerHTML={{
+              __html:
+                settings?.footerText ||
+                `&copy; ${new Date().getFullYear()} DesignKorv. All rights reserved.`,
             }}
           ></p>
           <div className="flex items-center mt-4 md:mt-0 space-x-4">
             <svg className="h-8 w-auto" viewBox="0 0 36 24" aria-label="Visa">
-              <rect width="36" height="24" fill="#F3F4F6" rx="4"/>
-              <path fill="#172B85" d="M15.4 14.792l1.014-6.56h1.621l-1.014 6.56H15.4z"/>
-              <path fill="#172B85" d="M21.522 8.44c-.322-.133-.83-.28-1.46-.28-1.61 0-2.747.896-2.758 2.182-.01.95.811 1.48 1.43 1.795.636.323.85.532.846.822-.005.443-.508.646-.978.646-.654 0-1-.1-1.535-.347l-.21-.105-.229 1.479c.38.184 1.085.344 1.815.352 1.714 0 2.83-.885 2.842-2.256.007-.752-.429-1.322-1.37-1.792-.569-.304-.919-.506-.915-.815.003-.273.293-.565.928-.565.53-.01.912.118 1.21.251l.145.076.219-1.442M25.81 8.232h-1.251c-.388 0-.677.116-.849.542L21.255 14.8h1.714s.288-.84.353-1.024l2.146.003c.05.238.204 1.021.204 1.021h1.513l-1.374-6.568zm-2.074 4.403c.139-.39.666-1.894.666-1.894-.1.017.137-.392.222-.647l.113.586.388 1.955h-1.389zM13.845 8.232l-1.597 4.49-.17-.914-.511-2.682s-.155-.601-.563-.788c-.408-.187-1.074-.36-1.074-.36l.024-.155h2.575c.329.015.592.346.673.68l.643 3.29zm-3.28 6.56v-.01h.009c.008.01 0 .01-.01.01z"/>
+              <rect width="36" height="24" fill="#F3F4F6" rx="4" />
+              <path
+                fill="#006cb4"
+                d="M790.67,4.15l-1.81-.62c-27.16,3.76-70.33-11.47-85.13,19.11l-102.87,245.81h71.9l15.02-39.49,86.36-.13,8.29,39.62h63.37L790.67,4.15ZM706.88,174.67l36.55-98.04,19.5,98.04h-56.05Z"
+              />
+              <path
+                fill="#006cb4"
+                d="M616.09,10.26l-9.76,57.24c-10.57-5.37-22.24-8.96-33.99-10.78-15.39-2.39-51.46-4.14-60.33,11.82-8.52,15.33,7.64,25.16,18.97,31.96,30.73,18.45,71.6,33.43,74.74,75.72,7.09,95.6-130.06,114.17-195.32,81.92l9.49-59.09c.74-.78,4.58,2.53,5.68,3.15,23.33,13.03,83.48,24.54,103.36,2.62,14.6-16.1-3.12-31.11-16.25-39.14-38.57-23.6-80.87-34.87-73.22-91.67,10.26-76.24,118.87-85.52,176.61-63.72Z"
+              />
+              <path
+                fill="#006cb4"
+                d="M166.42,143.01c4.31,12.21,4.87,28.02,8.35,40.69.17.63-.11,1.51.78,1.32L240.75,3.56h73.73l-109.97,264.89-70.91-.09L73.8,38.88c.59,0,1.18,0,1.75.11,4.89.86,21.69,14.29,26.68,18.31,18.8,15.16,36.08,33.07,49.27,53.36,6.52,10.03,12.41,20.55,14.91,32.35Z"
+              />
             </svg>
-            <svg className="h-8 w-auto" viewBox="0 0 36 24" aria-label="Mastercard">
-              <rect width="36" height="24" fill="#F3F4F6" rx="4"/>
-              <path fill="#FF5F00" d="M21.17 7.913h-6.34v8.174h6.34V7.913z"/>
-              <path d="M15.237 12c-.008-3.178 1.419-5.99 3.663-7.913a8.546 8.546 0 00-5.3-1.827C8.694 2.26 5 5.945 5 10.494c0 4.55 3.693 8.235 8.599 8.235 1.914 0 3.705-.68 5.3-1.827-2.236-1.915-3.663-4.73-3.663-7.912v3.01z" fill="#EB001B"/>
-              <path d="M31 12c0 4.55-3.693 8.235-8.6 8.235a8.473 8.473 0 01-5.3-1.827c2.244-1.923 3.671-4.735 3.671-7.913s-1.427-5.99-3.67-7.913a8.473 8.473 0 015.299-1.827C27.307 2.26 31 5.944 31 10.494V12z" fill="#F79E1B"/>
+            <svg
+              className="h-8 w-auto"
+              viewBox="0 0 36 24"
+              aria-label="Mastercard"
+            >
+              <rect width="36" height="24" fill="#F3F4F6" rx="4" />
+              <path fill="#FF5F00" d="M21.17 7.913h-6.34v8.174h6.34V7.913z" />
+              <path
+                d="M15.237 12c-.008-3.178 1.419-5.99 3.663-7.913a8.546 8.546 0 00-5.3-1.827C8.694 2.26 5 5.945 5 10.494c0 4.55 3.693 8.235 8.599 8.235 1.914 0 3.705-.68 5.3-1.827-2.236-1.915-3.663-4.73-3.663-7.912v3.01z"
+                fill="#EB001B"
+              />
+              <path
+                d="M31 12c0 4.55-3.693 8.235-8.6 8.235a8.473 8.473 0 01-5.3-1.827c2.244-1.923 3.671-4.735 3.671-7.913s-1.427-5.99-3.67-7.913a8.473 8.473 0 015.299-1.827C27.307 2.26 31 5.944 31 10.494V12z"
+                fill="#F79E1B"
+              />
             </svg>
             <svg className="h-8 w-auto" viewBox="0 0 36 24" aria-label="PayPal">
-              <rect width="36" height="24" fill="#F3F4F6" rx="4"/>
-              <path d="M25.491 9.934c0 1.777-1.385 3.29-3.789 3.29h-2.168c-.2 0-.38.163-.423.391l-.41 2.935a.34.34 0 01-.334.301h-1.797a.289.289 0 01-.256-.36l1.334-9.534a.456.456 0 01.45-.392h3.604c2.403 0 3.789 1.511 3.789 3.369zm-3.687-1.418h-1.65c-.157 0-.268.13-.291.314l-.536 3.778c.011.097.089.173.183.173h1.452c1.212 0 2.004-.522 2.004-1.706.003-1.022-.672-1.559-1.163-1.559z" fill="#253B80"/>
-              <path d="M11.475 9.934c0 1.777 1.385 3.29 3.788 3.29h2.169c.2 0 .38.163.423.391l.41 2.935a.34.34 0 0 0 .333.301h1.797a.289.289 0 0 0 .257-.36l-1.334-9.534a.456.456 0 0 0-.45-.392h-3.605c-2.403 0-3.788 1.511-3.788 3.369zm3.686-1.418h1.651c.156 0 .267.13.29.314l.536 3.778a.199.199 0 0 1-.182.173h-1.452c-1.213 0-2.005-.522-2.005-1.706-.001-1.022.673-1.559 1.163-1.559z" fill="#179BD7"/>
+              <rect width="36" height="24" fill="#F3F4F6" rx="4" />
+              <path
+                d="M25.491 9.934c0 1.777-1.385 3.29-3.789 3.29h-2.168c-.2 0-.38.163-.423.391l-.41 2.935a.34.34 0 01-.334.301h-1.797a.289.289 0 01-.256-.36l1.334-9.534a.456.456 0 01.45-.392h3.604c2.403 0 3.789 1.511 3.789 3.369zm-3.687-1.418h-1.65c-.157 0-.268.13-.291.314l-.536 3.778c.011.097.089.173.183.173h1.452c1.212 0 2.004-.522 2.004-1.706.003-1.022-.672-1.559-1.163-1.559z"
+                fill="#253B80"
+              />
+              <path
+                d="M11.475 9.934c0 1.777 1.385 3.29 3.788 3.29h2.169c.2 0 .38.163.423.391l.41 2.935a.34.34 0 0 0 .333.301h1.797a.289.289 0 0 0 .257-.36l-1.334-9.534a.456.456 0 0 0-.45-.392h-3.605c-2.403 0-3.788 1.511-3.788 3.369zm3.686-1.418h1.651c.156 0 .267.13.29.314l.536 3.778a.199.199 0 0 1-.182.173h-1.452c-1.213 0-2.005-.522-2.005-1.706-.001-1.022.673-1.559 1.163-1.559z"
+                fill="#179BD7"
+              />
             </svg>
           </div>
         </div>
