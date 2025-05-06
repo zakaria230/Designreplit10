@@ -158,30 +158,32 @@ export default function DownloadsPage() {
                     <span>Purchased on {formatDate(item.orderDate)}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span 
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary cursor-pointer"
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
                       onClick={() => handleViewOrder(item.orderId)}
+                      className="flex-1"
                     >
-                      <Eye className="h-3.5 w-3.5 mr-1 inline" /> View order details
-                    </span>
-                    <div>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          const fileName = item.downloadUrl.split('/').pop();
-                          if (!fileName) {
-                            console.error("Invalid download URL:", item.downloadUrl);
-                            return;
-                          }
-                          const downloadUrl = `/api/downloads/${fileName}`;
-                          window.open(downloadUrl, '_blank');
-                        }}
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download
-                      </Button>
-                    </div>
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        const fileName = item.downloadUrl.split('/').pop();
+                        if (!fileName) {
+                          console.error("Invalid download URL:", item.downloadUrl);
+                          return;
+                        }
+                        const downloadUrl = `/api/downloads/${fileName}`;
+                        window.open(downloadUrl, '_blank');
+                      }}
+                      className="flex-1"
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Download
+                    </Button>
                   </div>
                 </div>
               </div>
