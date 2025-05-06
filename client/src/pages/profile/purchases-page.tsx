@@ -94,7 +94,7 @@ export default function PurchasesPage() {
             if (
               searchTerm === "" || 
               purchaseRecord.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              purchaseRecord.orderCode.toLowerCase().includes(searchTerm.toLowerCase())
+              (purchaseRecord.orderCode && purchaseRecord.orderCode.toLowerCase().includes(searchTerm.toLowerCase()))
             ) {
               purchasedItems.push(purchaseRecord);
             }
@@ -228,7 +228,7 @@ export default function PurchasesPage() {
                     </span>
                     <span className="flex items-center">
                       <Receipt className="h-3.5 w-3.5 mr-1" />
-                      #{item.orderCode}
+                      #{item.orderCode || item.orderId}
                     </span>
                     <span className="flex items-center">
                       <CreditCard className="h-3.5 w-3.5 mr-1" />
