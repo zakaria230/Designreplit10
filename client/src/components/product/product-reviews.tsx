@@ -174,7 +174,7 @@ export function ProductReviews({ productId, className }: ProductReviewsProps) {
             <div className="flex items-start gap-4">
               <Avatar className="h-10 w-10 border border-gray-200 dark:border-gray-800">
                 <AvatarFallback className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                  {getUserInitials(review.user?.username || "")}
+                  {getUserInitials(review)}
                 </AvatarFallback>
               </Avatar>
               

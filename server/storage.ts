@@ -451,20 +451,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Review methods
-  async getReviewsByProduct(productId: number): Promise<Review[]> {
-    return db
-      .select()
-      .from(reviews)
-      .where(eq(reviews.productId, productId))
-      .orderBy(desc(reviews.createdAt));
+  async getReviewsByProduct(productId: number): Promise<any[]> {
+    return db.query.reviews.findMany({
+      where: eq(reviews.productId, productId),
+      with: {
+        user: true,
+        product: true
+      },
+      orderBy: (reviews, { desc }) => [desc(reviews.createdAt)]
+    });
   }
 
-  async getReviewsByUser(userId: number): Promise<Review[]> {
-    return db
-      .select()
-      .from(reviews)
-      .where(eq(reviews.userId, userId))
-      .orderBy(desc(reviews.createdAt));
+  async getReviewsByUser(userId: number): Promise<any[]> {
+    return db.query.reviews.findMany({
+      where: eq(reviews.userId, userId),
+      with: {
+        user: true,
+        product: true
+      },
+      orderBy: (reviews, { desc }) => [desc(reviews.createdAt)]
+    });
   }
 
   async getReviewById(id: number): Promise<Review | undefined> {
