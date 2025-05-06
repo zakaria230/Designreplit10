@@ -4,6 +4,7 @@ import { queryClient } from "@/lib/queryClient";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Review, User, Product } from "@shared/schema";
 import {
   Table,
   TableBody,
