@@ -279,7 +279,6 @@ export default function HelpCenterPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    variant="outline"
                     className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue dark:text-white dark:hover:bg-white/10"
                     asChild
                   >

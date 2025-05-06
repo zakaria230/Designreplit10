@@ -22,6 +22,7 @@ import { useState } from "react";
 
 type AdminLayoutProps = {
   children: ReactNode;
+  activeTab?: string;
 };
 
 const navItems = [
@@ -69,7 +70,7 @@ const navItems = [
   },
 ];
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
