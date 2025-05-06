@@ -1,62 +1,136 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
-interface ReviewFormProps {
+// Interface for review data
+interface ReviewData {
   productId: number;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  className?: string;
+  rating: number;
+  title: string;
+  comment: string;
 }
 
-export function ReviewForm({ productId, onSuccess, onCancel, className }: ReviewFormProps) {
-  const [rating, setRating] = useState<number>(0);
-  const [hoverRating, setHoverRating] = useState<number>(0);
-  const [title, setTitle] = useState<string>("");
-  const [comment, setComment] = useState<string>("");
+// Product data from API
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  images?: { url: string; isPrimary: boolean }[];
+}
+
+// Review form props
+interface ReviewFormProps {
+  products?: Product[];
+  productId?: number;
+  initialReview?: {
+    id: number;
+    productId: number;
+    rating: number;
+    title: string;
+    comment: string;
+    product?: {
+      id: number;
+      name: string;
+    };
+  };
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export function ReviewForm({ 
+  products, 
+  productId, 
+  initialReview, 
+  onSuccess, 
+  onCancel 
+}: ReviewFormProps) {
   const { toast } = useToast();
+  const [rating, setRating] = useState<number>(initialReview?.rating || 5);
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  
+  // Initialize form with default values or existing review data
+  const form = useForm<ReviewData>({
+    defaultValues: {
+      productId: initialReview?.productId || productId || (products?.length ? products[0].id : 0),
+      rating: initialReview?.rating || 5,
+      title: initialReview?.title || "",
+      comment: initialReview?.comment || "",
+    },
+  });
 
-  // Check if form is valid
-  const isFormValid = rating > 0 && title.trim().length >= 3;
-
-  // Create review mutation
-  const createReviewMutation = useMutation({
-    mutationFn: async () => {
-      const reviewData = {
-        productId,
-        rating,
-        title: title.trim(),
-        comment: comment.trim(),
-      };
-
-      const response = await apiRequest("POST", "/api/reviews", reviewData);
+  // Create or update review mutation
+  const mutation = useMutation({
+    mutationFn: async (data: ReviewData) => {
+      // Update rating from the star rating component
+      data.rating = rating;
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to submit review");
+      // For existing review, use PUT to update
+      if (initialReview) {
+        const response = await apiRequest(
+          "PUT", 
+          `/api/reviews/${initialReview.id}`,
+          data
+        );
+        
+        if (!response.ok) {
+          throw new Error("Failed to update review");
+        }
+        
+        return await response.json();
+      } 
+      // For new review, use POST to create
+      else {
+        const response = await apiRequest("POST", "/api/reviews", data);
+        
+        if (!response.ok) {
+          throw new Error("Failed to create review");
+        }
+        
+        return await response.json();
       }
-
-      return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Review submitted",
-        description: "Thank you for your feedback!",
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews/featured"] });
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/reviews/product/${form.getValues().productId}`] 
       });
       
-      // Reset form
-      setRating(0);
-      setTitle("");
-      setComment("");
+      // Display success message
+      toast({
+        title: initialReview ? "Review updated" : "Review submitted",
+        description: initialReview
+          ? "Your review has been successfully updated"
+          : "Thank you for your feedback!",
+      });
       
-      // Invalidate product reviews query to refresh the list
-      queryClient.invalidateQueries({ queryKey: [`/api/reviews/product/${productId}`] });
+      // Reset form for new reviews
+      if (!initialReview) {
+        form.reset();
+        setRating(5);
+      }
       
       // Call success callback if provided
       if (onSuccess) {
@@ -64,139 +138,198 @@ export function ReviewForm({ productId, onSuccess, onCancel, className }: Review
       }
     },
     onError: (error: Error) => {
-      // Show a specific message for "already reviewed" error
-      if (error.message.includes("already reviewed")) {
-        toast({
-          title: "Already reviewed",
-          description: "You have already submitted a review for this product.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to submit review",
-          variant: "destructive",
-        });
-      }
+      // Display error message
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit review",
+        variant: "destructive",
+      });
     },
   });
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
+  // Star rating renderer
+  const renderStars = () => {
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            className="focus:outline-none"
+            onClick={() => {
+              setRating(star);
+              form.setValue("rating", star);
+            }}
+            onMouseEnter={() => setHoveredRating(star)}
+            onMouseLeave={() => setHoveredRating(null)}
+          >
+            <Star
+              className={`h-6 w-6 ${
+                star <= (hoveredRating || rating)
+                  ? "text-yellow-500 fill-yellow-500"
+                  : "text-gray-300"
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Form submission handler
+  const onSubmit = (data: ReviewData) => {
+    mutation.mutate(data);
+  };
+
+  // Get product name for editing based on the product ID
+  const getProductName = (id: number) => {
+    if (initialReview?.product) {
+      return initialReview.product.name;
+    }
     
-    createReviewMutation.mutate();
+    if (products) {
+      const product = products.find(p => p.id === id);
+      return product ? product.name : "Unknown Product";
+    }
+    
+    return "Product";
   };
 
   return (
-    <div className={className}>
-      <h3 className="text-lg font-medium mb-4">Write a Review</h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Rating stars */}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Product selection field (only shown when multiple products available) */}
+        {products && products.length > 1 && !initialReview && (
+          <FormField
+            control={form.control}
+            name="productId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product</FormLabel>
+                <Select
+                  defaultValue={String(field.value)}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a product" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={String(product.id)}>
+                        {product.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {/* For editing, show product name */}
+        {initialReview && (
+          <div className="mb-4">
+            <FormLabel className="text-sm text-gray-500">Product</FormLabel>
+            <div className="font-medium">
+              {getProductName(initialReview.productId)}
+            </div>
+          </div>
+        )}
+
+        {/* Rating field */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">
-            Your Rating <span className="text-red-500">*</span>
-          </label>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setRating(value)}
-                onMouseEnter={() => setHoverRating(value)}
-                onMouseLeave={() => setHoverRating(0)}
-                className="p-1"
-              >
-                <Star
-                  className={`h-6 w-6 transition-colors ${
-                    (hoverRating ? value <= hoverRating : value <= rating)
-                      ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-300"
-                  }`}
-                />
-              </button>
-            ))}
+          <FormLabel>Rating</FormLabel>
+          <div className="flex items-center">
+            {renderStars()}
             <span className="ml-2 text-sm text-gray-500">
-              {rating > 0 ? [
-                "Poor",
-                "Fair",
-                "Good",
-                "Very Good",
-                "Excellent"
-              ][rating - 1] : "Select a rating"}
+              {rating} {rating === 1 ? "star" : "stars"}
             </span>
           </div>
-          {rating === 0 && createReviewMutation.isPending && (
-            <p className="text-sm text-red-500">Please select a rating</p>
+        </div>
+
+        {/* Review title field */}
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Summarize your experience" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
-        
-        {/* Review title */}
-        <div className="space-y-2">
-          <label htmlFor="review-title" className="text-sm font-medium">
-            Review Title <span className="text-red-500">*</span>
-          </label>
-          <Input
-            id="review-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Summarize your experience"
-            maxLength={100}
-            disabled={createReviewMutation.isPending}
-          />
-          {title.trim().length < 3 && title.trim().length > 0 && (
-            <p className="text-sm text-red-500">Title must be at least 3 characters</p>
+        />
+
+        {/* Review comment field */}
+        <FormField
+          control={form.control}
+          name="comment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Review</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Share your thoughts about this product"
+                  className="resize-none"
+                  rows={4}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-          <div className="text-xs text-gray-500 text-right">
-            {title.length}/100
-          </div>
-        </div>
-        
-        {/* Review comment */}
-        <div className="space-y-2">
-          <label htmlFor="review-comment" className="text-sm font-medium">
-            Your Review (Optional)
-          </label>
-          <Textarea
-            id="review-comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Share your experience with this product..."
-            rows={4}
-            disabled={createReviewMutation.isPending}
-          />
-        </div>
-        
-        {/* Submit button */}
-        <div className="flex gap-2 justify-end">
+        />
+
+        {/* Form actions */}
+        <div className="flex justify-end space-x-2 pt-2">
           {onCancel && (
             <Button 
               type="button" 
               variant="outline" 
               onClick={onCancel}
-              disabled={createReviewMutation.isPending}
+              disabled={mutation.isPending}
             >
               Cancel
             </Button>
           )}
-          
-          <Button 
-            type="submit" 
-            disabled={!isFormValid || createReviewMutation.isPending}
-          >
-            {createReviewMutation.isPending ? (
-              <>
-                <span className="animate-spin mr-2">⊚</span>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? (
+              <span className="flex items-center">
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
                 Submitting...
-              </>
+              </span>
+            ) : initialReview ? (
+              "Update Review"
             ) : (
               "Submit Review"
             )}
           </Button>
         </div>
       </form>
-    </div>
+    </Form>
   );
 }

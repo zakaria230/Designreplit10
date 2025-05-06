@@ -29,6 +29,7 @@ import ProfilePage from "@/pages/profile/profile-page";
 import OrdersPage from "@/pages/profile/orders-page";
 import PurchasesPage from "@/pages/profile/purchases-page";
 import DownloadsPage from "@/pages/profile/downloads-page";
+import ReviewsPage from "@/pages/profile/reviews-page";
 import SettingsPage from "@/pages/profile/settings-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProductManagement from "@/pages/admin/product-management";
@@ -71,6 +72,7 @@ function Router() {
         <ProtectedRoute path="/profile" component={PurchasesPage} />
         <ProtectedRoute path="/profile/purchases" component={PurchasesPage} />
         <ProtectedRoute path="/profile/downloads" component={DownloadsPage} />
+        <ProtectedRoute path="/profile/reviews" component={ReviewsPage} />
         <ProtectedRoute path="/profile/settings" component={SettingsPage} />
         
         {/* Admin Routes */}

@@ -10,7 +10,8 @@ import {
   Settings, 
   ChevronRight,
   Receipt,
-  LogOut
+  LogOut,
+  Star
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -66,6 +67,11 @@ export function ProfileLayout({ children, title, description }: ProfileLayoutPro
       href: "/profile/downloads",
       icon: <Download className="h-5 w-5" />,
       label: "Downloads",
+    },
+    {
+      href: "/profile/reviews",
+      icon: <Star className="h-5 w-5" />,
+      label: "My Reviews",
     },
     {
       href: "/profile/settings",
