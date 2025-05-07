@@ -489,6 +489,45 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+              
+              {/* Billing Address */}
+              {(selectedOrder.billingFirstName || selectedOrder.billingAddress) && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Billing Address</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-1">
+                      {selectedOrder.billingFirstName && selectedOrder.billingLastName && (
+                        <p className="font-medium">
+                          {selectedOrder.billingFirstName} {selectedOrder.billingLastName}
+                        </p>
+                      )}
+                      {selectedOrder.billingAddress && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {selectedOrder.billingAddress}
+                          {selectedOrder.billingApartment && `, ${selectedOrder.billingApartment}`}
+                        </p>
+                      )}
+                      {selectedOrder.billingCity && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {selectedOrder.billingCity}{selectedOrder.billingState && `, ${selectedOrder.billingState}`} {selectedOrder.billingZip}
+                        </p>
+                      )}
+                      {selectedOrder.billingCountry && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {selectedOrder.billingCountry}
+                        </p>
+                      )}
+                      {selectedOrder.billingPhone && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Phone: {selectedOrder.billingPhone}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Order Details */}
               <Card>

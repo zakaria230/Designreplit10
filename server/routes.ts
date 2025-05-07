@@ -1699,6 +1699,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (transactionId) {
           await storage.updateTransactionId(order.id, transactionId, paymentDetails);
         }
+        
+        // Update billing details if provided
+        if (billingDetails) {
+          await storage.updateOrderBillingDetails(order.id, {
+            billingFirstName: billingDetails.billingFirstName,
+            billingLastName: billingDetails.billingLastName,
+            billingAddress: billingDetails.billingAddress,
+            billingApartment: billingDetails.billingApartment || null,
+            billingCity: billingDetails.billingCity,
+            billingState: billingDetails.billingState,
+            billingZip: billingDetails.billingZip,
+            billingCountry: billingDetails.billingCountry,
+            billingPhone: billingDetails.billingPhone,
+          });
+        }
       }
 
       res.json({
