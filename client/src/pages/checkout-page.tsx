@@ -13,6 +13,7 @@ import {
 } from "@paypal/react-paypal-js";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { billingAddressSchema } from "@shared/schema";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,16 @@ import { Loader2, ShoppingCart } from "lucide-react";
 const checkoutFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   name: z.string().min(2, "Name must be at least 2 characters"),
+  // Billing address fields
+  billingFirstName: z.string().min(1, "First name is required"),
+  billingLastName: z.string().min(1, "Last name is required"),
+  billingAddress: z.string().min(1, "Address is required"),
+  billingApartment: z.string().optional(),
+  billingCity: z.string().min(1, "City is required"),
+  billingState: z.string().min(1, "State/Province is required"),
+  billingZip: z.string().min(1, "ZIP/Postal code is required"),
+  billingCountry: z.string().min(1, "Country is required"),
+  billingPhone: z.string().min(1, "Phone number is required"),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
@@ -48,12 +59,24 @@ function PayPalCheckout({
   amount, 
   items, 
   onSuccess, 
-  email 
+  email,
+  billingDetails
 }: { 
   amount: number, 
   items: any[], 
   onSuccess: (orderData?: {orderId?: number}) => void,
-  email: string
+  email: string,
+  billingDetails: {
+    billingFirstName: string,
+    billingLastName: string,
+    billingAddress: string,
+    billingApartment?: string,
+    billingCity: string,
+    billingState: string,
+    billingZip: string,
+    billingCountry: string,
+    billingPhone: string
+  }
 }) {
   const { toast } = useToast();
   const [{ isPending }] = usePayPalScriptReducer();
@@ -78,7 +101,8 @@ function PayPalCheckout({
       const response = await apiRequest("POST", "/api/create-paypal-order", {
         amount,
         items,
-        email
+        email,
+        billingDetails
       });
       
       const data = await response.json();
@@ -112,7 +136,8 @@ function PayPalCheckout({
       
       const response = await apiRequest("POST", "/api/capture-paypal-order", {
         orderId: data.orderID,
-        items
+        items,
+        billingDetails
       });
       
       const orderData = await response.json();
@@ -182,6 +207,16 @@ export default function CheckoutPage() {
     defaultValues: {
       email: user?.email || "",
       name: user?.username || "",
+      // Billing address default values
+      billingFirstName: "",
+      billingLastName: "",
+      billingAddress: "",
+      billingApartment: "",
+      billingCity: "",
+      billingState: "",
+      billingZip: "",
+      billingCountry: "",
+      billingPhone: "",
     },
   });
 
@@ -321,6 +356,149 @@ export default function CheckoutPage() {
                         )}
                       />
 
+                      {/* Billing Address Section */}
+                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <h3 className="text-base font-medium mb-4">Billing Address</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="billingFirstName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="First name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="billingLastName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Last name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          <FormField
+                            control={form.control}
+                            name="billingAddress"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Street Address</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Street address" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          <FormField
+                            control={form.control}
+                            name="billingApartment"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Apartment, suite, etc. (optional)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Apartment, suite, etc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <FormField
+                            control={form.control}
+                            name="billingCity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>City</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="City" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="billingState"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>State/Province</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="State/Province" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <FormField
+                            control={form.control}
+                            name="billingZip"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>ZIP/Postal Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ZIP/Postal code" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="billingCountry"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Country</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Country" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          <FormField
+                            control={form.control}
+                            name="billingPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Phone number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
                       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <h3 className="text-base font-medium mb-4">Payment with PayPal</h3>
                         
@@ -335,6 +513,17 @@ export default function CheckoutPage() {
                                 amount={totalPrice} 
                                 items={items} 
                                 email={form.getValues().email}
+                                billingDetails={{
+                                  billingFirstName: form.getValues().billingFirstName,
+                                  billingLastName: form.getValues().billingLastName,
+                                  billingAddress: form.getValues().billingAddress,
+                                  billingApartment: form.getValues().billingApartment,
+                                  billingCity: form.getValues().billingCity,
+                                  billingState: form.getValues().billingState,
+                                  billingZip: form.getValues().billingZip,
+                                  billingCountry: form.getValues().billingCountry,
+                                  billingPhone: form.getValues().billingPhone
+                                }}
                                 onSuccess={(orderData) => {
                                   clearCart();
                                   // Navigate to thank you page with order ID if available
