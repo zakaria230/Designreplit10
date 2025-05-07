@@ -52,6 +52,17 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   updatePaymentStatus(id: number, paymentStatus: string, paymentIntentId?: string): Promise<Order | undefined>;
+  updateOrderBillingDetails(id: number, billingDetails: {
+    billingFirstName?: string;
+    billingLastName?: string;
+    billingAddress?: string;
+    billingApartment?: string | null;
+    billingCity?: string;
+    billingState?: string;
+    billingZip?: string;
+    billingCountry?: string;
+    billingPhone?: string;
+  }): Promise<Order | undefined>;
   deleteOrder(id: number): Promise<boolean>;
 
   // Order items methods
@@ -387,6 +398,25 @@ export class DatabaseStorage implements IStorage {
         transactionId,
         ...(notes ? { notes } : {})
       })
+      .where(eq(orders.id, id))
+      .returning();
+    return updatedOrder;
+  }
+  
+  async updateOrderBillingDetails(id: number, billingDetails: {
+    billingFirstName?: string;
+    billingLastName?: string;
+    billingAddress?: string;
+    billingApartment?: string | null;
+    billingCity?: string;
+    billingState?: string;
+    billingZip?: string;
+    billingCountry?: string;
+    billingPhone?: string;
+  }): Promise<Order | undefined> {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set(billingDetails)
       .where(eq(orders.id, id))
       .returning();
     return updatedOrder;
