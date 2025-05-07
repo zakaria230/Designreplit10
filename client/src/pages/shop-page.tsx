@@ -45,22 +45,24 @@ export default function ShopPage() {
     data: products,
     isLoading: isLoadingProducts,
     error: productsError,
-    refetch: refetchProducts
+    refetch: refetchProducts,
   } = useQuery<Product[]>({
-    queryKey: ["/api/products", { 
-      search: searchQuery || undefined, 
-      categoryId: selectedCategory || undefined 
-    }],
+    queryKey: [
+      "/api/products",
+      {
+        search: searchQuery || undefined,
+        categoryId: selectedCategory || undefined,
+      },
+    ],
     // Make sure to refetch when query parameters change
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
   // Fetch all categories
-  const {
-    data: categories,
-    isLoading: isLoadingCategories,
-  } = useQuery<Category[]>({
+  const { data: categories, isLoading: isLoadingCategories } = useQuery<
+    Category[]
+  >({
     queryKey: ["/api/categories"],
   });
 
@@ -76,7 +78,9 @@ export default function ShopPage() {
           if (searchQuery) {
             const query = searchQuery.toLowerCase().trim();
             const nameMatch = product.name.toLowerCase().includes(query);
-            const descMatch = product.description ? product.description.toLowerCase().includes(query) : false;
+            const descMatch = product.description
+              ? product.description.toLowerCase().includes(query)
+              : false;
             // Don't filter out if either name or description match
             if (!nameMatch && !descMatch) {
               return false;
@@ -89,10 +93,7 @@ export default function ShopPage() {
           }
 
           // Filter by price range
-          if (
-            product.price < priceRange[0] ||
-            product.price > priceRange[1]
-          ) {
+          if (product.price < priceRange[0] || product.price > priceRange[1]) {
             return false;
           }
 
@@ -122,9 +123,16 @@ export default function ShopPage() {
     : [];
 
   // Get max price for the slider with error handling
-  const maxPrice = products && products.length > 0
-    ? Math.ceil(Math.max(...products.filter(p => p && typeof p.price === 'number').map(p => p.price))) || 100
-    : 100;
+  const maxPrice =
+    products && products.length > 0
+      ? Math.ceil(
+          Math.max(
+            ...products
+              .filter((p) => p && typeof p.price === "number")
+              .map((p) => p.price),
+          ),
+        ) || 100
+      : 100;
 
   // Handle applying a filter
   const applyFilter = (type: string, value: string | number | number[]) => {
@@ -132,10 +140,12 @@ export default function ShopPage() {
       setSelectedCategory(value as number);
       // If value is 0, we're clearing the category filter
       if (value === 0) {
-        setActiveFilters(activeFilters.filter(f => !f.startsWith('Category:')));
+        setActiveFilters(
+          activeFilters.filter((f) => !f.startsWith("Category:")),
+        );
         return;
       }
-      const category = categories?.find(c => c.id === value);
+      const category = categories?.find((c) => c.id === value);
       if (category) {
         if (!activeFilters.includes(`Category: ${category.name}`)) {
           setActiveFilters([...activeFilters, `Category: ${category.name}`]);
@@ -145,8 +155,8 @@ export default function ShopPage() {
       const priceValues = value as number[];
       setPriceRange(priceValues);
       setActiveFilters([
-        ...activeFilters.filter(f => !f.startsWith("Price:")), 
-        `Price: $${priceValues[0]} - $${priceValues[1]}`
+        ...activeFilters.filter((f) => !f.startsWith("Price:")),
+        `Price: $${priceValues[0]} - $${priceValues[1]}`,
       ]);
     }
   };
@@ -157,7 +167,7 @@ export default function ShopPage() {
     setSelectedCategory(null);
     setPriceRange([0, maxPrice]);
     setActiveFilters([]);
-    
+
     // Clear any pending search debounce
     if (searchDelay) {
       clearTimeout(searchDelay);
@@ -167,8 +177,8 @@ export default function ShopPage() {
 
   // Remove a specific filter
   const removeFilter = (filter: string) => {
-    setActiveFilters(activeFilters.filter(f => f !== filter));
-    
+    setActiveFilters(activeFilters.filter((f) => f !== filter));
+
     if (filter.startsWith("Category:")) {
       setSelectedCategory(null);
     } else if (filter.startsWith("Price:")) {
@@ -182,17 +192,22 @@ export default function ShopPage() {
     <>
       <Helmet>
         <title>Shop Digital Fashion Assets | DesignKorv</title>
-        <meta name="description" content="Browse our collection of premium digital fashion design assets including patterns, technical drawings, 3D models, and textures." />
+        <meta
+          name="description"
+          content="Browse our collection of premium digital fashion design assets including patterns, technical drawings, 3D models, and textures."
+        />
       </Helmet>
 
       <div className="bg-white dark:bg-gray-900 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Shop Digital Fashion Assets
+              Shop Digital Designs Assets
             </h1>
             <p className="text-gray-500 dark:text-gray-400 max-w-3xl">
-              Browse our collection of premium digital fashion design assets. From patterns to 3D models, find the perfect resources for your next project.
+              Browse our collection of premium digital designs and bundles
+              design assets. From patterns to vectors, find the perfect
+              resources for your next project.
             </p>
           </div>
 
@@ -207,16 +222,18 @@ export default function ShopPage() {
                   onChange={(e) => {
                     // Implement debounce for search to avoid too many API calls
                     if (searchDelay) clearTimeout(searchDelay);
-                    
+
                     const newSearchQuery = e.target.value;
-                    
+
                     // Update the display value immediately for better UX
                     setSearchQuery(newSearchQuery);
-                    
+
                     // Debounce the actual API call
-                    setSearchDelay(setTimeout(() => {
-                      setSearchQuery(newSearchQuery);
-                    }, 300));
+                    setSearchDelay(
+                      setTimeout(() => {
+                        setSearchQuery(newSearchQuery);
+                      }, 300),
+                    );
                   }}
                   className="pl-10"
                 />
@@ -237,7 +254,11 @@ export default function ShopPage() {
                       </SheetDescription>
                     </SheetHeader>
                     <div className="py-6">
-                      <Accordion type="single" collapsible defaultValue="categories">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        defaultValue="categories"
+                      >
                         <AccordionItem value="categories">
                           <AccordionTrigger>Categories</AccordionTrigger>
                           <AccordionContent>
@@ -248,12 +269,20 @@ export default function ShopPage() {
                                 </div>
                               ) : categories && categories.length > 0 ? (
                                 categories.map((category) => (
-                                  <div key={category.id} className="flex items-center">
+                                  <div
+                                    key={category.id}
+                                    className="flex items-center"
+                                  >
                                     <Checkbox
                                       id={`category-${category.id}`}
                                       checked={selectedCategory === category.id}
                                       onCheckedChange={() => {
-                                        applyFilter("category", selectedCategory === category.id ? 0 : category.id);
+                                        applyFilter(
+                                          "category",
+                                          selectedCategory === category.id
+                                            ? 0
+                                            : category.id,
+                                        );
                                       }}
                                     />
                                     <label
@@ -299,7 +328,11 @@ export default function ShopPage() {
                         </AccordionItem>
                       </Accordion>
                       <div className="flex justify-end mt-6">
-                        <Button variant="outline" onClick={clearFilters} className="mr-2">
+                        <Button
+                          variant="outline"
+                          onClick={clearFilters}
+                          className="mr-2"
+                        >
                           Clear All
                         </Button>
                         <Button>Apply Filters</Button>
@@ -317,7 +350,9 @@ export default function ShopPage() {
                   <SelectContent>
                     <SelectItem value="newest">Newest</SelectItem>
                     <SelectItem value="priceAsc">Price: Low to High</SelectItem>
-                    <SelectItem value="priceDesc">Price: High to Low</SelectItem>
+                    <SelectItem value="priceDesc">
+                      Price: High to Low
+                    </SelectItem>
                     <SelectItem value="popular">Most Popular</SelectItem>
                   </SelectContent>
                 </Select>
@@ -328,19 +363,37 @@ export default function ShopPage() {
             {activeFilters.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {activeFilters.map((filter) => (
-                  <Badge key={filter} variant="secondary" className="flex items-center">
+                  <Badge
+                    key={filter}
+                    variant="secondary"
+                    className="flex items-center"
+                  >
                     {filter}
                     <button
                       onClick={() => removeFilter(filter)}
                       className="ml-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </button>
                   </Badge>
                 ))}
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-xs"
+                >
                   Clear all
                 </Button>
               </div>
@@ -357,7 +410,7 @@ export default function ShopPage() {
           ) : (
             <>
               <ProductGrid products={filteredProducts} isLoading={isLoading} />
-              
+
               {/* Show "no results" message if no products match filters */}
               {!isLoading && filteredProducts.length === 0 && (
                 <div className="text-center py-12">

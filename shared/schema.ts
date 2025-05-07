@@ -138,6 +138,16 @@ export const orders = pgTable("orders", {
   paymentStatus: text("payment_status").default("unpaid"),
   transactionId: text("transaction_id"),  // PayPal transaction ID
   notes: text("notes"),  // Order notes
+  // Billing address fields
+  billingFirstName: text("billing_first_name"),
+  billingLastName: text("billing_last_name"),
+  billingAddress: text("billing_address"),
+  billingApartment: text("billing_apartment"),
+  billingCity: text("billing_city"),
+  billingState: text("billing_state"),
+  billingZip: text("billing_zip"),
+  billingCountry: text("billing_country"),
+  billingPhone: text("billing_phone"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -150,6 +160,16 @@ export const insertOrderSchema = createInsertSchema(orders).pick({
   paymentStatus: true,
   transactionId: true,
   notes: true,
+  // Billing address fields
+  billingFirstName: true,
+  billingLastName: true,
+  billingAddress: true,
+  billingApartment: true,
+  billingCity: true,
+  billingState: true,
+  billingZip: true,
+  billingCountry: true,
+  billingPhone: true,
 });
 
 export const orderRelations = relations(orders, ({ one, many }) => ({
@@ -236,7 +256,21 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+// Billing address schema for checkout
+export const billingAddressSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  address: z.string().min(1, "Address is required"),
+  apartment: z.string().optional(),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State/Province is required"),
+  zip: z.string().min(1, "ZIP/Postal code is required"),
+  country: z.string().min(1, "Country is required"),
+  phone: z.string().min(1, "Phone number is required"),
+});
+
 export type LoginData = z.infer<typeof loginSchema>;
+export type BillingAddress = z.infer<typeof billingAddressSchema>;
 
 export const registerSchema = insertUserSchema.extend({
   password: z.string()

@@ -14,7 +14,7 @@ import {
   X,
   Store,
   FolderClosed,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -95,8 +95,8 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
             <Button asChild className="w-full">
               <Link href="/">Return to Homepage</Link>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => logoutMutation.mutate()}
             >
@@ -148,15 +148,18 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
       <aside
         className={cn(
           "fixed top-0 bottom-0 left-0 z-20 w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-y-auto transition-transform duration-300 md:relative md:translate-x-0",
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center p-4 h-16">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-bold text-xl"
+            >
               <Store className="h-6 w-6" />
-              <span>DesignKorv</span>
+              <span>Desivoo</span>
             </Link>
           </div>
 
@@ -171,7 +174,7 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
               <div className="mt-1 h-px bg-gradient-to-r from-blue-500/20 to-transparent"></div>
             </div>
             {navItems
-              .filter(item => item.roles?.includes(user.role))
+              .filter((item) => item.roles?.includes(user.role))
               .map((item) => (
                 <Link key={item.href} href={item.href}>
                   <div
@@ -179,15 +182,17 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all",
                       location === item.href
                         ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm border-l-4 border-blue-500"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1",
                     )}
                   >
-                    <div className={cn(
-                      "flex items-center justify-center",
-                      location === item.href
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-gray-500 dark:text-gray-400"
-                    )}>
+                    <div
+                      className={cn(
+                        "flex items-center justify-center",
+                        location === item.href
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-500 dark:text-gray-400",
+                      )}
+                    >
                       {item.icon}
                     </div>
                     <span>{item.title}</span>
@@ -211,7 +216,7 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
               </h3>
               <div className="mt-1 h-px bg-gradient-to-r from-blue-500/20 to-transparent"></div>
             </div>
-            
+
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <div className="flex items-center gap-4">
                 <Avatar className="h-14 w-14 border-2 border-blue-200 dark:border-blue-800">
@@ -220,7 +225,9 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col overflow-hidden">
-                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{user.username}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
+                    {user.username}
+                  </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {user.email}
                   </span>
@@ -229,18 +236,18 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
                   </span>
                 </div>
               </div>
-              
+
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex items-center gap-2 justify-center bg-white dark:bg-gray-800 shadow-sm"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex items-center gap-2 justify-center bg-white dark:bg-gray-800 shadow-sm"
                   asChild
                 >
@@ -258,9 +265,7 @@ export function AdminLayout({ children, activeTab }: AdminLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 md:ml-0">
-        {children}
-      </main>
+      <main className="flex-1 min-w-0 md:ml-0">{children}</main>
     </div>
   );
 }
