@@ -17,9 +17,19 @@ async function importESM(modulePath) {
 // Main function to start the server
 async function startServer() {
   try {
-    // Use the CommonJS server file
-    // This ensures compatibility with cPanel
-    const serverModule = { app: require('./server.cjs') };
+    console.log('Starting cPanel adapter...');
+    
+    // Use the minimal CommonJS server file
+    // This will help identify if the problem is with the code or the environment
+    let serverModule;
+    try {
+      console.log('Attempting to load minimal server...');
+      serverModule = { app: require('./server.minimal.cjs') };
+      console.log('Minimal server loaded successfully');
+    } catch (error) {
+      console.error('Failed to load minimal server:', error);
+      process.exit(1);
+    }
     
     // Get port from environment or use default
     const PORT = process.env.PORT || 3000;
