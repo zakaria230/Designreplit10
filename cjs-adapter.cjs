@@ -17,9 +17,9 @@ async function importESM(modulePath) {
 // Main function to start the server
 async function startServer() {
   try {
-    // Use the compiled JavaScript server instead of TypeScript
-    // On cPanel we can't use TypeScript files directly
-    const serverModule = { app: require('./server.js') };
+    // Use the CommonJS server file
+    // This ensures compatibility with cPanel
+    const serverModule = { app: require('./server.cjs') };
     
     // Get port from environment or use default
     const PORT = process.env.PORT || 3000;

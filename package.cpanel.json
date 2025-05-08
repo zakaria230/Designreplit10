@@ -1,0 +1,34 @@
+{
+  "name": "designkorv",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "NODE_ENV=production node server.cjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "latest",
+    "@neondatabase/serverless": "latest",
+    "@paypal/checkout-server-sdk": "latest",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "connect-pg-simple": "latest",
+    "date-fns": "latest",
+    "drizzle-orm": "latest",
+    "drizzle-zod": "latest",
+    "express": "latest",
+    "express-fileupload": "latest",
+    "express-rate-limit": "latest",
+    "express-session": "latest",
+    "lucide-react": "latest",
+    "memorystore": "latest",
+    "passport": "latest",
+    "passport-local": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-hook-form": "latest",
+    "stripe": "latest",
+    "tailwind-merge": "latest",
+    "zod": "latest"
+  }
+}
