@@ -5,7 +5,7 @@
 process.env.NODE_ENV = 'production';
 
 // Import the main server
-const { app } = require('./dist/server');
+const { app } = require('./server/index');
 
 // Get port from environment or use 3000 as fallback
 const PORT = process.env.PORT || 3000;

@@ -18,7 +18,7 @@ async function importESM(modulePath) {
 async function startServer() {
   try {
     // Dynamically import the ESM server module
-    const serverModule = await importESM('./dist/index.js');
+    const serverModule = await importESM('./server/index.ts');
     
     // Get port from environment or use default
     const PORT = process.env.PORT || 3000;
