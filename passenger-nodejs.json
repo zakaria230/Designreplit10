@@ -1,13 +1,5 @@
 {
-  "script": "cjs-adapter.cjs",
-  "args": [],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "exec_mode": "fork",
-  "instances": 1,
-  "mergeLogs": true,
-  "watch": false,
-  "autorestart": true,
-  "max_memory_restart": "150M"
+  "app_type": "node",
+  "startup_file": "cjs-adapter.cjs",
+  "node_version": "18"
 }

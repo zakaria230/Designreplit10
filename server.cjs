@@ -16,15 +16,66 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the dist/client directory
-if (fs.existsSync(path.join(__dirname, 'dist', 'client'))) {
-  app.use(express.static(path.join(__dirname, 'dist', 'client')));
+// Check available paths (for diagnostics)
+console.log('Current directory:', __dirname);
+console.log('Available paths:', fs.readdirSync(__dirname).join(', '));
+
+// Try multiple static file locations for maximum compatibility
+const possibleClientPaths = [
+  path.join(__dirname, 'dist', 'client'),
+  path.join(__dirname, 'client'),
+  path.join(__dirname, 'public'),
+  path.join(__dirname, 'dist')
+];
+
+let clientPath = null;
+for (const dir of possibleClientPaths) {
+  if (fs.existsSync(dir)) {
+    console.log(`Found client files at: ${dir}`);
+    clientPath = dir;
+    app.use(express.static(dir));
+    break;
+  }
+}
+
+if (!clientPath) {
+  console.error('WARNING: No client files found in any expected directory!');
 }
 
 // Serve uploaded files
-if (fs.existsSync(path.join(__dirname, 'uploads'))) {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadPaths = [
+  path.join(__dirname, 'uploads'),
+  path.join(__dirname, '../uploads')
+];
+
+let uploadsPath = null;
+for (const dir of uploadPaths) {
+  if (fs.existsSync(dir)) {
+    console.log(`Found uploads at: ${dir}`);
+    uploadsPath = dir;
+    app.use('/uploads', express.static(dir));
+    break;
+  }
 }
+
+// Add diagnostic endpoint to help troubleshoot issues
+app.get('/diagnose', (req, res) => {
+  const diagnostics = {
+    environment: process.env.NODE_ENV,
+    currentDirectory: __dirname,
+    directories: {
+      current: fs.existsSync(__dirname) ? fs.readdirSync(__dirname) : 'not accessible',
+      clientPath: clientPath,
+      uploadsPath: uploadsPath,
+      clientFiles: clientPath ? fs.readdirSync(clientPath) : 'not found',
+      distExists: fs.existsSync(path.join(__dirname, 'dist')),
+      distContents: fs.existsSync(path.join(__dirname, 'dist')) ? 
+        fs.readdirSync(path.join(__dirname, 'dist')) : 'not found'
+    }
+  };
+  
+  res.json(diagnostics);
+});
 
 // Basic health check endpoint
 app.get('/api/health', (req, res) => {
@@ -38,12 +89,40 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  // Serve the index.html for client routes
-  if (fs.existsSync(path.join(__dirname, 'dist', 'client', 'index.html'))) {
-    res.sendFile(path.join(__dirname, 'dist', 'client', 'index.html'));
-  } else {
-    res.status(404).send('Application files not found. Please build the client application.');
+  // Find and serve index.html from the client path we detected
+  if (clientPath) {
+    const indexPath = path.join(clientPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
   }
+  
+  // Fallback to traditional path as a last resort
+  const traditionalIndexPath = path.join(__dirname, 'dist', 'client', 'index.html');
+  if (fs.existsSync(traditionalIndexPath)) {
+    return res.sendFile(traditionalIndexPath);
+  }
+
+  // If no index.html is found, provide a helpful error message with diagnostic info
+  res.status(404).send(`
+    <html>
+      <head><title>DesignKorv Diagnostic Page</title></head>
+      <body>
+        <h1>DesignKorv - Application Files Not Found</h1>
+        <p>The application files could not be located. Please ensure that:</p>
+        <ol>
+          <li>The application has been built (<code>npm run build</code>)</li>
+          <li>The dist/client directory has been uploaded to the server</li>
+          <li>The server has permission to read these files</li>
+        </ol>
+        <p>Current directory: ${__dirname}</p>
+        <p>Detected client path: ${clientPath || 'None'}</p>
+        <p><a href="/diagnose">View detailed diagnostics</a></p>
+        <hr>
+        <button onclick="window.location.reload()">Refresh Page</button>
+      </body>
+    </html>
+  `);
 });
 
 // Get port from environment or use 3000 as fallback

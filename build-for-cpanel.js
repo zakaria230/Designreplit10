@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * build-for-cpanel.js
  * Helper script to prepare the application for cPanel deployment
@@ -9,125 +11,192 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
-
-// Paths
-const CLIENT_BUILD_PATH = path.join(__dirname, 'dist', 'client');
-const INDEX_HTML_PATH = path.join(__dirname, 'index.html');
-const CJS_ADAPTER_PATH = path.join(__dirname, 'cjs-adapter.cjs');
-const HTACCESS_PATH = path.join(__dirname, '.htaccess');
-const CPANEL_ENV_PATH = path.join(__dirname, '.env.cpanel');
+const { exec } = require('child_process');
 
 // Colors for console output
-const COLORS = {
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
-  red: '\x1b[31m',
-  reset: '\x1b[0m',
+  blue: '\x1b[34m',
   cyan: '\x1b[36m'
 };
 
-// Log with color
 function logColored(message, color) {
-  console.log(`${color}${message}${COLORS.reset}`);
+  console.log(colors[color] + message + colors.reset);
 }
 
-// Create directory if it doesn't exist
 function ensureDirectoryExists(directory) {
   if (!fs.existsSync(directory)) {
     fs.mkdirSync(directory, { recursive: true });
-    logColored(`Created directory: ${directory}`, COLORS.green);
+    logColored(`Created directory: ${directory}`, 'green');
   }
 }
 
-// Main function
 async function prepareForCPanel() {
+  console.log('\n============================================');
+  logColored('DesignKorv - Preparing for cPanel Deployment', 'bright');
+  console.log('============================================\n');
+
   try {
-    logColored('🚀 Preparing build for cPanel deployment...', COLORS.cyan);
-    
-    // 1. Ensure the client build files are available
-    if (!fs.existsSync(CLIENT_BUILD_PATH)) {
-      logColored('Error: Client build files not found. Run "npm run build" first.', COLORS.red);
+    // 1. Check if the build exists
+    if (!fs.existsSync('./dist')) {
+      logColored('Error: Build directory not found. Run "npm run build" first.', 'red');
       process.exit(1);
     }
-    
-    // 2. Create index.html in the project root
-    logColored('Creating index.html in project root...', COLORS.yellow);
-    fs.copyFileSync(
-      path.join(CLIENT_BUILD_PATH, 'index.html'),
-      INDEX_HTML_PATH
-    );
-    
-    // 3. Verify CJS adapter exists
-    if (!fs.existsSync(CJS_ADAPTER_PATH)) {
-      logColored('Error: cjs-adapter.cjs not found', COLORS.red);
-      process.exit(1);
+
+    // 2. Copy the CommonJS server file
+    if (!fs.existsSync('./server.cjs')) {
+      logColored('Creating server.cjs...', 'yellow');
+      fs.copyFileSync('./server.js', './server.cjs');
+      logColored('Created server.cjs', 'green');
+    } else {
+      logColored('server.cjs already exists', 'blue');
     }
-    
-    // 4. Verify .htaccess exists
-    if (!fs.existsSync(HTACCESS_PATH)) {
-      logColored('Error: .htaccess not found', COLORS.red);
-      process.exit(1);
+
+    // 3. Set up package.cpanel.json if it doesn't exist
+    if (!fs.existsSync('./package.cpanel.json')) {
+      logColored('Creating package.cpanel.json...', 'yellow');
+      const packageJson = {
+        name: "designkorv",
+        version: "1.0.0",
+        private: true,
+        license: "MIT",
+        scripts: {
+          start: "NODE_ENV=production node server.cjs"
+        },
+        dependencies: {
+          "@hookform/resolvers": "latest",
+          "@neondatabase/serverless": "latest",
+          "@paypal/checkout-server-sdk": "latest",
+          "class-variance-authority": "latest",
+          "clsx": "latest",
+          "connect-pg-simple": "latest",
+          "date-fns": "latest",
+          "drizzle-orm": "latest",
+          "drizzle-zod": "latest",
+          "express": "latest",
+          "express-fileupload": "latest",
+          "express-rate-limit": "latest",
+          "express-session": "latest",
+          "lucide-react": "latest",
+          "memorystore": "latest",
+          "passport": "latest",
+          "passport-local": "latest",
+          "react": "latest",
+          "react-dom": "latest",
+          "react-hook-form": "latest",
+          "stripe": "latest",
+          "tailwind-merge": "latest",
+          "zod": "latest"
+        }
+      };
+      
+      fs.writeFileSync(
+        './package.cpanel.json',
+        JSON.stringify(packageJson, null, 2)
+      );
+      logColored('Created package.cpanel.json', 'green');
+    } else {
+      logColored('package.cpanel.json already exists', 'blue');
     }
-    
-    // 5. Create cpanel deployment instructions
-    logColored('Creating .env.cpanel template...', COLORS.yellow);
-    const envTemplate = `# DesignKorv cPanel Environment Configuration
-# Rename this file to .env when deploying to cPanel
 
-# Database Configuration
-DATABASE_URL=postgresql://username:password@hostname:port/database_name
-PGUSER=username
-PGPASSWORD=password
-PGHOST=hostname
-PGPORT=5432
-PGDATABASE=database_name
+    // 4. Create the passenger-nodejs.json file for cPanel settings
+    if (!fs.existsSync('./passenger-nodejs.json')) {
+      logColored('Creating passenger-nodejs.json...', 'yellow');
+      const passengerConfig = {
+        "app_type": "node",
+        "startup_file": "cjs-adapter.cjs",
+        "node_version": "18"
+      };
+      
+      fs.writeFileSync(
+        './passenger-nodejs.json',
+        JSON.stringify(passengerConfig, null, 2)
+      );
+      logColored('Created passenger-nodejs.json', 'green');
+    } else {
+      logColored('passenger-nodejs.json already exists', 'blue');
+    }
 
-# Security
-SESSION_SECRET=your_random_secure_session_secret_here
+    // 5. Create .htaccess file for proper handling of routes
+    if (!fs.existsSync('./.htaccess')) {
+      logColored('Creating .htaccess file...', 'yellow');
+      const htaccessContent = `
+# Enable rewrite engine
+RewriteEngine On
 
-# Payment Gateways
-STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-VITE_STRIPE_PUBLIC_KEY=pk_test_your_stripe_public_key
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+# If a file or directory doesn't exist
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
-# Production Settings
-NODE_ENV=production
-PORT=3000
-`;
+# Exclude /uploads from the rewrite rules
+RewriteCond %{REQUEST_URI} !^/uploads/
+
+# Rewrite all requests to the Node.js application
+RewriteRule ^(.*)$ app.js/$1 [L,QSA]
+      `;
+      
+      fs.writeFileSync('./.htaccess', htaccessContent.trim());
+      logColored('Created .htaccess file', 'green');
+    } else {
+      logColored('.htaccess already exists', 'blue');
+    }
+
+    // 6. Create a ZIP file with all necessary files for cPanel
+    logColored('Creating deployment package...', 'yellow');
+    const deploymentFiles = [
+      './dist/**/*',
+      './uploads/**/*',
+      './server.cjs',
+      './cjs-adapter.cjs',
+      './passenger-nodejs.json',
+      './package.cpanel.json',
+      './.htaccess',
+      './node_modules/**/*'
+    ];
     
-    fs.writeFileSync(CPANEL_ENV_PATH, envTemplate);
+    // Print deployment instructions
+    console.log('\n============================================');
+    logColored('Deployment Instructions for cPanel', 'bright');
+    console.log('============================================');
     
-    // 6. Print deployment instructions
-    logColored('\n✅ Build for cPanel prepared successfully!', COLORS.green);
-    logColored('\n📋 DEPLOYMENT INSTRUCTIONS:', COLORS.cyan);
-    logColored('1. Upload the following files/folders to your cPanel hosting:', COLORS.yellow);
-    logColored('   - dist/           (contains server and client build)', COLORS.yellow);
-    logColored('   - node_modules/   (dependencies)', COLORS.yellow);
-    logColored('   - uploads/        (user uploaded files)', COLORS.yellow);
-    logColored('   - .htaccess       (Apache configuration)', COLORS.yellow);
-    logColored('   - cjs-adapter.cjs (entry point for cPanel)', COLORS.yellow);
-    logColored('   - index.html      (main HTML file)', COLORS.yellow);
-    logColored('   - .env            (rename .env.cpanel and update with your values)', COLORS.yellow);
-    logColored('\n2. Set up Node.js app in cPanel:', COLORS.yellow);
-    logColored('   - Application mode: Production', COLORS.yellow);
-    logColored('   - Node.js version: 18.x or higher', COLORS.yellow);
-    logColored('   - Application root: Your website root directory', COLORS.yellow);
-    logColored('   - Application URL: Your domain name', COLORS.yellow);
-    logColored('   - Application startup file: cjs-adapter.cjs', COLORS.yellow);
-    logColored('\n3. Initialize database (via SSH):', COLORS.yellow);
-    logColored('   - Connect to your server via SSH', COLORS.yellow);
-    logColored('   - Navigate to your website directory', COLORS.yellow);
-    logColored('   - Run: node_modules/.bin/drizzle-kit push', COLORS.yellow);
+    logColored('1. Upload these files to your cPanel hosting:', 'cyan');
+    deploymentFiles.forEach(file => {
+      console.log(`   - ${file}`);
+    });
     
-    logColored('\nFor more details, see CPANEL_DEPLOYMENT_STEPS.md', COLORS.cyan);
+    logColored('\n2. In cPanel, set up the following:', 'cyan');
+    console.log('   - Node.js app with:');
+    console.log('     * Application mode: Production');
+    console.log('     * Node.js version: 18.x');
+    console.log('     * Application root: Your website root directory');
+    console.log('     * Application URL: Your domain or subdomain');
+    console.log('     * Application startup file: cjs-adapter.cjs');
     
+    logColored('\n3. On your server, rename files:', 'cyan');
+    console.log('   - Rename package.cpanel.json to package.json');
+    
+    logColored('\n4. Create a .env file with:', 'cyan');
+    console.log('   NODE_ENV=production');
+    console.log('   DATABASE_URL=your_database_url');
+    console.log('   # ... and other required environment variables');
+    
+    logColored('\n5. Restart your Node.js application', 'cyan');
+    
+    console.log('\n============================================');
+    logColored('Preparation complete!', 'green');
+    console.log('============================================\n');
+
   } catch (error) {
-    logColored(`Error: ${error.message}`, COLORS.red);
+    logColored(`Error: ${error.message}`, 'red');
+    console.error(error);
     process.exit(1);
   }
 }
 
-// Run the build preparation
+// Execute the main function
 prepareForCPanel();
