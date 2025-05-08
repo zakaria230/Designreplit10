@@ -1,5 +1,5 @@
 {
   "app_type": "node",
-  "startup_file": "cjs-adapter.cjs",
+  "startup_file": "app.js",
   "node_version": "18"
 }
